@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MMOMarket - Comprar Moedas</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://sdk.mercadopago.com/js/v2"></script>
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <a href="index.html"><img src="images/logo.png" alt="MMOMarket Logo"></a>
+        </div>
+        <div class="cart-icon">
+            <a href="carrinho.html" id="cart-link">
+                <img src="images/cart.png" alt="Carrinho">
+                <span class="cart-notification" id="cart-count">0</span>
+            </a>
+        </div>
+    </header>
+    
+    <nav>
+        <ul>
+            <li><a href="index.html">Início</a></li>
+            <li><a href="listajogos.html">Comprar Moedas</a></li>
+            <li><a href="intermediar.html">Intermediações</a></li>
+        </ul>
+    </nav>
+    
+    <main>
+        <div class="purchase-container">
+            <div class="game-image">
+                <img id="game-img" src="images/placeholder.jpg" alt="Imagem do jogo">
+            </div>
+            
+            <div class="purchase-details">
+                <h1 id="game-title">Moeda do Jogo</h1>
+                <div class="rating">
+                    <span>★★★★★</span> <span class="review-count">(5)</span>
+                </div>
+                
+                <div class="form-group">
+                    <label for="server">Servidor:</label>
+                    <select id="server" required>
+                        <option value="">Escolha servidor</option>
+                    </select>
+                </div>
+                
+                <!-- Novo campo: Nome do personagem -->
+                <div class="form-group">
+                    <label for="character-name">Nome do personagem:</label>
+                    <input type="text" id="character-name" maxlength="30" required placeholder="Digite o nome do seu personagem">
+                    <small class="form-hint">Este personagem receberá os créditos comprados.</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="quantity">Quantidade:</label>
+                    <div class="quantity-selector">
+                        <button id="decrease">-</button>
+                        <input type="number" id="quantity" value="50" min="10" readonly>
+                        <button id="increase">+</button>
+                    </div>
+                </div>
+                
+                <div class="price-container">
+                    <p>Preço:</p>
+                    <h2 id="price">R$ 0,00</h2>
+                </div>
+                
+                <div class="buttons">
+                    <button id="buy-now" class="primary-btn">Comprar Agora</button>
+                    <button id="add-to-cart" class="secondary-btn">Adicionar ao Carrinho</button>
+                </div>
+            </div>
+        </div>
+        
+        <div id="payment-modal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2>Pagamento via PIX</h2>
+                <div id="qrcode-container">
+                    <!-- QR Code será gerado aqui -->
+                </div>
+                <p>CNPJ: 49.450.443/0001-73</p>
+                <p>Valor: <span id="payment-amount">R$ 0,00</span></p>
+                <button id="confirm-payment">Confirmar Pagamento</button>
+            </div>
+        </div>
+        
+        <div id="confirmation-modal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2>Pedido Recebido!</h2>
+                <p>Você irá receber o seu pedido dentro de 24 a 48 horas.</p>
+                <p>Obrigado por escolher o MMOMarket.</p>
+                <div class="success-icon">✓</div>
+            </div>
+        </div>
+    </main>
+    
+    <footer>
+        <p>&copy; 2023 MMOMarket - Todos os direitos reservados</p>
+    </footer>
+    
+    <script src="js/main.js"></script>
+    <script src="js/compra.js"></script>
+    <script src="js/carrinho.js"></script>
+</body>
+</html>

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MMOMarket - Jogos Disponíveis</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <a href="index.html"><img src="images/logo.png" alt="MMOMarket Logo"></a>
+        </div>
+        <div class="cart-icon">
+            <a href="carrinho.html" id="cart-link">
+                <img src="images/cart.png" alt="Carrinho">
+                <span class="cart-notification" id="cart-count">0</span>
+            </a>
+        </div>
+    </header>
+    
+    <nav>
+        <ul>
+            <li><a href="index.html">Início</a></li>
+            <li><a href="listajogos.html">Comprar Moedas</a></li>
+            <li><a href="intermediar.html">Intermediações</a></li>
+        </ul>
+    </nav>
+    
+    <main>
+        <section class="games-list">
+            <h1>Escolha seu Jogo</h1>
+            
+            <div class="game-cards">
+                <a href="compra.html?game=cabal" class="game-card">
+                    <img src="images/cabal.jpg" alt="Cabal">
+                    <h2>Cabal Alz</h2>
+                </a>
+                
+                <a href="compra.html?game=dofus" class="game-card">
+                    <img src="images/dofus.jpg" alt="Dofus">
+                    <h2>Dofus Kamas</h2>
+                </a>
+                
+                <a href="compra.html?game=habbo" class="game-card">
+                    <img src="images/habbo.jpg" alt="Habbo">
+                    <h2>Habbo Moedas</h2>
+                </a>
+                
+                <a href="compra.html?game=albion" class="game-card">
+                    <img src="images/albion.jpg" alt="Albion">
+                    <h2>Albion Pratas</h2>
+                </a>
+                
+                <a href="compra.html?game=ragnarok" class="game-card">
+                    <img src="images/ragnarok.jpg" alt="Ragnarok">
+                    <h2>Ragnarok Zeny</h2>
+                </a>
+                
+                <a href="compra.html?game=secondlife" class="game-card">
+                    <img src="images/secondlife.jpg" alt="Second Life">
+                    <h2>Second Life Lindens</h2>
+                </a>
+                
+                <a href="compra.html?game=throne" class="game-card">
+                    <img src="images/throne.jpg" alt="Throne and Liberty">
+                    <h2>T&L Lucent</h2>
+                </a>
+            </div>
+        </section>
+    </main>
+    
+    <footer>
+        <p>&copy; 2023 MMOMarket - Todos os direitos reservados</p>
+    </footer>
+    
+    <script src="js/main.js"></script>
+    <script src="js/carrinho.js"></script>
+</body>
+</html>
