@@ -4,7 +4,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const game = urlParams.get('game');
     
     // API URL com nome neutro para evitar bloqueio
-    const APP_SERVICE = 'http://localhost:3000/api';
+    const APP_SERVICE = window.location.hostname === 'localhost' 
+    ? 'http://localhost:3000/api'
+    : 'https://seu-backend-de-producao.render.app/api';
     const BACKEND_URL = 'http://localhost:3000'; // URL base do backend
     
     // Dados dos jogos (em um cenário real, esses dados viriam de uma API ou banco de dados)
