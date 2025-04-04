@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // API URL com nome neutro para evitar bloqueio
     const APP_SERVICE = window.location.hostname === 'localhost' 
     ? 'http://localhost:3000/api'
-    : 'https://seu-backend-de-producao.render.app/api';
+    : 'http://rv36ua4l.up.railway.app';
     
     // Atualizar contador do carrinho
     function updateCartCount() {
