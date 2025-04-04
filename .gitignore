@@ -1,29 +1,27 @@
-# Node.js
+# Dependências
 node_modules/
-npm-debug.log
-yarn-error.log
+package-lock.json
+
+# Arquivos de ambiente
 .env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 
 # Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 logs
 *.log
 
-# Runtime data
-pids
-*.pid
-*.seed
-*.pid.lock
-
-# Diretório de dependências
-.npm
-
-# Optional REPL history
-.node_repl_history
-
-# Output of 'npm pack'
-*.tgz
-
-# Arquivos temporários
+# Arquivos do sistema
 .DS_Store
-.vscode/
+Thumbs.db
+
+# Arquivos de IDE/editores
 .idea/
+.vscode/
+*.swp
+*.swo

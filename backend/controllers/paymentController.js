@@ -1,4 +1,5 @@
-const mercadopago = require('../config/mercadopago');
+// backend/controllers/paymentController.js
+const { payment: mercadopagoPayment } = require('../config/mercadopago');
 const Order = require('../models/Order');
 const Payment = require('../models/Payment');
 const orderController = require('./orderController');
@@ -32,7 +33,7 @@ exports.createPayment = async (req, res) => {
             ? `Compra MMOMarket: ${items.length} itens` 
             : `Compra MMOMarket: ${items[0].quantity} ${items[0].gameName}`;
         
-        // Criar pagamento no MercadoPago
+        // Criar pagamento no MercadoPago - usando a nova sintaxe
         const paymentData = {
             transaction_amount: total,
             description: description,
@@ -48,36 +49,45 @@ exports.createPayment = async (req, res) => {
             }
         };
         
-        const payment = await mercadopago.payment.create(paymentData);
-        
-        // Salvar os detalhes do pagamento
-        const newPayment = new Payment({
-            mercadopagoId: payment.body.id,
-            orderId: order._id,
-            amount: total,
-            status: payment.body.status,
-            paymentMethod: 'pix',
-            paymentDetails: payment.body
-        });
-        
-        await newPayment.save();
-        
-        // Atualizar o pedido com o ID do pagamento
-        await orderController.updateOrderStatus(
-            order._id, 
-            'pending', 
-            payment.body.id
-        );
-        
-        return res.status(200).json({
-            status: 'success',
-            data: {
-                payment_id: payment.body.id,
-                status: payment.body.status,
-                pix_data: payment.body.point_of_interaction.transaction_data,
-                order_id: order._id
-            }
-        });
+        try {
+            const payment = await mercadopagoPayment.create({ body: paymentData });
+            
+            // Salvar os detalhes do pagamento
+            const newPayment = new Payment({
+                mercadopagoId: payment.id,
+                orderId: order._id,
+                amount: total,
+                status: payment.status,
+                paymentMethod: 'pix',
+                paymentDetails: payment
+            });
+            
+            await newPayment.save();
+            
+            // Atualizar o pedido com o ID do pagamento
+            await orderController.updateOrderStatus(
+                order._id, 
+                'pending', 
+                payment.id
+            );
+            
+            return res.status(200).json({
+                status: 'success',
+                data: {
+                    payment_id: payment.id,
+                    status: payment.status,
+                    pix_data: payment.point_of_interaction.transaction_data,
+                    order_id: order._id
+                }
+            });
+        } catch (mpError) {
+            console.error('Erro ao criar pagamento no MercadoPago:', mpError);
+            
+            // Se falhar no MercadoPago, excluir o pedido
+            await Order.findByIdAndDelete(order._id);
+            
+            throw new Error(`Erro ao processar pagamento: ${mpError.message}`);
+        }
     } catch (error) {
         console.error('Erro ao criar pagamento:', error);
         return res.status(500).json({
@@ -92,9 +102,9 @@ exports.getPaymentStatus = async (req, res) => {
     try {
         const { payment_id } = req.params;
         
-        const payment = await mercadopago.payment.get(payment_id);
+        const paymentInfo = await mercadopagoPayment.get({ id: payment_id });
         
-        if (!payment) {
+        if (!paymentInfo) {
             return res.status(404).json({
                 status: 'error',
                 message: 'Pagamento não encontrado'
@@ -105,14 +115,14 @@ exports.getPaymentStatus = async (req, res) => {
         await Payment.findOneAndUpdate(
             { mercadopagoId: payment_id },
             { 
-                status: payment.body.status,
-                paymentDetails: payment.body,
+                status: paymentInfo.status,
+                paymentDetails: paymentInfo,
                 updatedAt: Date.now()
             }
         );
         
         // Se o pagamento foi aprovado, atualizar o status do pedido
-        if (payment.body.status === 'approved') {
+        if (paymentInfo.status === 'approved') {
             const paymentRecord = await Payment.findOne({ mercadopagoId: payment_id });
             if (paymentRecord) {
                 await orderController.updateOrderStatus(
@@ -126,16 +136,17 @@ exports.getPaymentStatus = async (req, res) => {
         return res.status(200).json({
             status: 'success',
             data: {
-                payment_id: payment.body.id,
-                status: payment.body.status,
-                order_id: payment.body.metadata.order_id
+                payment_id: paymentInfo.id,
+                status: paymentInfo.status,
+                order_id: paymentInfo.metadata.order_id
             }
         });
     } catch (error) {
         console.error('Erro ao verificar status do pagamento:', error);
         return res.status(500).json({
             status: 'error',
-            message: 'Erro ao verificar status do pagamento'
+            message: 'Erro ao verificar status do pagamento',
+            details: error.message
         });
     }
 };

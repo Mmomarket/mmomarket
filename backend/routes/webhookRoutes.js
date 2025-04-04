@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const mercadopago = require('../config/mercadopago');
+const { payment: mercadopagoPayment } = require('../config/mercadopago');
 const Payment = require('../models/Payment');
 const orderController = require('../controllers/orderController');
 
@@ -13,22 +13,21 @@ router.post('/', async (req, res) => {
             const paymentId = data.id;
             
             // Buscar informações do pagamento
-            const paymentInfo = await mercadopago.payment.get(paymentId);
-            const payment = paymentInfo.body;
+            const paymentInfo = await mercadopagoPayment.get({ id: paymentId });
             
             // Atualizar o registro de pagamento
             const paymentRecord = await Payment.findOneAndUpdate(
                 { mercadopagoId: paymentId },
                 { 
-                    status: payment.status,
-                    paymentDetails: payment,
+                    status: paymentInfo.status,
+                    paymentDetails: paymentInfo,
                     updatedAt: Date.now()
                 },
                 { new: true }
             );
             
             // Se o pagamento foi aprovado, atualizar o status do pedido
-            if (payment.status === 'approved' && paymentRecord) {
+            if (paymentInfo.status === 'approved' && paymentRecord) {
                 await orderController.updateOrderStatus(
                     paymentRecord.orderId,
                     'completed',

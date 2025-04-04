@@ -1,8 +1,16 @@
-const mercadopago = require('mercadopago');
+// backend/config/mercadopago.js
+const { MercadoPagoConfig, Payment } = require('mercadopago');
 require('dotenv').config();
 
-mercadopago.configure({
-    access_token: process.env.MERCADOPAGO_ACCESS_TOKEN
+// Inicialize a configuração do MercadoPago
+const client = new MercadoPagoConfig({
+    accessToken: process.env.MERCADOPAGO_ACCESS_TOKEN
 });
 
-module.exports = mercadopago;
+// Crie instâncias dos recursos que vamos usar
+const payment = new Payment(client);
+
+module.exports = {
+    client,
+    payment
+};

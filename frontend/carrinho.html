@@ -5,7 +5,43 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MMOMarket - Carrinho</title>
     <link rel="stylesheet" href="css/style.css">
-    <script src="https://sdk.mercadopago.com/js/v2"></script>
+    <script>
+        // Verificar se há bloqueadores ativos
+        function detectAdBlocker() {
+            let adBlockEnabled = false;
+            const ad = document.createElement('div');
+            ad.innerHTML = '&nbsp;';
+            ad.className = 'adsbox';
+            document.body.appendChild(ad);
+            
+            setTimeout(function() {
+                if (ad.offsetHeight === 0) {
+                    adBlockEnabled = true;
+                }
+                ad.remove();
+                
+                if (adBlockEnabled) {
+                    const warningEl = document.createElement('div');
+                    warningEl.className = 'adblock-warning';
+                    warningEl.innerHTML = `
+                        <div class="warning-content">
+                            <h3>Bloqueador de anúncios detectado</h3>
+                            <p>Notamos que você está usando um bloqueador de anúncios. Para usar nosso serviço, por favor desative-o temporariamente.</p>
+                            <button id="dismiss-warning" class="btn primary-btn">Entendi</button>
+                        </div>
+                    `;
+                    document.body.appendChild(warningEl);
+                    
+                    document.getElementById('dismiss-warning').addEventListener('click', function() {
+                        warningEl.style.display = 'none';
+                    });
+                }
+            }, 100);
+        }
+        
+        // Executar após carregar a página
+        window.addEventListener('load', detectAdBlocker);
+    </script>
 </head>
 <body>
     <header>
@@ -54,16 +90,16 @@
             </div>
         </section>
         
-        <div id="payment-modal" class="modal">
+        <div id="pm-dialog" class="modal">
             <div class="modal-content">
                 <span class="close">&times;</span>
-                <h2>Pagamento via PIX</h2>
+                <h2>Finalizar Compra</h2>
                 <div id="qrcode-container">
                     <!-- QR Code será gerado aqui -->
                 </div>
-                <p>CNPJ: 49.450.443/0001-73</p>
+                <p></p>
                 <p>Valor: <span id="payment-amount">R$ 0,00</span></p>
-                <button id="confirm-payment">Confirmar Pagamento</button>
+                
             </div>
         </div>
         

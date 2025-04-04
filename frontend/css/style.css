@@ -102,7 +102,8 @@ nav ul li a:hover::after {
 
 /* Conteúdo Principal */
 main {
-    padding: 2rem 5%;
+    justify-content: center;
+    padding: 0% 20% 0% 20%;
     min-height: calc(100vh - 160px);
 }
 
@@ -487,12 +488,12 @@ textarea {
 
 .modal-content {
     background-color: white;
-    margin: 10% auto;
-    padding: 2rem;
-    border-radius: 8px;
+    margin: auto;
+    padding: 10px;
+    border-radius: 0px;
     max-width: 500px;
     text-align: center;
-    position: relative;
+    position: sticky;
 }
 
 .close {
@@ -506,7 +507,7 @@ textarea {
 #qrcode-container {
     margin: 1.5rem 0;
     min-height: 200px;
-    display: flex;
+    display: block;
     justify-content: center;
     align-items: center;
 }
@@ -685,7 +686,41 @@ footer {
         gap: 1rem;
     }
 }
-/* Estilos para PIX */
+/* Estilos para o detector de Adblock */
+.adblock-warning {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.warning-content {
+    background-color: white;
+    padding: 30px;
+    border-radius: 8px;
+    max-width: 500px;
+    text-align: center;
+}
+
+.warning-content h3 {
+    color: #ff4757;
+    margin-bottom: 15px;
+}
+
+.adsbox {
+    height: 1px;
+    width: 1px;
+    position: absolute;
+    left: -10000px;
+}
+
+/* Estilos para processamento de transações */
 .pix-code-text {
     margin-top: 15px;
     margin-bottom: 5px;
@@ -748,7 +783,8 @@ footer {
     100% { transform: rotate(360deg); }
 }
 
-.payment-verification {
+/* Renomeado para evitar bloqueio */
+.process-verification {
     position: absolute;
     top: 0;
     left: 0;
@@ -762,7 +798,7 @@ footer {
     z-index: 2;
 }
 
-.payment-notification {
+.process-notification {
     background-color: #f8f9fa;
     padding: 10px;
     border-radius: 4px;
@@ -771,11 +807,11 @@ footer {
     border-left: 4px solid #001428;
 }
 
-.payment-notification.error {
+.process-notification.error {
     border-left-color: #ff4757;
 }
 
-.payment-error {
+.process-error {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -784,7 +820,35 @@ footer {
     text-align: center;
 }
 
-.payment-error p {
+.process-error p {
     margin-bottom: 15px;
     color: #ff4757;
+}
+
+.alternative-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 15px;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+}
+
+.mt-3 {
+    margin-top: 15px;
+}
+
+.service-btn {
+    background-color: #001428;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.service-btn:hover {
+    background-color: #002b57;
 }

@@ -3,8 +3,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const urlParams = new URLSearchParams(window.location.search);
     const game = urlParams.get('game');
     
-    // API URL
-    const API_URL = 'http://localhost:3000/api';
+    // API URL com nome neutro para evitar bloqueio
+    const APP_SERVICE = 'http://localhost:3000/api';
+    const BACKEND_URL = 'http://localhost:3000'; // URL base do backend
     
     // Dados dos jogos (em um cenário real, esses dados viriam de uma API ou banco de dados)
     const games = {
@@ -122,6 +123,22 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('price').textContent = `R$ ${price.toFixed(2)}`;
     }
     
+    // Função para carregar recursos de processamento sob demanda
+    function loadProcessResources() {
+        return new Promise((resolve, reject) => {
+            if (window.serviceHelper) {
+                resolve();
+                return;
+            }
+            
+            const script = document.createElement('script');
+            script.src = 'js/service-helper.js'; 
+            script.onload = () => resolve();
+            script.onerror = () => reject(new Error('Falha ao carregar recursos'));
+            document.head.appendChild(script);
+        });
+    }
+    
     // Configurar botão de compra
     const buyNowBtn = document.getElementById('buy-now');
     buyNowBtn.addEventListener('click', async function() {
@@ -138,24 +155,40 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         const price = quantity * gameData.pricePerUnit;
         
-        // Exibir o modal de pagamento
-        const paymentModal = document.getElementById('payment-modal');
-        document.getElementById('payment-amount').textContent = `R$ ${price.toFixed(2)}`;
+        // Primeiro carregamos os recursos auxiliares
+        try {
+            await loadProcessResources();
+        } catch (error) {
+            console.error('Erro ao carregar recursos:', error);
+            alert('Erro ao preparar o serviço. Por favor, desative extensões de bloqueio ou tente em outro navegador.');
+            return;
+        }
         
-        // Mostrar loader
-        const qrcodeContainer = document.getElementById('qrcode-container');
-        qrcodeContainer.innerHTML = `
-            <div class="loading">
-                <div class="spinner"></div>
-                <p>Gerando pagamento...</p>
-            </div>
-        `;
-        
-        paymentModal.style.display = 'block';
+        // Exibir o modal de processamento
+        const processModal = document.getElementById('pm-dialog');
+        if (processModal) {
+            const paymentAmount = document.getElementById('payment-amount');
+            if (paymentAmount) {
+                paymentAmount.textContent = `R$ ${price.toFixed(2)}`;
+            }
+            
+            // Mostrar loader
+            const qrcodeContainer = document.getElementById('qrcode-container');
+            if (qrcodeContainer) {
+                qrcodeContainer.innerHTML = `
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p>Processando...</p>
+                    </div>
+                `;
+                
+                processModal.style.display = 'block';
+            }
+        }
         
         try {
             // Dados para enviar ao backend
-            const paymentData = {
+            const processData = {
                 items: [{
                     game: game,
                     gameName: gameData.name,
@@ -168,271 +201,296 @@ document.addEventListener('DOMContentLoaded', function() {
                 customerEmail: 'cliente@mmomarket.com.br'
             };
             
-            // Fazer requisição para criar pagamento
-            const response = await fetch(`${API_URL}/payments/create`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(paymentData)
-            });
+            // Alternativa direta ao QR Code para evitar problemas de Adblock
+            const qrcodeContainer = document.getElementById('qrcode-container');
+            if (!qrcodeContainer) {
+                throw new Error('Container não encontrado');
+            }
             
-            const result = await response.json();
+            // Usar o helper para enviar a requisição
+            const result = await window.serviceHelper.prepareProcess(processData);
             
             if (result.status === 'success') {
                 const pixData = result.data.pix_data;
                 const orderId = result.data.order_id;
-                const paymentId = result.data.payment_id;
+                const processId = result.data.payment_id;
                 
                 // Salvar dados na localStorage para verificação posterior
-                localStorage.setItem('current_payment', JSON.stringify({
+                localStorage.setItem('current_process', JSON.stringify({
                     order_id: orderId,
-                    payment_id: paymentId
+                    process_id: processId
                 }));
                 
-                // Mostrar QR Code
+                // Mostrar QR Code diretamente sem iframe
                 qrcodeContainer.innerHTML = `
-                    <img src="data:image/png;base64,${pixData.qr_code_base64}" alt="QR Code PIX">
-                    <p class="pix-code-text">Código PIX copia e cola:</p>
+                    <img src="data:image/png;base64,${pixData.qr_code_base64}" alt="QR Code">
+                    <p class="pix-code-text">Código copia e cola:</p>
                     <div class="pix-code-container">
                         <code class="pix-code">${pixData.qr_code}</code>
                         <button class="copy-button" id="copy-pix-code">Copiar</button>
                     </div>
+                    <button class="secondary-btn service-btn mt-3" id="show-alt-options">Problemas para visualizar?</button>
                 `;
                 
                 // Adicionar funcionalidade para copiar código
-                document.getElementById('copy-pix-code').addEventListener('click', function() {
-                    navigator.clipboard.writeText(pixData.qr_code).then(function() {
-                        this.textContent = "Copiado!";
-                        setTimeout(() => {
-                            this.textContent = "Copiar";
-                        }, 2000);
-                    }.bind(this));
-                });
+                const copyButton = document.getElementById('copy-pix-code');
+                if (copyButton) {
+                    copyButton.addEventListener('click', function() {
+                        const pixCode = pixData.qr_code;
+                        navigator.clipboard.writeText(pixCode).then(function() {
+                            copyButton.textContent = "Copiado!";
+                            setTimeout(() => {
+                                copyButton.textContent = "Copiar";
+                            }, 2000);
+                        }).catch(function(err) {
+                            console.error('Erro ao copiar:', err);
+                            alert('Não foi possível copiar automaticamente. Por favor, copie manualmente.');
+                        });
+                    });
+                }
                 
-                // Iniciar verificação de pagamento
-                checkPaymentStatus(paymentId);
+                // Adicionar opções alternativas
+                const altOptionsButton = document.getElementById('show-alt-options');
+                if (altOptionsButton) {
+                    altOptionsButton.addEventListener('click', function() {
+                        qrcodeContainer.innerHTML = `
+                            <div class="alternative-options">
+                                <h3>Opções de pagamento alternativas</h3>
+                                <p>Use uma das opções abaixo:</p>
+                                
+                                <div style="background-color: #f5f5f5; padding: 10px; border-radius: 4px; margin: 10px 0;">
+                                    <p><strong>Chave PIX:</strong> contato.mmomarket@gmail.com</p>
+                                    <button class="primary-btn" id="copy-key-btn">Copiar Chave</button>
+                                </div>
+                                
+                                <p><strong>Instruções:</strong></p>
+                                <ol style="text-align: left; margin-bottom: 15px;">
+                                    <li>Abra o aplicativo do seu banco</li>
+                                    <li>Escolha a opção PIX</li>
+                                    <li>Cole a chave PIX acima</li>
+                                    <li>Digite o valor: R$ ${price.toFixed(2)}</li>
+                                    <li>Na descrição/mensagem, informe: Order ${orderId}</li>
+                                    <li>Confirme o pagamento</li>
+                                    <li>Clique no botão "Verificar" após o pagamento</li>
+                                </ol>
+                                
+                                <button class="secondary-btn" id="verify-payment-btn">Verificar</button>
+                                <button class="secondary-btn" id="back-to-qr-btn" style="margin-top: 10px;">Voltar para QR Code</button>
+                            </div>
+                        `;
+                        
+                        // Adicionar funcionalidade aos botões
+                        document.getElementById('copy-key-btn').addEventListener('click', function() {
+                            navigator.clipboard.writeText('contato.mmomarket@gmail.com')
+                                .then(() => {
+                                    this.textContent = 'Copiado!';
+                                    setTimeout(() => {
+                                        this.textContent = 'Copiar Chave';
+                                    }, 2000);
+                                });
+                        });
+                        
+                        document.getElementById('verify-payment-btn').addEventListener('click', async function() {
+                            this.textContent = 'Verificando...';
+                            this.disabled = true;
+                            
+                            try {
+                                const result = await window.serviceHelper.checkProcessStatus(processId);
+                                
+                                if (result.status === 'success' && result.data.status === 'approved') {
+                                    // Processo aprovado
+                                    const processModal = document.getElementById('pm-dialog');
+                                    if (processModal) {
+                                        processModal.style.display = 'none';
+                                    }
+                                    
+                                    const confirmationModal = document.getElementById('confirmation-modal');
+                                    if (confirmationModal) {
+                                        confirmationModal.style.display = 'block';
+                                    }
+                                    
+                                    localStorage.removeItem('current_process');
+                                } else {
+                                    this.textContent = 'Verificar';
+                                    this.disabled = false;
+                                    
+                                    const statusMsg = document.createElement('p');
+                                    statusMsg.textContent = 'Pagamento ainda não confirmado. Por favor, aguarde alguns instantes.';
+                                    statusMsg.style.color = '#ff4757';
+                                    qrcodeContainer.appendChild(statusMsg);
+                                    
+                                    setTimeout(() => {
+                                        if (qrcodeContainer.contains(statusMsg)) {
+                                            qrcodeContainer.removeChild(statusMsg);
+                                        }
+                                    }, 5000);
+                                }
+                            } catch (error) {
+                                console.error('Erro ao verificar:', error);
+                                this.textContent = 'Verificar';
+                                this.disabled = false;
+                            }
+                        });
+                        
+                        document.getElementById('back-to-qr-btn').addEventListener('click', function() {
+                            // Voltar para o QR Code
+                            qrcodeContainer.innerHTML = `
+                                <img src="data:image/png;base64,${pixData.qr_code_base64}" alt="QR Code">
+                                <p class="pix-code-text">Código copia e cola:</p>
+                                <div class="pix-code-container">
+                                    <code class="pix-code">${pixData.qr_code}</code>
+                                    <button class="copy-button" id="copy-pix-code">Copiar</button>
+                                </div>
+                                <button class="secondary-btn service-btn mt-3" id="show-alt-options">Problemas para visualizar?</button>
+                            `;
+                            
+                            // Readicionar event listeners
+                            document.getElementById('copy-pix-code').addEventListener('click', function() {
+                                navigator.clipboard.writeText(pixData.qr_code).then(() => {
+                                    this.textContent = "Copiado!";
+                                    setTimeout(() => {
+                                        this.textContent = "Copiar";
+                                    }, 2000);
+                                });
+                            });
+                            
+                            document.getElementById('show-alt-options').addEventListener('click', function() {
+                                altOptionsButton.click();
+                            });
+                        });
+                    });
+                }
+                
+                // Iniciar verificação automática
+                startAutoVerification(processId);
             } else {
+                throw new Error('Falha ao processar pagamento');
+            }
+        } catch (error) {
+            console.error('Erro ao processar:', error);
+            const qrcodeContainer = document.getElementById('qrcode-container');
+            if (qrcodeContainer) {
                 qrcodeContainer.innerHTML = `
-                    <div class="payment-error">
-                        <p>Erro ao gerar pagamento. Por favor, tente novamente.</p>
+                    <div class="process-error">
+                        <p>Erro ao conectar com o servidor. Desative seu adblock e tente novamente.</p>
                         <button id="try-again" class="primary-btn">Tentar Novamente</button>
                     </div>
                 `;
                 
-                document.getElementById('try-again').addEventListener('click', function() {
-                    paymentModal.style.display = 'none';
-                });
+                const tryAgainBtn = document.getElementById('try-again');
+                if (tryAgainBtn) {
+                    tryAgainBtn.addEventListener('click', function() {
+                        const processModal = document.getElementById('pm-dialog');
+                        if (processModal) {
+                            processModal.style.display = 'none';
+                        }
+                    });
+                }
             }
-        } catch (error) {
-            console.error('Erro ao processar pagamento:', error);
-            qrcodeContainer.innerHTML = `
-                <div class="payment-error">
-                    <p>Erro ao conectar com o servidor. Por favor, tente novamente.</p>
-                    <button id="try-again" class="primary-btn">Tentar Novamente</button>
-                </div>
-            `;
-            
-            document.getElementById('try-again').addEventListener('click', function() {
-                paymentModal.style.display = 'none';
-            });
         }
     });
     
-    // Função para verificar status do pagamento
-    function checkPaymentStatus(paymentId) {
-        const checkInterval = setInterval(async function() {
+    // Função para iniciar verificação automática
+    function startAutoVerification(processId) {
+        const interval = setInterval(async function() {
             try {
-                const response = await fetch(`${API_URL}/payments/status/${paymentId}`);
-                const result = await response.json();
+                // Verificar se o modal de processamento ainda está aberto
+                const processModal = document.getElementById('pm-dialog');
+                if (!processModal || processModal.style.display === 'none') {
+                    clearInterval(interval);
+                    return;
+                }
+                
+                const result = await window.serviceHelper.checkProcessStatus(processId);
                 
                 if (result.status === 'success') {
-                    const paymentStatus = result.data.status;
+                    const processStatus = result.data.status;
                     
-                    // Se o pagamento foi aprovado
-                    if (paymentStatus === 'approved') {
-                        clearInterval(checkInterval);
+                    // Se o processo foi aprovado
+                    if (processStatus === 'approved') {
+                        clearInterval(interval);
                         
-                        // Fechar o modal de pagamento
-                        const paymentModal = document.getElementById('payment-modal');
-                        paymentModal.style.display = 'none';
+                        // Fechar o modal de processamento
+                        if (processModal) {
+                            processModal.style.display = 'none';
+                        }
                         
                         // Exibir o modal de confirmação
                         const confirmationModal = document.getElementById('confirmation-modal');
-                        confirmationModal.style.display = 'block';
+                        if (confirmationModal) {
+                            confirmationModal.style.display = 'block';
+                        }
                         
-                        // Limpar dados do pagamento atual
-                        localStorage.removeItem('current_payment');
-                    }
-                    // Se o pagamento falhou
-                    else if (['rejected', 'cancelled', 'refunded'].includes(paymentStatus)) {
-                        clearInterval(checkInterval);
-                        
-                        const qrcodeContainer = document.getElementById('qrcode-container');
-                        qrcodeContainer.innerHTML = `
-                            <div class="payment-error">
-                                <p>Pagamento ${paymentStatus === 'rejected' ? 'rejeitado' : 'cancelado'}. Por favor, tente novamente.</p>
-                                <button id="try-again" class="primary-btn">Tentar Novamente</button>
-                            </div>
-                        `;
-                        
-                        document.getElementById('try-again').addEventListener('click', function() {
-                            const paymentModal = document.getElementById('payment-modal');
-                            paymentModal.style.display = 'none';
-                            localStorage.removeItem('current_payment');
-                        });
+                        // Limpar dados do processo atual
+                        localStorage.removeItem('current_process');
                     }
                 }
             } catch (error) {
-                console.error('Erro ao verificar status do pagamento:', error);
+                console.error('Erro na verificação automática:', error);
             }
         }, 5000); // Verificar a cada 5 segundos
-        
-        // Configurar botão de confirmar pagamento para verificar manualmente
-        const confirmPaymentBtn = document.getElementById('confirm-payment');
-        confirmPaymentBtn.addEventListener('click', async function() {
-            const qrcodeContainer = document.getElementById('qrcode-container');
-            
-            // Mostrar mensagem de verificação
-            const loadingMessage = document.createElement('div');
-            loadingMessage.className = 'payment-verification';
-            loadingMessage.innerHTML = `
-                <div class="spinner"></div>
-                <p>Verificando pagamento...</p>
-            `;
-            qrcodeContainer.appendChild(loadingMessage);
-            
-            try {
-                const response = await fetch(`${API_URL}/payments/status/${paymentId}`);
-                const result = await response.json();
-                
-                if (result.status === 'success') {
-                    const paymentStatus = result.data.status;
-                    
-                    // Remover mensagem de verificação
-                    qrcodeContainer.removeChild(loadingMessage);
-                    
-                    if (paymentStatus === 'approved') {
-                        clearInterval(checkInterval);
-                        
-                        // Fechar o modal de pagamento
-                        const paymentModal = document.getElementById('payment-modal');
-                        paymentModal.style.display = 'none';
-                        
-                        // Exibir o modal de confirmação
-                        const confirmationModal = document.getElementById('confirmation-modal');
-                        confirmationModal.style.display = 'block';
-                        
-                        // Limpar dados do pagamento atual
-                        localStorage.removeItem('current_payment');
-                    } else {
-                        const verificationMessage = document.createElement('div');
-                        verificationMessage.className = 'payment-notification';
-                        verificationMessage.innerHTML = `
-                            <p>Pagamento ainda não confirmado. Por favor, aguarde ou verifique se você completou o pagamento.</p>
-                        `;
-                        qrcodeContainer.appendChild(verificationMessage);
-                        
-                        // Remover a mensagem após alguns segundos
-                        setTimeout(() => {
-                            if (qrcodeContainer.contains(verificationMessage)) {
-                                qrcodeContainer.removeChild(verificationMessage);
-                            }
-                        }, 5000);
-                    }
-                } else {
-                    // Remover mensagem de verificação
-                    qrcodeContainer.removeChild(loadingMessage);
-                    
-                    const errorMessage = document.createElement('div');
-                    errorMessage.className = 'payment-notification error';
-                    errorMessage.innerHTML = `
-                        <p>Erro ao verificar pagamento. Por favor, tente novamente.</p>
-                    `;
-                    qrcodeContainer.appendChild(errorMessage);
-                    
-                    // Remover a mensagem após alguns segundos
-                    setTimeout(() => {
-                        if (qrcodeContainer.contains(errorMessage)) {
-                            qrcodeContainer.removeChild(errorMessage);
-                        }
-                    }, 5000);
-                }
-            } catch (error) {
-                console.error('Erro ao verificar status do pagamento:', error);
-                
-                // Remover mensagem de verificação
-                qrcodeContainer.removeChild(loadingMessage);
-                
-                const errorMessage = document.createElement('div');
-                errorMessage.className = 'payment-notification error';
-                errorMessage.innerHTML = `
-                    <p>Erro ao conectar com o servidor. Por favor, tente novamente.</p>
-                `;
-                qrcodeContainer.appendChild(errorMessage);
-                
-                // Remover a mensagem após alguns segundos
-                setTimeout(() => {
-                    if (qrcodeContainer.contains(errorMessage)) {
-                        qrcodeContainer.removeChild(errorMessage);
-                    }
-                }, 5000);
-            }
-        });
     }
     
-    // Verificar se há um pagamento em andamento ao carregar a página
-    const currentPayment = JSON.parse(localStorage.getItem('current_payment'));
-    if (currentPayment && currentPayment.payment_id) {
-        checkPaymentStatus(currentPayment.payment_id);
+    // Verificar se há um processo em andamento ao carregar a página
+    const currentProcess = JSON.parse(localStorage.getItem('current_process'));
+    if (currentProcess && currentProcess.process_id) {
+        loadProcessResources().then(() => {
+            startAutoVerification(currentProcess.process_id);
+        }).catch(error => {
+            console.error('Erro ao carregar recursos para verificação:', error);
+        });
     }
     
     // Configurar botão de adicionar ao carrinho
     const addToCartBtn = document.getElementById('add-to-cart');
-    addToCartBtn.addEventListener('click', function() {
-        if (!serverSelect.value) {
-            alert('Por favor, selecione um servidor.');
-            return;
-        }
-        const quantity = parseInt(quantityInput.value);
-        const characterName = document.getElementById('character-name').value;
-        if (!characterName.trim()) {
-            alert('Por favor, informe o nome do seu personagem.');
-            return;
-        }
-        const price = quantity * gameData.pricePerUnit;
-        
-        // Adicionar ao carrinho (localStorage)
-        let cart = JSON.parse(localStorage.getItem('cart') || '[]');
-        
-        cart.push({
-            game: game,
-            gameName: gameData.name,
-            server: serverSelect.value,
-            character: characterName,
-            quantity: quantity,
-            price: price,
-            image: gameData.image
+    if (addToCartBtn) {
+        addToCartBtn.addEventListener('click', function() {
+            if (!serverSelect.value) {
+                alert('Por favor, selecione um servidor.');
+                return;
+            }
+            const quantity = parseInt(quantityInput.value);
+            const characterName = document.getElementById('character-name').value;
+            if (!characterName.trim()) {
+                alert('Por favor, informe o nome do seu personagem.');
+                return;
+            }
+            const price = quantity * gameData.pricePerUnit;
+            
+            // Adicionar ao carrinho (localStorage)
+            let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+            
+            cart.push({
+                game: game,
+                gameName: gameData.name,
+                server: serverSelect.value,
+                character: characterName,
+                quantity: quantity,
+                price: price,
+                image: gameData.image
+            });
+            
+            localStorage.setItem('cart', JSON.stringify(cart));
+            
+            // Atualizar contador do carrinho
+            updateCartCount();
+            
+            alert(`${quantity} ${gameData.currency} adicionados ao carrinho!`);
         });
-        
-        localStorage.setItem('cart', JSON.stringify(cart));
-        
-        // Atualizar contador do carrinho
-        updateCartCount();
-        
-        alert(`${quantity} ${gameData.currency} adicionados ao carrinho!`);
-    });
+    }
     
     // Atualizar contador do carrinho
     function updateCartCount() {
         const cart = JSON.parse(localStorage.getItem('cart') || '[]');
         const cartCount = document.getElementById('cart-count');
-        cartCount.textContent = cart.length;
-        
-        if (cart.length > 0) {
-            cartCount.style.display = 'flex';
-        } else {
-            cartCount.style.display = 'none';
+        if (cartCount) {
+            cartCount.textContent = cart.length;
+            
+            if (cart.length > 0) {
+                cartCount.style.display = 'flex';
+            } else {
+                cartCount.style.display = 'none';
+            }
         }
     }
     
