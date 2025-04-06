@@ -3,35 +3,67 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MMOMarket - Seu Intermediador de Confiança</title>
+    <title>MMOMarket - Seu Mercado de Confiança</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
     <header>
-        <div class="logo">
-            <a href="index.html"><img src="images/logo.png" alt="MMOMarket Logo"></a>
+        <div class="headerheader">
+            <h5>Published by MMOMarket</h5>
         </div>
-        <div class="cart-icon">
-            <a href="carrinho.html" id="cart-link">
-                <img src="images/cart.png" alt="Carrinho">
-                <span class="cart-notification" id="cart-count">0</span>
-            </a>
+        <div class="headercontainer">
+            <div class="firstThird">
+            <div class="logo">
+                <a href="index.html"><img src="images/logo.png" alt="MMOMarket Logo"></a>
+            </div>
+            <div class="headercounter">
+                <span>Mais de</span>
+                <h3>200</h3>
+                <span>Vendas realizadas</span>
+            </div>
+            <div class="divider">
+                <img src="images/divider.png" alt="">
+            </div>
+            <div class="headercounter">
+                <span>Mais de</span>
+                <h3>50</h3>
+                <span>Intermediações</span>
+            </div>
+            <div class="divider">
+                <img src="images/divider.png" alt="">
+            </div>
+        </div>
+            <nav>
+                <ul>
+                    <li><a href="index.html">Início</a></li>
+                    <li><a href="listajogos.html">Comprar Moedas</a></li>
+                    <li><a href="intermediar.html">Intermediações</a></li>
+                </ul>
+            </nav>
+
+            <div class="buttoncontainer">
+                <a href="listajogos.html"><button class="Discord">Discord</button></a>
+            </div>
+            <div class="cart-icon">
+                <a href="carrinho.html" id="cart-link">
+                    <img src="images/cart.png" alt="Carrinho">
+                    <span class="cart-notification" id="cart-count">0</span>
+                </a>
+            </div>
         </div>
     </header>
-    
-    <nav>
-        <ul>
-            <li><a href="index.html">Início</a></li>
-            <li><a href="listajogos.html">Comprar Moedas</a></li>
-            <li><a href="intermediar.html">Intermediações</a></li>
-        </ul>
-    </nav>
-    
     <main>
-        <!-- Substituir carrossel por vídeo placeholder -->
-        <section class="video-banner">
+        <section>
+            <div class="logobig">
+                <img src="images/logobig.png" alt="MMOMarket Logo">
+                <h1>SEU MERCADO DE CONFIANÇA</h1>
+                <div class="wrapperbotoes">
+                    <a href="listajogos.html"><button class="comprar">Comprar</button></a>
+                    <a href="intermediar.html"><button class="intermediar">Intermediar</button></a>
+                </div>
+            </div>
             <div class="video-container">
-                <video controls>
+                <video autoplay muted loop>
                     <source src="videos/intro.mp4" type="video/mp4">
                     Seu navegador não suporta o elemento de vídeo.
                 </video>
@@ -39,7 +71,7 @@
         </section>
         
         <section class="about">
-            <h2>Por que escolher o MMOMarket?</h2>
+            <h3>Por que escolher o</h3> <h2>MMOMarket?</h2>
             <div class="features">
                 <div class="feature">
                     <h3>Segurança Garantida</h3>
@@ -60,7 +92,10 @@
                     <h3>Pioneiros</h3>
                     <p>Há mais de 2 anos, pioneiros no mercado dos MMOs no Brasil.</p>
                 </div>
-
+                <div class="feature">
+                    <h3>Inovadores</h3>
+                    <p>Primeiros e únicos a oferecer esse serviço no Brasil.</p>
+                </div>
                 <div class="feature">
                     <h3>Com histórico</h3>
                     <p>Mais de 200 transações e 50 intermediações bem-sucedidas.</p>
@@ -118,12 +153,21 @@
                         <p>Lembramos que todos os pedidos ficam registrados em nosso sistema e garantimos 100% de segurança nas transações.</p>
                     </div>
                 </div>
+                <div class="accordion-item">
+                    <button class="accordion-button">Como funcionam as intermediações?</button>
+                    <div class="accordion-content">
+                        <p>Ao enviar o formulário com as informações necessárias para o pedido de intermediação, um de nossos intermediadores, dentro de algumas horas, tentará contato in-game com os dois negociadores. Caso não consiga contato in-game, procederá a buscar contato pelo Whatsapp fornecido.</p>
+                        <p>Na intermediação, o vendedor passará seus itens/conta para o intermediador, e o comprador passará o dinheiro. Assim que se certificar de ter recebido os valores de ambos, o intermediador procederá com a troca. Caso uma das partes falhe com o acordo, o intermediador devolverá os bens da outra parte, sem cobrança de taxa.</p>
+                        <p>Durante a troca, será acrescido o valor de 3% de taxa no momento em que o comprador passar o dinheiro ao intermediador. Após isso, o intermediador passará o valor com mais 3% de desconto para o vendedor, totalizando 6% de taxa.</p>
+                        <p>Toda a intermediação será gravada e salva em nosso servidor por 5 anos.</p>
+                    </div>
+                </div>
             </div>
         </section>
     </main>
     
     <footer>
-        <p>&copy; 2023 MMOMarket - Todos os direitos reservados</p>
+        <p>&copy; 2025 MMOMarket - Todos os direitos reservados</p>
     </footer>
     
     <script src="js/main.js"></script>
