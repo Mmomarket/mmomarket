@@ -277,10 +277,13 @@ main {
     color: rgb(129, 129, 129);
 }
 /* Lista de Jogos */
+.games-list {
+    padding: 3rem 20%;
+}
 .games-list h1 {
     text-align: center;
     margin-bottom: 2rem;
-    color: #001428;
+    color: #ff4757;
 }
 
 .game-cards {
@@ -290,7 +293,7 @@ main {
 }
 
 .game-card {
-    background-color: white;
+    background-color: #171920;
     border-radius: 8px;
     overflow: hidden;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
@@ -311,20 +314,22 @@ main {
 .game-card h2 {
     padding: 1rem;
     text-align: center;
-    color: #001428;
+    color: white;
     font-size: 1.2rem;
 }
 
 /* Página de Compra */
 .purchase-container {
+    margin: 10rem 20%;;
     display: flex;
-    background-color: white;
+    background-color: #171920;
     border-radius: 8px;
     overflow: hidden;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .game-image {
+    padding: 2%;
     flex: 1;
     max-width: 40%;
 }
@@ -332,7 +337,7 @@ main {
 .game-image img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit:contain;
 }
 
 .purchase-details {
@@ -341,17 +346,17 @@ main {
 }
 
 .purchase-details h1 {
-    color: #001428;
+    color: white;
     margin-bottom: 0.5rem;
 }
 
 .rating {
-    color: #ffce00;
+    color: #ff4757;
     margin-bottom: 1.5rem;
 }
 
 .review-count {
-    color: #666;
+    color: white;
 }
 
 .form-group {
@@ -361,7 +366,7 @@ main {
 .form-group label {
     display: block;
     margin-bottom: 0.5rem;
-    color: #001428;
+    color: white;
     font-weight: 500;
 }
 
@@ -381,7 +386,7 @@ main {
 .quantity-selector button {
     width: 40px;
     height: 40px;
-    background-color: #001428;
+    background-color: #ff4757;
     color: white;
     border: none;
     border-radius: 4px;
@@ -400,11 +405,11 @@ main {
 }
 
 .price-container p {
-    color: #666;
+    color: white;
 }
 
 .price-container h2 {
-    color: #001428;
+    color: #ff4757;
     font-size: 1.8rem;
 }
 
@@ -423,33 +428,34 @@ main {
 }
 
 .primary-btn {
-    background-color: #001428;
+    background-color: #ff4757;
     color: white;
 }
 
 .primary-btn:hover {
-    background-color: #002b57;
+    background-color: #ff7b86;
 }
 
 .secondary-btn {
-    background-color: #e9ecef;
-    color: #001428;
+    background-color: #0f1116;
+    color: white;
 }
 
 .secondary-btn:hover {
-    background-color: #dde2e6;
+    background-color: #292d38;
 }
 
 /* Carrinho */
 .cart-container {
-    background-color: white;
+    margin: 10rem 20%;
+    background-color: #171920;
     border-radius: 8px;
     padding: 2rem;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .cart-container h1 {
-    color: #001428;
+    color: white;
     margin-bottom: 2rem;
     text-align: center;
 }
@@ -470,33 +476,38 @@ main {
 }
 
 .cart-item-details {
+    color: rgb(129, 129, 129);
     flex: 1;
 }
 
 .cart-item-title {
     font-weight: 500;
-    color: #001428;
+    color: white;
 }
 
 .cart-item-server, .cart-item-quantity {
-    color: #666;
+    color: rgb(129, 129, 129);;
     font-size: 0.9rem;
 }
 
 .cart-item-price {
     font-weight: 500;
-    color: #001428;
+    color: white;
 }
 
 .cart-item-remove {
-    background-color: transparent;
+    width: 20px;
+    height: 20px;
+    background-color: #ff4757;
     border: none;
-    color: #ff4757;
+    border-radius: 20px;
+    color: white;
     cursor: pointer;
     margin-left: 1rem;
 }
 
 .total {
+    color: white;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -516,24 +527,27 @@ main {
 
 /* Formulário de Intermediação */
 .intermediation-form {
-    background-color: white;
+    background-color: #171920;
     border-radius: 8px;
     padding: 2rem;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     max-width: 700px;
-    margin: 0 auto;
+    margin: 10rem auto;
 }
 
 .intermediation-form h1 {
-    color: #001428;
+    color: white;
     margin-bottom: 2rem;
     text-align: center;
 }
 
 .fee-notice {
-    background-color: #f8f9fa;
+    text-align: center;
+    color: white;
+    background-color: #34363f;
     padding: 1rem;
-    border-radius: 4px;
+    margin: 3rem;
+    margin-top: 1.5rem;
     margin-bottom: 1.5rem;
 }
 
@@ -898,7 +912,7 @@ footer {
 }
 
 .copy-button {
-    background-color: #001428;
+    background-color: #ff4757;
     color: white;
     border: none;
     padding: 5px 10px;
@@ -908,7 +922,7 @@ footer {
 }
 
 .copy-button:hover {
-    background-color: #002b57;
+    background-color: #f56a75;
 }
 
 .loading {
@@ -926,7 +940,7 @@ footer {
     width: 36px;
     height: 36px;
     border-radius: 50%;
-    border-left-color: #001428;
+    border-left-color: #ff4757;
     animation: spin 1s linear infinite;
     margin-bottom: 10px;
 }
@@ -957,7 +971,7 @@ footer {
     border-radius: 4px;
     margin-top: 10px;
     text-align: center;
-    border-left: 4px solid #001428;
+    border-left: 4px solid #ff4757;
 }
 
 .process-notification.error {
@@ -993,7 +1007,7 @@ footer {
 }
 
 .service-btn {
-    background-color: #001428;
+    background-color: #ff4757;
     color: white;
     border: none;
     padding: 8px 16px;
@@ -1003,5 +1017,5 @@ footer {
 }
 
 .service-btn:hover {
-    background-color: #002b57;
+    background-color: #ff7883;
 }

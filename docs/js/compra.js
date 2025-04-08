@@ -66,6 +66,14 @@ document.addEventListener('DOMContentLoaded', function() {
             currency: 'Lucent',
             pricePerUnit: 0.007,
             increment: 1000
+        },
+        'muonline': {
+            name: 'Mu Online Bless',
+            image: 'images/muonline.jpg',
+            servers: ['Global', 'Korea'],
+            currency: 'Bless',
+            pricePerUnit: 0.30,
+            increment: 50
         }
     };
     
