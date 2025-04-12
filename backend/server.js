@@ -28,7 +28,7 @@ app.use((req, res, next) => {
         'https://mmomarket.com.br',       // Versão segura do seu domínio
         'http://www.mmomarket.com.br',    // Variante com www
         'https://www.mmomarket.com.br',   // Variante segura com www
-        'https://seu-usuario.github.io'      
+        'https://mmomarket.github.io'      
     ];
     
     // Em desenvolvimento, permitimos todas as origens
