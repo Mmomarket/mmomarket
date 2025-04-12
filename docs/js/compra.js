@@ -7,8 +7,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const APP_SERVICE = window.location.hostname === 'localhost' 
     ? 'http://localhost:3000/api'
     : 'mmomarket-production.up.railway.app';
-    //const BACKEND_URL = 'http://localhost:3000'; // URL base do backend
-    const BACKEND_URL = 'mmomarket-production.up.railway.app';
+    const BACKEND_URL = 'http://localhost:3000'; // URL base do backend
     
     // Dados dos jogos (em um cenário real, esses dados viriam de uma API ou banco de dados)
     const games = {

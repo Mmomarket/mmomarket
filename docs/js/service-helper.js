@@ -3,8 +3,7 @@ window.serviceHelper = {
     // Use um nome neutro como "process" em vez de "payment"
     prepareProcess: async function(data) {
         try {
-            //const APP_SERVICE = 'http://localhost:3000/api';
-            const APP_SERVICE = 'mmomarket-production.up.railway.app';
+            const APP_SERVICE = 'http://localhost:3000/api';
             const response = await fetch(`${APP_SERVICE}/process/create`, {
                 method: 'POST',
                 headers: {
@@ -21,8 +20,7 @@ window.serviceHelper = {
     
     checkProcessStatus: async function(id) {
         try {
-            //const APP_SERVICE = 'http://localhost:3000/api';
-            const APP_SERVICE = 'mmomarket-production.up.railway.app';
+            const APP_SERVICE = 'http://localhost:3000/api';
             const response = await fetch(`${APP_SERVICE}/process/status/${id}`);
             return await response.json();
         } catch (error) {
