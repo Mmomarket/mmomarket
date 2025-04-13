@@ -29,7 +29,7 @@ app.use((req, res, next) => {
         'http://www.mmomarket.com.br',    // Variante com www
         'https://www.mmomarket.com.br',   // Variante segura com www
         'https://mmomarket.github.io',
-        'https://mmomarket-production.up.railway.app'
+        'https://mmomarket-backend.onrender.com'
     ];
     
     // Em desenvolvimento, permitimos todas as origens

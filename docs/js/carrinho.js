@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // API URL com nome neutro para evitar bloqueio
     const APP_SERVICE = window.location.hostname === 'localhost' 
     ? 'http://localhost:3000/api'
-    : 'mmomarket-production.up.railway.app';
+    : 'https://mmomarket-backend.onrender.com';
     
     // Atualizar contador do carrinho
     function updateCartCount() {
