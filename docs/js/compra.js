@@ -15,65 +15,65 @@ document.addEventListener('DOMContentLoaded', function() {
         'cabal': {
             name: 'Cabal Alz',
             image: 'images/cabal.jpg',
-            servers: ['America', 'Brazil', 'Europe'],
+            servers: ['BR - Mercurio', 'BR - Venus', 'EU - Mercury', 'EU - Venus'],
             currency: 'Alz',
-            pricePerUnit: 0.01,
-            increment: 1000
+            pricePerUnit: 0.00000007262,
+            increment: 100000000
         },
         'dofus': {
             name: 'Dofus Kamas',
             image: 'images/dofus.jpg',
-            servers: ['Ilyzaelle', 'Merkator', 'Echo'],
+            servers: ['Tal Kasha' , 'Draconiros' , 'Dakal' , 'Kourial' , 'Brial' , 'Salar' , 'Mikhal' , 'Rafal'],
             currency: 'Kamas',
-            pricePerUnit: 0.005,
-            increment: 1000000
+            pricePerUnit: 0.000022036,
+            increment: 10000000
         },
         'habbo': {
             name: 'Habbo Moedas',
             image: 'images/habbo.jpg',
-            servers: ['BR', 'COM', 'ES'],
+            servers: ['BR'],
             currency: 'Moedas',
-            pricePerUnit: 0.02,
-            increment: 100
+            pricePerUnit: 0.377,
+            increment: 50
         },
         'albion': {
             name: 'Albion Pratas',
             image: 'images/albion.jpg',
-            servers: ['América do Norte', 'Europa', 'Ásia'],
+            servers: ['Americas', 'Europa', 'Ásia'],
             currency: 'Pratas',
-            pricePerUnit: 0.003,
-            increment: 10000
+            pricePerUnit: 0.000002838,
+            increment: 20000000
         },
         'ragnarok': {
             name: 'Ragnarok Zeny',
             image: 'images/ragnarok.jpg',
-            servers: ['bRO Thor', 'bRO Valhalla', 'Asgard Legend'],
+            servers: ['bRO Thor', 'bRO Valhalla'],
             currency: 'Zeny',
-            pricePerUnit: 0.0001,
-            increment: 10000000
+            pricePerUnit: 0.00000025935,
+            increment: 100000000
         },
         'secondlife': {
             name: 'Second Life Lindens',
             image: 'images/secondlife.jpg',
             servers: ['Main Grid'],
             currency: 'Lindens',
-            pricePerUnit: 0.015,
-            increment: 100
+            pricePerUnit: 0.04,
+            increment: 1000
         },
         'throne': {
             name: 'T&L Lucent',
             image: 'images/throne.jpg',
-            servers: ['SA', 'NA', 'EU', 'SEA'],
+            servers: ['WA - Moonstone' , 'WA - Invoker' , 'WA - Oblivion' , 'WA - Akidu' , 'EA - Carnage' , 'EA - Ivory' , 'EA - Snowburn' , 'EA - Stellarite' , 'EA - Adrenaline' , 'EA - Pippin' , 'SA - Starlight' , 'SA - Eldritch' , 'SA - Resistance' , 'SA - Chamir' , 'EU - Cascade' , 'EU - Emerald' , 'EU - Judgement' , 'EU - Destiny' , 'EU - Rebellion' , 'EU - Fortune' , 'EU - Talon' , 'EU - Arcane' , 'EU - Zephyr' , 'EU - Conviction' ,' EU - Obsidian' ,' EU - Paola'],
             currency: 'Lucent',
-            pricePerUnit: 0.007,
+            pricePerUnit: 0.06013,
             increment: 1000
         },
         'muonline': {
             name: 'Mu Online Bless',
             image: 'images/muonline.jpg',
-            servers: ['Global', 'Korea'],
+            servers: ['Hellheim' , 'Alfheim' , 'Midgard' , 'Arcadia' , 'Fresei' , 'Nidavellir' , 'Ydalir'],
             currency: 'Bless',
-            pricePerUnit: 0.30,
+            pricePerUnit: 0.286,
             increment: 50
         }
     };
