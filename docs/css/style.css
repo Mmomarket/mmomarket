@@ -395,7 +395,7 @@ main {
 }
 
 .quantity-selector input {
-    width: 100px;
+    width: 200px;
     text-align: center;
     margin: 0 0.5rem;
 }
