@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', function() {
             image: 'images/cabal.jpg',
             servers: ['BR - Mercurio', 'BR - Venus', 'EU - Mercury', 'EU - Venus'],
             currency: 'Alz',
-            pricePerUnit: 0.000000072,
+            pricePerUnit: 0.00000007,
             increment: 100000000
         },
         'dofus': {
@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', function() {
             image: 'images/dofus.jpg',
             servers: ['Tal Kasha' , 'Draconiros' , 'Dakal' , 'Kourial' , 'Brial' , 'Salar' , 'Mikhal' , 'Rafal'],
             currency: 'Kamas',
-            pricePerUnit: 0.000022,
+            pricePerUnit: 0.00002,
             increment: 10000000
         },
         'habbo': {
@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', function() {
             image: 'images/albion.jpg',
             servers: ['Americas', 'Europa', 'Ásia'],
             currency: 'Pratas',
-            pricePerUnit: 0.0000028,
+            pricePerUnit: 0.000003,
             increment: 20000000
         },
         'ragnarok': {
@@ -49,7 +49,7 @@ document.addEventListener('DOMContentLoaded', function() {
             image: 'images/ragnarok.jpg',
             servers: ['bRO Thor', 'bRO Valhalla'],
             currency: 'Zeny',
-            pricePerUnit: 0.00000026,
+            pricePerUnit: 0.00000025,
             increment: 100000000
         },
         'secondlife': {
@@ -65,7 +65,7 @@ document.addEventListener('DOMContentLoaded', function() {
             image: 'images/throne.jpg',
             servers: ['WA - Moonstone' , 'WA - Invoker' , 'WA - Oblivion' , 'WA - Akidu' , 'EA - Carnage' , 'EA - Ivory' , 'EA - Snowburn' , 'EA - Stellarite' , 'EA - Adrenaline' , 'EA - Pippin' , 'SA - Starlight' , 'SA - Eldritch' , 'SA - Resistance' , 'SA - Chamir' , 'EU - Cascade' , 'EU - Emerald' , 'EU - Judgement' , 'EU - Destiny' , 'EU - Rebellion' , 'EU - Fortune' , 'EU - Talon' , 'EU - Arcane' , 'EU - Zephyr' , 'EU - Conviction' ,' EU - Obsidian' ,' EU - Paola'],
             currency: 'Lucent',
-            pricePerUnit: 0.06000,
+            pricePerUnit: 0.06,
             increment: 1000
         },
         'muonline': {
@@ -73,7 +73,7 @@ document.addEventListener('DOMContentLoaded', function() {
             image: 'images/muonline.jpg',
             servers: ['Hellheim' , 'Alfheim' , 'Midgard' , 'Arcadia' , 'Fresei' , 'Nidavellir' , 'Ydalir'],
             currency: 'Bless',
-            pricePerUnit: 0.58,
+            pricePerUnit: 0.6,
             increment: 50
         }
     };
