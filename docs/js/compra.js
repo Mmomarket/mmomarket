@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', function() {
             image: 'images/cabal.jpg',
             servers: ['BR - Mercurio', 'BR - Venus', 'EU - Mercury', 'EU - Venus'],
             currency: 'Alz',
-            pricePerUnit: 0.0000000699,
+            pricePerUnit: 0.0000000698,
             increment: 100000000
         },
         'dofus': {
