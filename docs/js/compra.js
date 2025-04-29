@@ -104,10 +104,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const quantityInput = document.getElementById('quantity');
     const decreaseBtn = document.getElementById('decrease');
     const increaseBtn = document.getElementById('increase');
+    const quantityDisplay = document.getElementById('quantityDisplay');
     
     // Definir a quantidade inicial e mínima
     quantityInput.value = gameData.increment;
     quantityInput.min = gameData.increment;
+    quantityDisplay.value = Number(quantityInput.value).toLocaleString();
     
     // Calcular preço inicial
     updatePrice();
@@ -117,6 +119,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const currentValue = parseInt(quantityInput.value);
         if (currentValue > gameData.increment) {
             quantityInput.value = currentValue - gameData.increment;
+            quantityDisplay.value = Number(quantityInput.value).toLocaleString();
             updatePrice();
         }
     });
@@ -124,6 +127,7 @@ document.addEventListener('DOMContentLoaded', function() {
     increaseBtn.addEventListener('click', function() {
         const currentValue = parseInt(quantityInput.value);
         quantityInput.value = currentValue + gameData.increment;
+        quantityDisplay.value = Number(quantityInput.value).toLocaleString();
         updatePrice();
     });
     
