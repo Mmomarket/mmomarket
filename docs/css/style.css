@@ -384,8 +384,9 @@ main {
 }
 
 .quantity-selector button {
-    width: 40px;
+    width: 60px;
     height: 40px;
+    margin-right: 5px;
     background-color: #ff4757;
     color: white;
     border: none;

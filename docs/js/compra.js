@@ -18,7 +18,8 @@ document.addEventListener('DOMContentLoaded', function() {
             servers: ['BR - Mercurio', 'BR - Venus'],
             currency: 'Alz',
             pricePerUnit: 0.0000000398,
-            increment: 100000000
+            increment: 100000000,
+            increment2: 1000000000
         },
         'dofus': {
             name: 'Dofus Kamas',
@@ -26,7 +27,8 @@ document.addEventListener('DOMContentLoaded', function() {
             servers: ['Tal Kasha' , 'Draconiros' , 'Dakal' , 'Kourial' , 'Brial' , 'Salar' , 'Mikhal' , 'Rafal'],
             currency: 'Kamas',
             pricePerUnit: 0.00002,
-            increment: 10000000
+            increment: 10000000,
+            increment2: 100000000
         },
         'habbo': {
             name: 'Habbo Moedas',
@@ -34,7 +36,8 @@ document.addEventListener('DOMContentLoaded', function() {
             servers: ['BR'],
             currency: 'Moedas',
             pricePerUnit: 0.378,
-            increment: 50
+            increment: 50,
+            increment2: 500
         },
         'albion': {
             name: 'Albion Pratas',
@@ -42,7 +45,8 @@ document.addEventListener('DOMContentLoaded', function() {
             servers: ['Americas', 'Europa', 'Ásia'],
             currency: 'Pratas',
             pricePerUnit: 0.000003,
-            increment: 20000000
+            increment: 20000000,
+            increment2: 200000000
         },
         'ragnarok': {
             name: 'Ragnarok Zeny',
@@ -50,7 +54,8 @@ document.addEventListener('DOMContentLoaded', function() {
             servers: ['bRO Thor', 'bRO Valhalla'],
             currency: 'Zeny',
             pricePerUnit: 0.00000025,
-            increment: 100000000
+            increment: 100000000,
+            increment2: 1000000000
         },
         'secondlife': {
             name: 'Second Life Lindens',
@@ -58,7 +63,8 @@ document.addEventListener('DOMContentLoaded', function() {
             servers: ['Main Grid'],
             currency: 'Lindens',
             pricePerUnit: 0.04,
-            increment: 1000
+            increment: 1000,
+            increment2: 10000
         },
         'throne': {
             name: 'T&L Lucent',
@@ -66,7 +72,8 @@ document.addEventListener('DOMContentLoaded', function() {
             servers: ['WA - Moonstone' , 'WA - Invoker' , 'WA - Oblivion' , 'WA - Akidu' , 'EA - Carnage' , 'EA - Ivory' , 'EA - Snowburn' , 'EA - Stellarite' , 'EA - Adrenaline' , 'EA - Pippin' , 'SA - Starlight' , 'SA - Eldritch' , 'SA - Resistance' , 'SA - Chamir' , 'EU - Cascade' , 'EU - Emerald' , 'EU - Judgement' , 'EU - Destiny' , 'EU - Rebellion' , 'EU - Fortune' , 'EU - Talon' , 'EU - Arcane' , 'EU - Zephyr' , 'EU - Conviction' ,' EU - Obsidian' ,' EU - Paola'],
             currency: 'Lucent',
             pricePerUnit: 0.06,
-            increment: 1000
+            increment: 1000,
+            increment2: 10000
         },
         'muonline': {
             name: 'Mu Online Bless',
@@ -74,7 +81,8 @@ document.addEventListener('DOMContentLoaded', function() {
             servers: ['Hellheim' , 'Alfheim' , 'Midgard' , 'Arcadia' , 'Fresei' , 'Nidavellir' , 'Ydalir'],
             currency: 'Bless',
             pricePerUnit: 0.6,
-            increment: 50
+            increment: 50,
+            increment2: 500
         }
     };
     
@@ -103,7 +111,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Configurar seletor de quantidade
     const quantityInput = document.getElementById('quantity');
     const decreaseBtn = document.getElementById('decrease');
+    const decrease2Btn = document.getElementById('decrease2');
     const increaseBtn = document.getElementById('increase');
+    const increase2Btn = document.getElementById('increase2');
     const quantityDisplay = document.getElementById('quantityDisplay');
     
     // Definir a quantidade inicial e mínima
@@ -123,10 +133,26 @@ document.addEventListener('DOMContentLoaded', function() {
             updatePrice();
         }
     });
+
+    decrease2Btn.addEventListener('click', function() {
+        const currentValue = parseInt(quantityInput.value);
+        if (currentValue > gameData.increment) {
+            quantityInput.value = currentValue - gameData.increment2;
+            quantityDisplay.value = Number(quantityInput.value).toLocaleString();
+            updatePrice();
+        }
+    });
     
     increaseBtn.addEventListener('click', function() {
         const currentValue = parseInt(quantityInput.value);
         quantityInput.value = currentValue + gameData.increment;
+        quantityDisplay.value = Number(quantityInput.value).toLocaleString();
+        updatePrice();
+    });
+
+    increase2Btn.addEventListener('click', function() {
+        const currentValue = parseInt(quantityInput.value);
+        quantityInput.value = currentValue + gameData.increment2;
         quantityDisplay.value = Number(quantityInput.value).toLocaleString();
         updatePrice();
     });
