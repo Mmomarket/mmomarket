@@ -6,7 +6,12 @@ document.addEventListener('DOMContentLoaded', function() {
     // API URL com nome neutro para evitar bloqueio
     const APP_SERVICE = window.location.hostname === 'localhost' 
     ? 'http://localhost:3000/api'
-    : 'https://mmomarket-backend.onrender.com';
+    : 'https://mmomarket-backend.onrender.com/api';
+    
+    // Função para obter o código de referência
+    function getReferralFromStorage() {
+        return localStorage.getItem('refCode') || null;
+    }
     
     // Atualizar contador do carrinho
     function updateCartCount() {
@@ -78,8 +83,85 @@ document.addEventListener('DOMContentLoaded', function() {
                 total += item.price;
             });
             
-            // Atualizar total
-            cartTotal.textContent = `R$ ${total.toFixed(2)}`;
+            // Variável para cupom aplicado
+            let appliedCoupon = null;
+
+            // Função para atualizar total com desconto
+            function updateTotalWithDiscount() {
+                if (appliedCoupon) {
+                    const discountAmount = (total * appliedCoupon.discount) / 100;
+                    const finalPrice = total - discountAmount;
+                    
+                    // Atualizar exibição do total
+                    cartTotal.innerHTML = `
+                        <span class="original-price">R$ ${total.toFixed(2)}</span>
+                        <div class="discount-applied">
+                            <span>R$ ${finalPrice.toFixed(2)}</span>
+                            <span>-${appliedCoupon.discount}%</span>
+                        </div>
+                    `;
+                } else {
+                    cartTotal.textContent = `R$ ${total.toFixed(2)}`;
+                }
+            }
+
+            // Configurar botão de aplicar cupom
+            const applyCouponBtn = document.getElementById('apply-coupon');
+            const couponInput = document.getElementById('coupon-code');
+            const couponMessage = document.getElementById('coupon-message');
+
+            if (applyCouponBtn && couponInput && couponMessage) {
+                applyCouponBtn.addEventListener('click', async function() {
+                    if (!couponInput.value.trim()) {
+                        couponMessage.textContent = 'Por favor, insira um código de cupom.';
+                        couponMessage.className = 'coupon-message error';
+                        return;
+                    }
+
+                    const couponCode = couponInput.value.trim();
+                    
+                    try {
+                        const baseUrl = window.location.hostname === 'localhost' 
+                            ? 'http://localhost:3000' 
+                            : 'https://mmomarket-backend.onrender.com';
+                        
+                        const response = await fetch(`${baseUrl}/api/coupons/validate/${couponCode}`);
+                        const result = await response.json();
+                        
+                        if (result.status === 'success') {
+                            // Cupom válido
+                            appliedCoupon = result.data;
+                            
+                            couponMessage.textContent = `Cupom aplicado: ${appliedCoupon.discount}% de desconto!`;
+                            couponMessage.className = 'coupon-message success';
+                            
+                            // Desabilitar campo e botão
+                            couponInput.disabled = true;
+                            applyCouponBtn.disabled = true;
+                            
+                            // Atualizar total com desconto
+                            updateTotalWithDiscount();
+                        } else {
+                            // Cupom inválido
+                            couponMessage.textContent = 'Cupom inválido ou já utilizado.';
+                            couponMessage.className = 'coupon-message error';
+                            
+                            appliedCoupon = null;
+                            updateTotalWithDiscount();
+                        }
+                    } catch (error) {
+                        console.error('Erro ao validar cupom:', error);
+                        couponMessage.textContent = 'Erro ao validar cupom. Tente novamente.';
+                        couponMessage.className = 'coupon-message error';
+                        
+                        appliedCoupon = null;
+                        updateTotalWithDiscount();
+                    }
+                });
+            }
+            
+            // Inicializar o total
+            updateTotalWithDiscount();
             
             // Adicionar event listeners para remover itens
             const removeButtons = document.querySelectorAll('.cart-item-remove');
@@ -130,8 +212,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Obter itens do carrinho
                 if (cart.length === 0) return;
                 
-                // Calcular total
-                const total = cart.reduce((sum, item) => sum + item.price, 0);
+                // Calcular total original
+                const originalTotal = cart.reduce((sum, item) => sum + item.price, 0);
                 
                 // Exibir o modal de processamento
                 const processModal = document.getElementById('pm-dialog');
@@ -142,7 +224,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 const paymentAmountElement = document.getElementById('payment-amount');
                 if (paymentAmountElement) {
-                    paymentAmountElement.textContent = `R$ ${total.toFixed(2)}`;
+                    // Mostrar valor com desconto se aplicável
+                    if (appliedCoupon) {
+                        const discountAmount = (originalTotal * appliedCoupon.discount) / 100;
+                        const finalPrice = originalTotal - discountAmount;
+                        paymentAmountElement.textContent = `R$ ${finalPrice.toFixed(2)}`;
+                    } else {
+                        paymentAmountElement.textContent = `R$ ${originalTotal.toFixed(2)}`;
+                    }
                 }
                 
                 // Mostrar loader
@@ -165,8 +254,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Dados para enviar ao backend
                     const processData = {
                         items: cart,
-                        total: total,
-                        customerEmail: 'cliente@mmomarket.com.br'
+                        total: originalTotal,
+                        customerEmail: 'cliente@mmomarket.com.br',
+                        couponCode: appliedCoupon ? appliedCoupon.code : null,
+                        referralCode: getReferralFromStorage()
                     };
                     
                     // Usar o helper para enviar a requisição
@@ -217,6 +308,13 @@ document.addEventListener('DOMContentLoaded', function() {
                         const altOptionsButton = document.getElementById('show-alt-options');
                         if (altOptionsButton) {
                             altOptionsButton.addEventListener('click', function() {
+                                // Calcular o valor final com desconto se aplicável
+                                let finalPrice = originalTotal;
+                                if (appliedCoupon) {
+                                    const discountAmount = (originalTotal * appliedCoupon.discount) / 100;
+                                    finalPrice = originalTotal - discountAmount;
+                                }
+                                
                                 qrcodeContainer.innerHTML = `
                                     <div class="alternative-options">
                                         <h3>Opções de pagamento alternativas</h3>
@@ -232,7 +330,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                             <li>Abra o aplicativo do seu banco</li>
                                             <li>Escolha a opção PIX</li>
                                             <li>Cole a chave PIX acima</li>
-                                            <li>Digite o valor: R$ ${total.toFixed(2)}</li>
+                                            <li>Digite o valor: R$ ${finalPrice.toFixed(2)}</li>
                                             <li>Na descrição/mensagem, informe: Order ${orderId}</li>
                                             <li>Confirme o pagamento</li>
                                             <li>Clique no botão "Verificar" após o pagamento</li>

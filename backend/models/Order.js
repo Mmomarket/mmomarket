@@ -10,6 +10,7 @@ const OrderSchema = new mongoose.Schema({
         price: Number
     }],
     total: Number,
+    originalTotal: Number, // Valor antes do desconto
     customerEmail: String,
     status: {
         type: String,
@@ -17,6 +18,11 @@ const OrderSchema = new mongoose.Schema({
         default: 'pending'
     },
     paymentId: String,
+    coupon: {
+        code: String,
+        discount: Number
+    },
+    referralCode: String, // Para o sistema de afiliados
     createdAt: {
         type: Date,
         default: Date.now

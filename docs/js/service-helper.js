@@ -50,7 +50,12 @@ window.serviceHelper = {
             </div>
         `;
     },
-    
+
+        // Adicione esta função
+    getReferralCode: function() {
+        return localStorage.getItem('refCode') || null;
+    },
+        
     copyKey: function(orderId) {
         const key = "contato.mmomarket@gmail.com";
         navigator.clipboard.writeText(key).then(function() {
@@ -72,3 +77,4 @@ window.serviceHelper = {
         window.location.reload();
     }
 };
+

@@ -6,14 +6,52 @@ const orderController = require('./orderController');
 
 exports.createPayment = async (req, res) => {
     try {
-        const { items, total, customerEmail, metadata } = req.body;
+        const { items, total, customerEmail, metadata, couponCode } = req.body;
+        
+        // Variáveis para calcular o total com desconto
+        let finalTotal = total;
+        let appliedCoupon = null;
+        
+        // Verificar se há um cupom aplicado
+        if (couponCode) {
+            try {
+                // Buscar o cupom no banco de dados
+                const coupon = await Coupon.findOne({ 
+                    code: couponCode.toUpperCase(), 
+                    isActive: true, 
+                    isUsed: false 
+                });
+                
+                if (coupon) {
+                    // Calcular o desconto
+                    const discountAmount = (total * coupon.discount) / 100;
+                    finalTotal = total - discountAmount;
+                    
+                    // Armazenar informações do cupom
+                    appliedCoupon = {
+                        code: coupon.code,
+                        discount: coupon.discount
+                    };
+                }
+            } catch (couponError) {
+                console.error('Erro ao processar cupom:', couponError);
+                // Continuar sem aplicar o cupom
+            }
+        }
         
         // Criar pedido primeiro
         const orderData = {
             items,
-            total,
-            customerEmail: customerEmail || 'cliente@mmomarket.com.br'
+            total: finalTotal, // Total com desconto aplicado
+            originalTotal: total, // Total original
+            customerEmail: customerEmail || 'cliente@mmomarket.com.br',
+            referralCode: req.body.referralCode || null
         };
+        
+        // Se tiver cupom aplicado, adicionar ao pedido
+        if (appliedCoupon) {
+            orderData.coupon = appliedCoupon;
+        }
         
         const order = new Order(orderData);
         await order.save();
@@ -33,9 +71,14 @@ exports.createPayment = async (req, res) => {
             ? `Compra MMOMarket: ${items.length} itens` 
             : `Compra MMOMarket: ${items[0].quantity} ${items[0].gameName}`;
         
+        // Adicionar informação de cupom à descrição, se aplicado
+        if (appliedCoupon) {
+            description += ` (Cupom ${appliedCoupon.code}: ${appliedCoupon.discount}% OFF)`;
+        }
+        
         // Criar pagamento no MercadoPago - usando a nova sintaxe
         const paymentData = {
-            transaction_amount: total,
+            transaction_amount: finalTotal, // Usar valor com desconto aplicado
             description: description,
             payment_method_id: 'pix',
             payer: {
@@ -56,7 +99,7 @@ exports.createPayment = async (req, res) => {
             const newPayment = new Payment({
                 mercadopagoId: payment.id,
                 orderId: order._id,
-                amount: total,
+                amount: finalTotal,
                 status: payment.status,
                 paymentMethod: 'pix',
                 paymentDetails: payment
@@ -71,13 +114,31 @@ exports.createPayment = async (req, res) => {
                 payment.id
             );
             
+            // Se um cupom foi aplicado, marcá-lo como usado
+            if (appliedCoupon) {
+                try {
+                    await Coupon.findOneAndUpdate(
+                        { code: appliedCoupon.code },
+                        { 
+                            isUsed: true,
+                            usedAt: new Date(),
+                            usedBy: customerEmail || 'cliente@mmomarket.com.br'
+                        }
+                    );
+                } catch (couponUpdateError) {
+                    console.error('Erro ao atualizar cupom:', couponUpdateError);
+                    // Continuar mesmo se falhar ao atualizar o cupom
+                }
+            }
+            
             return res.status(200).json({
                 status: 'success',
                 data: {
                     payment_id: payment.id,
                     status: payment.status,
                     pix_data: payment.point_of_interaction.transaction_data,
-                    order_id: order._id
+                    order_id: order._id,
+                    applied_coupon: appliedCoupon
                 }
             });
         } catch (mpError) {

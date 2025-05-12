@@ -8,6 +8,7 @@
     <link rel="icon" type="image/x-icon" href="/images/favicon.png">
 </head>
 <body>
+    <script src="js/referral.js"></script>
     <header>
         <div class="headerheader">
             <h5>Published by MMOMarket</h5>
@@ -76,7 +77,7 @@
                         <option value="habbo">Habbo</option>
                         <option value="albion">Albion</option>
                         <option value="ragnarok">Ragnarok</option>
-                        <option value="secondlife">Second Life</option>
+                        <option value="pristontale">Priston Tale</option>
                         <option value="throne">Throne and Liberty</option>
                         <option value="muonline">Mu Online</option>
                     </select>
@@ -145,6 +146,7 @@
     
     <script src="js/main.js"></script>
     <script src="js/carrinho.js"></script>
+    // Substitua o script existente no final do arquivo intermediar.html
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const form = document.getElementById('intermediation-form');
@@ -160,7 +162,7 @@
                 'habbo': ['BR'],
                 'albion': ['Americas' , 'Asia' , 'Europe'],
                 'ragnarok': ['bRO Thor', 'bRO Valhalla'],
-                'secondlife': ['Main Grid'],
+                'pristontale': ['Cronus' , 'Awell' , 'Valento' , 'Migal' , 'Midranda' , 'Idhas'],
                 'throne': ['WA - Moonstone' , 'WA - Invoker' , 'WA - Oblivion' , 'WA - Akidu' , 'EA - Carnage' , 'EA - Ivory' , 'EA - Snowburn' , 'EA - Stellarite' , 'EA - Adrenaline' , 'EA - Pippin' , 'SA - Starlight' , 'SA - Eldritch' , 'SA - Resistance' , 'SA - Chamir' , 'EU - Cascade' , 'EU - Emerald' , 'EU - Judgement' , 'EU - Destiny' , 'EU - Rebellion' , 'EU - Fortune' , 'EU - Talon' , 'EU - Arcane' , 'EU - Zephyr' , 'EU - Conviction' ,' EU - Obsidian' ,' EU - Paola'],
                 'muonline' : ['Hellheim' , 'Alfheim' , 'Midgard' , 'Arcadia' , 'Fresei' , 'Nidavellir' , 'Ydalir']
             };
@@ -199,7 +201,7 @@
                 }
             });
             
-            form.addEventListener('submit', function(e) {
+            form.addEventListener('submit', async function(e) {
                 e.preventDefault();
                 
                 // Verificar se o servidor foi selecionado
@@ -209,35 +211,49 @@
                 }
                 
                 // Colete os dados do formulário
-                const game = document.getElementById('game').value;
-                const server = document.getElementById('server').value;
-                const charName = document.getElementById('char-name').value;
-                const otherCharName = document.getElementById('other-char-name').value;
-                const whatsapp = document.getElementById('whatsapp').value;
-                const otherWhatsapp = document.getElementById('other-whatsapp').value;
-                const tradeDescription = document.getElementById('trade-description').value;
+                const formData = {
+                    game: document.getElementById('game').value,
+                    server: document.getElementById('server').value,
+                    character: document.getElementById('char-name').value,
+                    otherCharacter: document.getElementById('other-char-name').value,
+                    whatsapp: document.getElementById('whatsapp').value,
+                    otherWhatsapp: document.getElementById('other-whatsapp').value || 'Não fornecido',
+                    tradeDescription: document.getElementById('trade-description').value
+                };
                 
-                // Simulação do envio de e-mail (no mundo real, isso seria feito no backend)
-                console.log(`Enviando e-mail para contato.mmomarket@gmail.com`);
-                console.log(`Assunto: Intermediação - ${game}`);
-                console.log(`Corpo: 
-                    Jogo: ${game}
-                    Servidor: ${server}
-                    Nome do personagem: ${charName}
-                    Nome do outro personagem: ${otherCharName}
-                    Whatsapp: ${whatsapp}
-                    Whatsapp do outro jogador: ${otherWhatsapp || 'Não fornecido'}
-                    Descrição da troca: ${tradeDescription}
-                `);
-                
-                // Exiba o modal de confirmação
-                modal.style.display = 'block';
-                
-                // Resetar o formulário
-                form.reset();
-                // Redefinir o select de servidor para o estado inicial
-                serverSelect.innerHTML = '<option value="">Primeiro selecione um jogo</option>';
-                serverSelect.disabled = true;
+                try {
+                    // Definir a URL base do backend
+                    const baseUrl = window.location.hostname === 'localhost' 
+                        ? 'http://localhost:3000' 
+                        : 'https://mmomarket-backend.onrender.com';
+                    
+                    // Enviar dados para o backend
+                    const response = await fetch(`${baseUrl}/api/intermediation/create`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(formData)
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.status === 'success') {
+                        // Exiba o modal de confirmação
+                        modal.style.display = 'block';
+                        
+                        // Resetar o formulário
+                        form.reset();
+                        // Redefinir o select de servidor para o estado inicial
+                        serverSelect.innerHTML = '<option value="">Primeiro selecione um jogo</option>';
+                        serverSelect.disabled = true;
+                    } else {
+                        alert('Ocorreu um erro ao enviar seu pedido de intermediação. Por favor, tente novamente.');
+                    }
+                } catch (error) {
+                    console.error('Erro ao enviar pedido:', error);
+                    alert('Ocorreu um erro ao enviar seu pedido de intermediação. Por favor, tente novamente.');
+                }
             });
             
             // Fechar o modal quando o usuário clicar no X

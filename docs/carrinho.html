@@ -90,7 +90,7 @@
             </div>
         </div>
     </header>
-    
+
     <nav>
         <ul>
             <li><a href="index.html">Início</a></li>
@@ -98,59 +98,68 @@
             <li><a href="intermediar.html">Intermediações</a></li>
         </ul>
     </nav>
-    
-    <main>
-        <section class="cart-container">
-            <h1>Seu Carrinho</h1>
-            
-            <div id="cart-items">
-                <!-- Os itens do carrinho serão exibidos aqui -->
-            </div>
-            
-            <div id="cart-empty" class="hidden">
-                <p>Seu carrinho está vazio.</p>
-                <a href="listajogos.html" class="btn">Continuar Comprando</a>
-            </div>
-            
-            <div id="cart-summary" class="hidden">
-                <div class="total">
-                    <p>Total:</p>
-                    <h2 id="cart-total">R$ 0,00</h2>
+        <main>
+            <section class="cart-container">
+                <h1>Seu Carrinho</h1>
+                
+                <div id="cart-items">
+                    <!-- Os itens do carrinho serão exibidos aqui -->
                 </div>
                 
-                <div class="cart-buttons">
-                    <a href="listajogos.html" class="btn secondary-btn">Continuar Comprando</a>
-                    <button id="checkout" class="btn primary-btn">Finalizar Compra</button>
+                <div id="cart-empty" class="hidden">
+                    <p>Seu carrinho está vazio.</p>
+                    <a href="listajogos.html" class="btn">Continuar Comprando</a>
                 </div>
-            </div>
-        </section>
-        
-        <div id="pm-dialog" class="modal">
-            <div class="modal-content">
-                <span class="close">&times;</span>
-                <h2>Finalizar Compra</h2>
-                <div id="qrcode-container">
-                    <!-- QR Code será gerado aqui -->
+
+                <div class="coupon-section" id="coupon-section">
+                    <h3>Cupom de Desconto</h3>
+                    <div class="coupon-container">
+                        <input type="text" id="coupon-code" placeholder="Inserir cupom">
+                        <button id="apply-coupon" class="secondary-btn">Aplicar</button>
+                    </div>
+                    <div id="coupon-message" class="coupon-message"></div>
+                    <div><span class="coupon-instruction">Não tem um cupom? Após receber seu pedido, faça uma review no nosso Discord para ganhar um cupom e usar na sua próxima compra!</span></div>
                 </div>
-                <p></p>
-                <p>Valor: <span id="payment-amount">R$ 0,00</span></p>
                 
+                <div id="cart-summary" class="hidden">
+                    <div class="total">
+                        <p>Total:</p>
+                        <h2 id="cart-total">R$ 0,00</h2>
+                    </div>
+                    
+                    <div class="cart-buttons">
+                        <a href="listajogos.html" class="secondary-btn">Continuar Comprando</a>
+                        <button id="checkout" class="primary-btn">Finalizar Compra</button>
+                    </div>
+                </div>
+            </section>
+            
+            <div id="pm-dialog" class="modal">
+                <div class="modal-content">
+                    <span class="close">&times;</span>
+                    <h2>Finalizar Compra</h2>
+                    <div id="qrcode-container">
+                        <!-- QR Code será gerado aqui -->
+                    </div>
+                    <p></p>
+                    <p>Valor: <span id="payment-amount">R$ 0,00</span></p>
+                    
+                </div>
             </div>
-        </div>
-        
-        <div id="confirmation-modal" class="modal">
-            <div class="modal-content">
-                <span class="close">&times;</span>
-                <h2>Pedido Recebido!</h2>
-                <p>Você irá receber o seu pedido dentro de 24 a 48 horas.</p>
-                <p>Obrigado por escolher o MMOMarket.</p>
-                <div class="success-icon">✓</div>
+            
+            <div id="confirmation-modal" class="modal">
+                <div class="modal-content">
+                    <span class="close">&times;</span>
+                    <h2>Pedido Recebido!</h2>
+                    <p>Você irá receber o seu pedido dentro de 24 a 48 horas.</p>
+                    <p>Obrigado por escolher o MMOMarket.</p>
+                    <div class="success-icon">✓</div>
+                </div>
             </div>
-        </div>
-    </main>
+        </main>
     
     <footer>
-        <p>&copy; 2023 MMOMarket - Todos os direitos reservados</p>
+        <p>&copy; 2025 MMOMarket - Todos os direitos reservados</p>
     </footer>
     
     <script src="js/main.js"></script>

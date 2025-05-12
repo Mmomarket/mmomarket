@@ -64,4 +64,34 @@ router.get('/status/:status', async (req, res) => {
     }
 });
 
+// Adicione esta rota
+// Listar pedidos por código de referência
+router.get('/referral/:code', async (req, res) => {
+    try {
+        const referralCode = req.params.code;
+        const orders = await Order.find({ referralCode }).sort({ createdAt: -1 });
+        
+        // Calcular estatísticas
+        const totalOrders = orders.length;
+        const totalValue = orders.reduce((sum, order) => sum + order.total, 0);
+        const completedOrders = orders.filter(order => order.status === 'completed').length;
+        
+        res.status(200).json({
+            status: 'success',
+            stats: {
+                totalOrders,
+                completedOrders,
+                totalValue: totalValue.toFixed(2)
+            },
+            data: orders
+        });
+    } catch (error) {
+        console.error('Erro ao listar pedidos por afiliado:', error);
+        res.status(500).json({
+            status: 'error',
+            message: 'Erro ao listar pedidos por afiliado'
+        });
+    }
+});
+
 module.exports = router;

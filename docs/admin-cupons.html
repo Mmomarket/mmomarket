@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Gerenciamento de Cupons</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .admin-container {
+            max-width: 800px;
+            margin: 100px auto;
+            padding: 20px;
+            background-color: #171920;
+            border-radius: 8px;
+        }
+        .admin-header {
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #333;
+            color: white;
+        }
+        .form-container {
+            margin-bottom: 30px;
+            padding: 15px;
+            background-color: #1e2128;
+            border-radius: 4px;
+        }
+        .coupon-list {
+            margin-top: 30px;
+        }
+        .coupon-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background-color: #1e2128;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            color: white;
+        }
+        .coupon-used {
+            background-color: #2d3038;
+            opacity: 0.7;
+        }
+        .coupon-code {
+            font-weight: bold;
+            font-family: monospace;
+            font-size: 16px;
+        }
+        .coupon-status {
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+        .status-active {
+            background-color: #2ecc71;
+            color: white;
+        }
+        .status-used {
+            background-color: #e74c3c;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <div class="admin-header">
+            <h1>Gerenciamento de Cupons</h1>
+        </div>
+        
+        <div class="form-container">
+            <h2>Criar Novo Cupom</h2>
+            <div class="form-group">
+                <label for="discount">Porcentagem de Desconto:</label>
+                <select id="discount" class="form-control">
+                    <option value="5">5%</option>
+                    <option value="10" selected>10%</option>
+                    <option value="15">15%</option>
+                </select>
+            </div>
+            <button id="create-coupon" class="primary-btn">Criar Cupom</button>
+            <div id="create-message" class="mt-3"></div>
+        </div>
+        
+        <div class="coupon-list">
+            <h2>Cupons Existentes</h2>
+            <div id="coupons-container">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Carregando cupons...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const BASE_URL = window.location.hostname === 'localhost' 
+                ? 'http://localhost:3000' 
+                : 'https://mmomarket-backend.onrender.com';
+                
+            // Elementos DOM
+            const createBtn = document.getElementById('create-coupon');
+            const discountSelect = document.getElementById('discount');
+            const createMessage = document.getElementById('create-message');
+            const couponsContainer = document.getElementById('coupons-container');
+            
+            // Carregar lista de cupons
+            loadCoupons();
+            
+            // Event listener para criar cupom
+            createBtn.addEventListener('click', async function() {
+                const discount = discountSelect.value;
+                
+                try {
+                    createBtn.disabled = true;
+                    createBtn.textContent = 'Criando...';
+                    
+                    const response = await fetch(`${BASE_URL}/api/coupons/create`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ discount })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.status === 'success') {
+                        createMessage.innerHTML = `
+                            <div style="color: #2ecc71; margin-top: 10px;">
+                                Cupom criado com sucesso! Código: <strong>${result.data.code}</strong>
+                            </div>
+                        `;
+                        
+                        // Recarregar lista de cupons
+                        loadCoupons();
+                    } else {
+                        createMessage.innerHTML = `
+                            <div style="color: #e74c3c; margin-top: 10px;">
+                                Erro ao criar cupom: ${result.message}
+                            </div>
+                        `;
+                    }
+                } catch (error) {
+                    console.error('Erro:', error);
+                    createMessage.innerHTML = `
+                        <div style="color: #e74c3c; margin-top: 10px;">
+                            Erro ao criar cupom. Verifique o console para mais detalhes.
+                        </div>
+                    `;
+                } finally {
+                    createBtn.disabled = false;
+                    createBtn.textContent = 'Criar Cupom';
+                }
+            });
+            
+            // Função para carregar cupons
+            async function loadCoupons() {
+                try {
+                    couponsContainer.innerHTML = `
+                        <div class="loading">
+                            <div class="spinner"></div>
+                            <p>Carregando cupons...</p>
+                        </div>
+                    `;
+                    
+                    const response = await fetch(`${BASE_URL}/api/coupons`);
+                    const result = await response.json();
+                    
+                    if (result.status === 'success') {
+                        if (result.data.length === 0) {
+                            couponsContainer.innerHTML = '<p style="color: #999;">Nenhum cupom encontrado.</p>';
+                            return;
+                        }
+                        
+                        couponsContainer.innerHTML = '';
+                        
+                        result.data.forEach(coupon => {
+                            const couponEl = document.createElement('div');
+                            couponEl.className = `coupon-item ${coupon.isUsed ? 'coupon-used' : ''}`;
+                            
+                            couponEl.innerHTML = `
+                                <div>
+                                    <span class="coupon-code">${coupon.code}</span>
+                                    <span style="margin-left: 10px;">${coupon.discount}% OFF</span>
+                                </div>
+                                <div>
+                                    <span class="coupon-status ${coupon.isUsed ? 'status-used' : 'status-active'}">
+                                        ${coupon.isUsed ? 'Usado' : 'Disponível'}
+                                    </span>
+                                </div>
+                            `;
+                            
+                            couponsContainer.appendChild(couponEl);
+                        });
+                    } else {
+                        couponsContainer.innerHTML = `
+                            <div style="color: #e74c3c;">
+                                Erro ao carregar cupons: ${result.message}
+                            </div>
+                        `;
+                    }
+                } catch (error) {
+                    console.error('Erro:', error);
+                    couponsContainer.innerHTML = `
+                        <div style="color: #e74c3c;">
+                            Erro ao carregar cupons. Verifique o console para mais detalhes.
+                        </div>
+                    `;
+                }
+            }
+        });
+    </script>
+</body>
+</html>

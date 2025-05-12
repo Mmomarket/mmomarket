@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // API URL com nome neutro para evitar bloqueio
     const APP_SERVICE = window.location.hostname === 'localhost' 
     ? 'http://localhost:3000/api'
-    : 'https://mmomarket-backend.onrender.com';
+    : 'https://mmomarket-backend.onrender.com/api';
     //const BACKEND_URL = 'http://localhost:3000'; // URL base do backend
     const BACKEND_URL = 'https://mmomarket-backend.onrender.com'
     
@@ -57,14 +57,14 @@ document.addEventListener('DOMContentLoaded', function() {
             increment: 100000000,
             increment2: 1000000000
         },
-        'secondlife': {
-            name: 'Second Life Lindens',
-            image: 'images/secondlife.jpg',
-            servers: ['Main Grid'],
+        'pristontale': {
+            name: 'Priston Tale Ouro',
+            image: 'images/pristontale.jpg',
+            servers: ['Cronus' , 'Awell' , 'Valento' , 'Migal' , 'Midranda' , 'Idhas'],
             currency: 'Lindens',
-            pricePerUnit: 0.04,
-            increment: 1000,
-            increment2: 10000
+            pricePerUnit: 0.0000006,
+            increment: 1000000,
+            increment2: 10000000
         },
         'throne': {
             name: 'T&L Lucent',
@@ -121,8 +121,103 @@ document.addEventListener('DOMContentLoaded', function() {
     quantityInput.min = gameData.increment;
     quantityDisplay.value = Number(quantityInput.value).toLocaleString();
     
+    // Variáveis para cupom
+    let appliedCoupon = null;
+
+    // Função para obter o código de referência
+    function getReferralFromStorage() {
+        return localStorage.getItem('refCode') || null;
+    }
+    
+    // Função para aplicar cupom
+    const applyCouponBtn = document.getElementById('apply-coupon');
+    if (applyCouponBtn) {
+        applyCouponBtn.addEventListener('click', async function() {
+            const couponInput = document.getElementById('coupon-code');
+            const couponMessage = document.getElementById('coupon-message');
+            
+            if (!couponInput || !couponInput.value.trim()) {
+                if (couponMessage) {
+                    couponMessage.textContent = 'Por favor, insira um código de cupom.';
+                    couponMessage.className = 'coupon-message error';
+                }
+                return;
+            }
+            
+            const couponCode = couponInput.value.trim();
+            
+            try {
+                const baseUrl = window.location.hostname === 'localhost' 
+                    ? 'http://localhost:3000' 
+                    : 'https://mmomarket-backend.onrender.com';
+                
+                const response = await fetch(`${baseUrl}/api/coupons/validate/${couponCode}`);
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    // Cupom válido
+                    appliedCoupon = result.data;
+                    
+                    if (couponMessage) {
+                        couponMessage.textContent = `Cupom aplicado: ${appliedCoupon.discount}% de desconto!`;
+                        couponMessage.className = 'coupon-message success';
+                    }
+                    
+                    // Desabilitar campo e botão
+                    couponInput.disabled = true;
+                    applyCouponBtn.disabled = true;
+                    
+                    // Atualizar preço com desconto
+                    updatePriceWithDiscount();
+                } else {
+                    // Cupom inválido
+                    if (couponMessage) {
+                        couponMessage.textContent = 'Cupom inválido ou já utilizado.';
+                        couponMessage.className = 'coupon-message error';
+                    }
+                    
+                    appliedCoupon = null;
+                }
+            } catch (error) {
+                console.error('Erro ao validar cupom:', error);
+                if (couponMessage) {
+                    couponMessage.textContent = 'Erro ao validar cupom. Tente novamente.';
+                    couponMessage.className = 'coupon-message error';
+                }
+                
+                appliedCoupon = null;
+            }
+        });
+    }
+
+    // Função para atualizar preço com desconto
+    function updatePriceWithDiscount() {
+        const quantity = parseInt(quantityInput.value);
+        const originalPrice = quantity * gameData.pricePerUnit;
+        const priceDisplay = document.getElementById('price');
+        
+        if (!priceDisplay) return;
+        
+        if (appliedCoupon) {
+            const discountAmount = (originalPrice * appliedCoupon.discount) / 100;
+            const finalPrice = originalPrice - discountAmount;
+            
+            // Mostrar preço original e com desconto
+            priceDisplay.innerHTML = `
+                <span class="original-price">R$ ${originalPrice.toFixed(2)}</span>
+                <div class="discount-applied">
+                    <span>R$ ${finalPrice.toFixed(2)}</span>
+                    <span>-${appliedCoupon.discount}%</span>
+                </div>
+            `;
+        } else {
+            // Mostrar apenas o preço normal
+            priceDisplay.textContent = `R$ ${originalPrice.toFixed(2)}`;
+        }
+    }
+    
     // Calcular preço inicial
-    updatePrice();
+    updatePriceWithDiscount();
     
     // Adicionar event listeners para os botões de quantidade
     decreaseBtn.addEventListener('click', function() {
@@ -130,7 +225,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (currentValue > gameData.increment) {
             quantityInput.value = currentValue - gameData.increment;
             quantityDisplay.value = Number(quantityInput.value).toLocaleString();
-            updatePrice();
+            updatePriceWithDiscount();
         }
     });
 
@@ -139,7 +234,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (currentValue > gameData.increment) {
             quantityInput.value = currentValue - gameData.increment2;
             quantityDisplay.value = Number(quantityInput.value).toLocaleString();
-            updatePrice();
+            updatePriceWithDiscount();
         }
     });
     
@@ -147,22 +242,15 @@ document.addEventListener('DOMContentLoaded', function() {
         const currentValue = parseInt(quantityInput.value);
         quantityInput.value = currentValue + gameData.increment;
         quantityDisplay.value = Number(quantityInput.value).toLocaleString();
-        updatePrice();
+        updatePriceWithDiscount();
     });
 
     increase2Btn.addEventListener('click', function() {
         const currentValue = parseInt(quantityInput.value);
         quantityInput.value = currentValue + gameData.increment2;
         quantityDisplay.value = Number(quantityInput.value).toLocaleString();
-        updatePrice();
+        updatePriceWithDiscount();
     });
-    
-    // Função para atualizar o preço
-    function updatePrice() {
-        const quantity = parseInt(quantityInput.value);
-        const price = quantity * gameData.pricePerUnit;
-        document.getElementById('price').textContent = `R$ ${price.toFixed(2)}`;
-    }
     
     // Função para carregar recursos de processamento sob demanda
     function loadProcessResources() {
@@ -194,7 +282,15 @@ document.addEventListener('DOMContentLoaded', function() {
             alert('Por favor, informe o nome do seu personagem.');
             return;
         }
-        const price = quantity * gameData.pricePerUnit;
+        
+        // Calcular preço original e preço com desconto
+        const originalPrice = quantity * gameData.pricePerUnit;
+        let finalPrice = originalPrice;
+        
+        if (appliedCoupon) {
+            const discountAmount = (originalPrice * appliedCoupon.discount) / 100;
+            finalPrice = originalPrice - discountAmount;
+        }
         
         // Primeiro carregamos os recursos auxiliares
         try {
@@ -210,7 +306,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (processModal) {
             const paymentAmount = document.getElementById('payment-amount');
             if (paymentAmount) {
-                paymentAmount.textContent = `R$ ${price.toFixed(2)}`;
+                paymentAmount.textContent = `R$ ${finalPrice.toFixed(2)}`;
             }
             
             // Mostrar loader
@@ -236,10 +332,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     server: serverSelect.value,
                     character: characterName,
                     quantity: quantity,
-                    price: price
+                    price: originalPrice
                 }],
-                total: price,
-                customerEmail: 'cliente@mmomarket.com.br'
+                total: originalPrice,
+                customerEmail: 'cliente@mmomarket.com.br',
+                couponCode: appliedCoupon ? appliedCoupon.code : null,
+                referralCode: getReferralFromStorage()
             };
             
             // Alternativa direta ao QR Code para evitar problemas de Adblock
@@ -309,7 +407,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                     <li>Abra o aplicativo do seu banco</li>
                                     <li>Escolha a opção PIX</li>
                                     <li>Cole a chave PIX acima</li>
-                                    <li>Digite o valor: R$ ${price.toFixed(2)}</li>
+                                    <li>Digite o valor: R$ ${finalPrice.toFixed(2)}</li>
                                     <li>Na descrição/mensagem, informe: Order ${orderId}</li>
                                     <li>Confirme o pagamento</li>
                                     <li>Clique no botão "Verificar" após o pagamento</li>
@@ -496,7 +594,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 alert('Por favor, informe o nome do seu personagem.');
                 return;
             }
-            const price = quantity * gameData.pricePerUnit;
+            
+            // Calcular preço original (sem desconto para o carrinho)
+            const originalPrice = quantity * gameData.pricePerUnit;
             
             // Adicionar ao carrinho (localStorage)
             let cart = JSON.parse(localStorage.getItem('cart') || '[]');
@@ -507,7 +607,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 server: serverSelect.value,
                 character: characterName,
                 quantity: quantity,
-                price: price,
+                price: originalPrice,
                 image: gameData.image
             });
             

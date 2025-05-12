@@ -4,6 +4,8 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const axios = require('axios');
 const path = require('path');
+const intermediationRoutes = require('./routes/intermediationRoutes');
+const couponRoutes = require('./routes/couponRoutes');
 require('dotenv').config();
 
 const paymentRoutes = require('./routes/paymentRoutes');
@@ -104,6 +106,8 @@ app.use('/api/process', paymentRoutes);
 app.use('/api/service', paymentRoutes);
 app.use('/api/webhook', webhookRoutes);
 app.use('/api/orders', orderRoutes);
+app.use('/api/intermediation', intermediationRoutes);
+app.use('/api/coupons', couponRoutes);
 
 // Servir o painel admin
 app.use('/admin', express.static(path.join(__dirname, 'admin')));
