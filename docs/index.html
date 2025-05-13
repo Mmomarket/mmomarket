@@ -107,25 +107,101 @@
         <section class="testimonials">
             <h2>O que nossos clientes dizem</h2>
             
-            <div class="testimonial-cards">
-                <div class="testimonial">
-                    <div class="stars">★★★★★</div>
-                    <p>"Comprei Zenys no Ragnarok e recebi em menos de 1 hora. Serviço rápido e confiável!"</p>
-                    <p class="author">- Lucas F., São Paulo</p>
-                </div>
-                
-                <div class="testimonial">
-                    <div class="stars">★★★★★</div>
-                    <p>"Utilizei o serviço de intermediação para uma troca de itens raros no Albion. Tudo ocorreu perfeitamente!"</p>
-                    <p class="author">- Mariana S., Rio de Janeiro</p>
-                </div>
-                
-                <div class="testimonial">
-                    <div class="stars">★★★★★</div>
-                    <p>"Excelente atendimento! As moedas do Habbo foram entregues no prazo e o preço foi justo."</p>
-                    <p class="author">- Carlos H., Belo Horizonte</p>
-                </div>
-            </div>
+<!-- Seção de Reviews -->
+<div class="review-section">
+    <p><svg width="70" height="70" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 8L6 14H18L12 8Z" fill="white"/>
+      </svg>
+      </p>
+      
+    <div class="carousel-container" id="carousel">
+      <img src="images/reviews/1.png" alt="Review 1" class="carousel-item">
+      <img src="images/reviews/2.png" alt="Review 2" class="carousel-item">
+      <img src="images/reviews/3.png" alt="Review 3" class="carousel-item">
+      <img src="images/reviews/4.png" alt="Review 4" class="carousel-item">
+      <img src="images/reviews/5.png" alt="Review 5" class="carousel-item">
+      <!-- Adicione mais imagens conforme necessário -->
+    </div>
+  
+    <div class="call-to-action">
+      <p>
+        <svg width="70" height="70" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 16L6 10H18L12 16Z" fill="white"/>
+      </svg>      
+      </p>
+      <a href="https://discord.gg/GykcyBV6HG"><button class="discord-button">Deixe também sua review no nosso Discord e ganhe um cupom de desconto!</button></a>
+    </div>
+  </div>
+  
+  <style>
+    .review-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+
+      color: white;
+      font-family: 'Segoe UI', sans-serif;
+    }
+  
+    .carousel-container {
+      width: 100%;
+      max-width: 1000px;
+      height: 220px;
+      overflow: hidden;
+      position: relative;
+      border-radius: 10px;
+    }
+  
+    .carousel-item {
+      width: 100%;
+      margin-top: 10px;
+      display: block;
+      border-radius: 10px;
+      transition: transform 0.5s ease;
+    }
+    .carousel-item:hover {
+        cursor: pointer;
+        filter: brightness(1.5);
+        transition: all 0.2s;
+    }
+  
+    .call-to-action {
+      margin-top: 1rem;
+      text-align: center;
+    }
+  
+    .discord-button {
+    background-color: #5967f2;
+    border: none;
+    color: white;
+    padding: 0.7rem 1.2rem;
+    font-weight: 500;
+    cursor: pointer;
+    font-size: 0.9rem;
+  }
+
+  .discord-button:hover {
+    background-color: #7983f8;
+    transition: all 0.2s;
+  }
+  </style>
+  
+  <script>
+    const carousel = document.getElementById('carousel');
+    const items = carousel.querySelectorAll('.carousel-item');
+    let currentIndex = 0;
+  
+    function showNextReview() {
+      items.forEach((item, index) => {
+        item.style.transform = `translateY(-${currentIndex * 100}%)`;
+      });
+  
+      currentIndex = (currentIndex + 1) % items.length;
+    }
+  
+    setInterval(showNextReview, 3000); // Troca a cada 3 segundos
+  </script>
+  
         </section>
         <!-- Para o futuro: seção "XXX transações XXX intermediações, atualizada em tempo real, ou 1x por dia." -->
         <!-- Para o futuro: seção "ultimas compras" -->
