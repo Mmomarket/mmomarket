@@ -96,6 +96,11 @@ header {
     height: 40px;
 }
 
+.cart-icon:hover {
+    filter: drop-shadow(0 0 0.25rem white);
+    transition: all 0.2s;
+}
+
 .cart-notification {
     position: absolute;
     top: 7px;
@@ -156,9 +161,12 @@ nav ul li a:hover::after {
 }
 .buttoncontainer {
     align-content: center;
-    background-color: #2ecc71;
 }
 .Discord {
+    display: flex;
+    align-items: center;
+    align-content: center;
+    justify-content: center;
     height: 50px;
     width: 180px;
     color: white;
@@ -167,6 +175,7 @@ nav ul li a:hover::after {
     font-size: 15px;
     font-weight: 400;
     background-color: #5967f2;
+    border-radius: 5px;
 }
 .Discord:hover {
     cursor: pointer;
@@ -268,6 +277,13 @@ main {
     text-align: center;
 }
 
+.feature:hover {
+    cursor: pointer;
+    filter: brightness(1.5);
+    transition: all 0.2s;
+    transform: translateY(-5px);
+}
+
 .feature h3 {
     color: white;
     margin-bottom: 1rem;
@@ -283,7 +299,7 @@ main {
 .games-list h1 {
     text-align: center;
     margin-bottom: 2rem;
-    color: #ff4757;
+    color: white;
 }
 
 .game-cards {
@@ -301,8 +317,10 @@ main {
 }
 
 .game-card:hover {
+    filter: brightness(1.5);
     transform: translateY(-5px);
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+    transition: all 0.2s;
 }
 
 .game-card img {
@@ -332,6 +350,7 @@ main {
     padding: 2%;
     flex: 1;
     max-width: 40%;
+    min-width: 150px;
 }
 
 .game-image img {
@@ -619,6 +638,11 @@ main {
     text-align: center;
 }
 
+.formsubmit {
+    display: flex;
+    justify-content: right;
+}
+
 .fee-notice {
     text-align: center;
     color: white;
@@ -629,12 +653,13 @@ main {
     margin-bottom: 1.5rem;
 }
 
-.form-group.checkbox {
+.form-group-checkbox {
+    color: white;
     display: flex;
-    align-items: center;
+    align-content: center;
 }
 
-.form-group.checkbox input {
+.form-group-checkbox input {
     width: auto;
     margin-right: 0.5rem;
 }
@@ -750,26 +775,28 @@ footer {
 .comprar {
     font-size: 15px;
     font-weight: 400;
-    background-color: #670500;
+    background-color: #ff4757;
+    border-radius: 5px;
 }
 .comprar:hover {
     cursor: pointer;
     font-size: 15px;
     font-weight: 500;
-    background-color: #9e251f;
-    transition: all 0.2s;
+    background-color: #f56a75;
+    transition: ease 0.3s;
 }
 .intermediar {
     font-size: 15px;
     font-weight: 400;
-    background-color: rgba(0,0,0,0.7);
+    background-color: rgb(31, 31, 31);
+    border-radius: 5px;
 }
 .intermediar:hover {
     cursor: pointer;
     font-size: 15px;
     font-weight: 500;
     background-color: rgba(26, 26, 26, 0.7);
-    transition: all 0.2s;
+    transition: ease 0.3s;
 }
 .placeholder-text {
     text-align: center;
@@ -809,7 +836,11 @@ footer {
 }
 .about h2 {
     text-align: center;
-    color: #af352e;
+    color: white;
+}
+.aboutmmomarket h2 {
+    text-align: center;
+    color: #ff4757;
 }
         
 /* Estilos para a seção de FAQ */
@@ -822,7 +853,7 @@ footer {
 .faq-section h2 {
     text-align: center;
     margin-bottom: 2rem;
-    color: #ff4757;
+    color: white;
     font-size: 1.8rem;
 }
         
@@ -1097,3 +1128,202 @@ footer {
 .service-btn:hover {
     background-color: #ff7883;
 }
+
+.review-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: white;
+    font-family: 'Segoe UI', sans-serif;
+  }
+
+  .carousel-container {
+    width: 100%;
+    max-width: 1000px;
+    height: 220px;
+    overflow: hidden;
+    position: relative;
+    border-radius: 10px;
+  }
+
+  .carousel-item {
+    width: 100%;
+    margin-top: 10px;
+    display: block;
+    border-radius: 10px;
+    transition: transform 0.5s ease;
+  }
+  .carousel-item:hover {
+      cursor: pointer;
+      filter: brightness(1.5);
+      transition: all 0.2s;
+  }
+
+  .call-to-action {
+    margin-top: 1rem;
+    text-align: center;
+  }
+
+ svg {
+    opacity: 20%;
+  }
+
+ svg:hover {
+    cursor: pointer;
+    opacity: 50%;
+    transition: all 0.2s;
+}
+
+.footer {
+    background-color: #000;
+    color: white;
+    padding: 2rem 1rem 1rem;
+    font-family: 'Segoe UI', sans-serif;
+    font-size: 0.9rem;
+  }
+
+  .footer h4 {
+    align-self: center;
+  }
+  
+  .footer-content {
+    display: flex;
+    flex-wrap:wrap;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 1px solid #333;
+    padding-top: 2rem;
+    padding-bottom: 5rem;
+  }
+  
+  .footer-left img.footer-logo {
+    padding-left: 150px;
+    height: 150px;
+  }
+  
+  .footer-links {
+    border-left: 1px solid #777;
+    padding-left: 2rem;
+    margin-top: 0.5rem;
+    text-align: justify;
+  }
+  
+  .footer-links h4 {
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+  }
+  
+  .footer-links ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .footer-links ul li {
+    margin: 0.3rem 0;
+  }
+  
+  .footer-links ul li a {
+    color: white;
+    text-decoration: none;
+  }
+  
+  .footer-discord {
+    padding-top: 50px;
+    padding-right: 200px;
+    margin-top: 1rem;
+  }
+  
+  .discord-button {
+    display: flex;
+    align-items: center;
+    background-color: #5967f2;
+    padding: 0.6rem 1rem;
+    border-radius: 4px;
+    text-decoration: none;
+    color: white;
+    transition: background-color 0.3s ease;
+  }
+  
+  .discord-button:hover {
+    background-color: #7983f8;
+  }
+  
+  .discord-logo {
+    height: 30px;
+    margin-right: 0.5rem;
+  }
+  
+  .discord-text {
+    font-weight: bold;
+    margin-right: 0.8rem;
+  }
+  
+  .discord-spacer {
+    flex: 1;
+  }
+  
+  .discord-icon {
+    height: 20px;
+    filter: brightness(0) invert(1);
+    margin-right: 0.4rem;
+  }
+  
+  .discord-word {
+    margin-right: 0.3rem;
+  }
+  
+  .discord-arrow {
+    font-size: 1.2rem;
+  }
+  
+  .footer-bottom {
+    text-align: center;
+    margin-top: 1.5rem;
+    color: #ccc;
+    font-size: 0.8rem;
+    padding-bottom: 2rem;
+  }
+  
+  .footer-bottom a {
+    color: #ffffff;
+    text-decoration: none;
+  }
+  
+  .footer-bottom a:hover {
+    text-decoration: underline;
+  }
+  
+  .promo-bar {
+    width: 100%;
+    background-color: #d64545;
+    overflow: hidden;
+    white-space: nowrap;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+  }
+  
+  .promo-marquee {
+    display: inline-block;
+    white-space: nowrap;
+    padding: 0.5rem 0;
+    animation: marquee 15s linear infinite;
+  }
+  
+  .promo-marquee span {
+    display: inline-block;
+    padding-right: 15rem; /* espaçamento entre repetições */
+    color: white;
+    font-weight: 500;
+    font-size: 0.95rem;
+    font-style: italic;
+  }
+  
+  @keyframes marquee {
+    0% {
+      transform: translateX(0%);
+    }
+    100% {
+      transform: translateX(-50%);
+    }
+  }
+  

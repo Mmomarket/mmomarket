@@ -44,7 +44,11 @@
             </nav>
 
             <div class="buttoncontainer">
-                <a href="https://discord.gg/GykcyBV6HG"><button class="Discord">Discord</button></a>
+                <a href="https://discord.gg/GykcyBV6HG">
+                    <button class="Discord">
+                        <img src="https://cdn.jsdelivr.net/npm/simple-icons@v10/icons/discord.svg" class="discord-icon" alt="Discord Icon">
+                        Discord
+                    </button></a>
             </div>
             <div class="cart-icon">
                 <a href="carrinho.html" id="cart-link">
@@ -73,7 +77,7 @@
         </section>
         
         <section class="about">
-            <h3>Por que escolher o</h3> <h2>MMOMarket?</h2>
+            <h2 class="aboutmmomarket">Por que escolher o <br>MMOMarket?</h2>
             <div class="features">
                 <div class="feature">
                     <h3>Segurança Garantida</h3>
@@ -107,102 +111,59 @@
         <section class="testimonials">
             <h2>O que nossos clientes dizem</h2>
             
-<!-- Seção de Reviews -->
-<div class="review-section">
-    <p><svg width="70" height="70" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
-        <path d="M12 8L6 14H18L12 8Z" fill="white"/>
-      </svg>
-      </p>
-      
-    <div class="carousel-container" id="carousel">
-      <img src="images/reviews/1.png" alt="Review 1" class="carousel-item">
-      <img src="images/reviews/2.png" alt="Review 2" class="carousel-item">
-      <img src="images/reviews/3.png" alt="Review 3" class="carousel-item">
-      <img src="images/reviews/4.png" alt="Review 4" class="carousel-item">
-      <img src="images/reviews/5.png" alt="Review 5" class="carousel-item">
-      <!-- Adicione mais imagens conforme necessário -->
-    </div>
-  
-    <div class="call-to-action">
-      <p>
-        <svg width="70" height="70" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
-        <path d="M12 16L6 10H18L12 16Z" fill="white"/>
-      </svg>      
-      </p>
-      <a href="https://discord.gg/GykcyBV6HG"><button class="discord-button">Deixe também sua review no nosso Discord e ganhe um cupom de desconto!</button></a>
-    </div>
-  </div>
-  
-  <style>
-    .review-section {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-
-      color: white;
-      font-family: 'Segoe UI', sans-serif;
-    }
-  
-    .carousel-container {
-      width: 100%;
-      max-width: 1000px;
-      height: 220px;
-      overflow: hidden;
-      position: relative;
-      border-radius: 10px;
-    }
-  
-    .carousel-item {
-      width: 100%;
-      margin-top: 10px;
-      display: block;
-      border-radius: 10px;
-      transition: transform 0.5s ease;
-    }
-    .carousel-item:hover {
-        cursor: pointer;
-        filter: brightness(1.5);
-        transition: all 0.2s;
-    }
-  
-    .call-to-action {
-      margin-top: 1rem;
-      text-align: center;
-    }
-  
-    .discord-button {
-    background-color: #5967f2;
-    border: none;
-    color: white;
-    padding: 0.7rem 1.2rem;
-    font-weight: 500;
-    cursor: pointer;
-    font-size: 0.9rem;
-  }
-
-  .discord-button:hover {
-    background-color: #7983f8;
-    transition: all 0.2s;
-  }
-  </style>
-  
-  <script>
-    const carousel = document.getElementById('carousel');
-    const items = carousel.querySelectorAll('.carousel-item');
-    let currentIndex = 0;
-  
-    function showNextReview() {
-      items.forEach((item, index) => {
-        item.style.transform = `translateY(-${currentIndex * 100}%)`;
-      });
-  
-      currentIndex = (currentIndex + 1) % items.length;
-    }
-  
-    setInterval(showNextReview, 3000); // Troca a cada 3 segundos
-  </script>
-  
+            <!-- Seção de Reviews -->
+            <div class="review-section">
+                <p><svg width="70" height="70" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 8L6 14H18L12 8Z" fill="white"/>
+                </svg>
+                </p>
+                
+                <div class="carousel-container" id="carousel">
+                <img src="images/reviews/1.png" alt="Review 1" class="carousel-item">
+                <img src="images/reviews/2.png" alt="Review 2" class="carousel-item">
+                <img src="images/reviews/3.png" alt="Review 3" class="carousel-item">
+                <img src="images/reviews/4.png" alt="Review 4" class="carousel-item">
+                <img src="images/reviews/5.png" alt="Review 5" class="carousel-item">
+                <!-- Adicione mais imagens conforme necessário -->
+                </div>
+            
+                <div class="call-to-action">
+                <p>
+                    <svg width="70" height="70" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 16L6 10H18L12 16Z" fill="white"/>
+                </svg>      
+                </p>
+                </div>
+            </div>
+            <script>
+                const carousel = document.getElementById('carousel');
+                const items = carousel.querySelectorAll('.carousel-item');
+                let currentIndex = 0;
+            
+                function showNextReview() {
+                items.forEach((item, index) => {
+                    item.style.transform = `translateY(-${currentIndex * 100}%)`;
+                });
+            
+                currentIndex = (currentIndex + 1) % items.length;
+                }
+            
+                setInterval(showNextReview, 3000); // Troca a cada 3 segundos
+            </script>
         </section>
+
+            <a href="https://discord.gg/GykcyBV6HG">
+                <div class="promo-bar">
+                    <div class="promo-marquee">
+                      <span>Após sua compra, deixe também sua review no nosso Discord e ganhe um cupom de desconto!</span>
+                      <span>Após sua compra, deixe também sua review no nosso Discord e ganhe um cupom de desconto!</span>
+                      <span>Após sua compra, deixe também sua review no nosso Discord e ganhe um cupom de desconto!</span>
+                      <span>Após sua compra, deixe também sua review no nosso Discord e ganhe um cupom de desconto!</span>
+                      <span>Após sua compra, deixe também sua review no nosso Discord e ganhe um cupom de desconto!</span>
+                      <span>Após sua compra, deixe também sua review no nosso Discord e ganhe um cupom de desconto!</span>
+                    </div>
+                  </div>
+            </a>
         <!-- Para o futuro: seção "XXX transações XXX intermediações, atualizada em tempo real, ou 1x por dia." -->
         <!-- Para o futuro: seção "ultimas compras" -->
         <section class="faq-section">
@@ -251,9 +212,42 @@
         </section>
     </main>
     
-    <footer>
-        <p>&copy; 2025 MMOMarket - Todos os direitos reservados</p>
-    </footer>
+    <footer class="footer">
+        <div class="footer-content">
+          <div class="footer-left">
+            <img src="images/logobig.png" alt="MMOMarket Logo" class="footer-logo">
+          </div>
+
+          <div class="footer-links">
+            <ul>
+              <li><a href="index.html">INÍCIO</a></li>
+              <li><a href="listajogos.html">COMPRAR</a></li>
+              <li><a href="intermediar.html">INTERMEDIAÇÕES</a></li>
+              <li><a href="https://discord.gg/GykcyBV6HG">DISCORD</a></li>
+              <li><a href="carrinho.html">CARRINHO</a></li>
+            </ul>
+          </div>
+      
+          <div class="footer-discord">
+            <a href="https://discord.gg/GykcyBV6HG" class="discord-button" target="_blank">
+              <img src="images/logo.png" alt="MMOMarket" class="discord-logo">
+              <span class="discord-text">MMOMarket</span>
+              <div class="discord-spacer"></div>
+              <img src="https://cdn.jsdelivr.net/npm/simple-icons@v10/icons/discord.svg" class="discord-icon" alt="Discord Icon">
+              <span class="discord-word">Discord</span>
+              <span class="discord-arrow">›</span>
+            </a>
+          </div>
+        </div>
+      
+        <div class="footer-bottom">
+          <p>© 2025 MMOMarket é uma marca registrada da MMOMarket. Todos os direitos reservados.<br>
+            CNPJ: 49.450.443/0001-73 | Rua Governador Valadares, 342, Sala 4, Centro, Uberaba - Minas Gerais
+          </p>
+          <a href="#">Contrato de Licença e Uso e Política de Privacidade</a>
+        </div>
+      </footer>
+      
     
     <script src="js/main.js"></script>
     <script src="js/carrinho.js"></script>
