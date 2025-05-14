@@ -17,83 +17,129 @@ document.addEventListener('DOMContentLoaded', function() {
         'cabal': {
             name: 'Cabal Alz',
             image: 'images/cabal.jpg',
-            servers: ['BR - Mercurio', 'BR - Venus'],
+            servers: [
+                { name: 'BR - Mercurio', pricePerUnit: 0.0000000298 },
+                { name: 'BR - Venus', pricePerUnit: 0.0000000278 }
+            ],
             currency: 'Alz',
-            pricePerUnit: 0.0000000398,
             increment: 100000000,
             increment2: 1000000000
         },
         'dofus': {
             name: 'Dofus Kamas',
             image: 'images/dofus.jpg',
-            servers: ['Tal Kasha' , 'Draconiros' , 'Dakal' , 'Kourial' , 'Brial' , 'Salar' , 'Mikhal' , 'Rafal'],
+            servers: [
+                { name: 'Tal Kasha', pricePerUnit: 0.00000724},
+                { name: 'Draconiros', pricePerUnit: 0.00000719},
+                { name: 'Dakal', pricePerUnit: 0.00002641},
+                { name: 'Kourial', pricePerUnit: 0.00002664},
+                { name: 'Brial', pricePerUnit: 0.00001521},
+                { name: 'Salar', pricePerUnit: 0.00001520},
+                { name: 'Mikhal', pricePerUnit: 0.00002543},
+                { name: 'Rafal', pricePerUnit: 0.00001521}
+            ],
             currency: 'Kamas',
-            pricePerUnit: 0.00002,
             increment: 10000000,
             increment2: 100000000
         },
         'habbo': {
             name: 'Habbo Moedas',
             image: 'images/habbo.jpg',
-            servers: ['BR'],
+            servers: [
+                { name: 'BR', pricePerUnit: 0.378 }
+            ],
             currency: 'Moedas',
-            pricePerUnit: 0.378,
             increment: 50,
             increment2: 500
         },
         'albion': {
             name: 'Albion Pratas',
             image: 'images/albion.jpg',
-            servers: ['Americas', 'Europa', 'Ásia'],
+            servers: [
+                { name: 'Americas', pricePerUnit: 0.00000282},
+                { name: 'Europa', pricePerUnit: 0.00000299},
+                { name: 'Ásia', pricePerUnit: 0.00000327}
+            ],
             currency: 'Pratas',
-            pricePerUnit: 0.000003,
             increment: 20000000,
             increment2: 200000000
         },
         'ragnarok': {
             name: 'Ragnarok Zeny',
             image: 'images/ragnarok.jpg',
-            servers: ['bRO Thor', 'bRO Valhalla'],
+            servers: [
+                { name: 'bRO Thor', pricePerUnit: 0.000000012},
+                { name: 'bRO Valhalla', pricePerUnit: 0.000000013}
+            ],
             currency: 'Zeny',
-            pricePerUnit: 0.00000025,
             increment: 100000000,
             increment2: 1000000000
         },
-        'secondlife': {
-            name: 'Second Life Lindens',
-            image: 'images/secondlife.jpg',
-            servers: ['Main Grid'],
-            currency: 'Lindens',
-            pricePerUnit: 0.04,
-            increment: 1000,
-            increment2: 10000
+        'pristontale': {
+            name: 'Priston Tale Ouro',
+            image: 'images/pristontale.jpg',
+            servers: [
+                { name: 'Cronus', pricePerUnit: 0.0000006 },
+                { name: 'Awell', pricePerUnit: 0.0000006 },
+                { name: 'Valento', pricePerUnit: 0.0000006 },
+                { name: 'Migal', pricePerUnit: 0.0000006 },
+                { name: 'Midranda', pricePerUnit: 0.0000006 },
+                { name: 'Idhas', pricePerUnit: 0.0000006 },
+            ],
+            currency: 'Ouro',
+            increment: 2000000,
+            increment2: 20000000
         },
         'throne': {
             name: 'T&L Lucent',
             image: 'images/throne.jpg',
-            servers: ['WA - Moonstone' , 'WA - Invoker' , 'WA - Oblivion' , 'WA - Akidu' , 'EA - Carnage' , 'EA - Ivory' , 'EA - Snowburn' , 'EA - Stellarite' , 'EA - Adrenaline' , 'EA - Pippin' , 'SA - Starlight' , 'SA - Eldritch' , 'SA - Resistance' , 'SA - Chamir' , 'EU - Cascade' , 'EU - Emerald' , 'EU - Judgement' , 'EU - Destiny' , 'EU - Rebellion' , 'EU - Fortune' , 'EU - Talon' , 'EU - Arcane' , 'EU - Zephyr' , 'EU - Conviction' ,' EU - Obsidian' ,' EU - Paola'],
+            servers: [
+                { name: 'WA - Moonstone', pricePerUnit: 0.0586},
+                { name: 'WA - Invoker', pricePerUnit: 0.0586},
+                { name: 'WA - Oblivion', pricePerUnit: 0.0580},
+                { name: 'WA - Akidu', pricePerUnit: 0.0563},
+                { name: 'EA - Carnage', pricePerUnit: 0.0610},
+                { name: 'EA - Ivory', pricePerUnit: 0.0610},
+                { name: 'EA - Snowburn', pricePerUnit: 0.0610},
+                { name: 'EA - Stellarite', pricePerUnit: 0.0610},
+                { name: 'EA - Adrenaline', pricePerUnit: 0.0610},
+                { name: 'EA - Pippin', pricePerUnit: 0.0602},
+                { name: 'SA - Starlight', pricePerUnit: 0.0694},
+                { name: 'SA - Eldritch', pricePerUnit: 0.0694},
+                { name: 'SA - Resistance', pricePerUnit: 0.0694},
+                { name: 'SA - Chamir', pricePerUnit: 0.0677},
+                { name: 'EU - Cascade', pricePerUnit: 0.0618},
+                { name: 'EU - Emerald', pricePerUnit: 0.0627},
+                { name: 'EU - Judgement', pricePerUnit: 0.0618},
+                { name: 'EU - Destiny', pricePerUnit: 0.0626},
+                { name: 'EU - Rebellion', pricePerUnit: 0.0627},
+                { name: 'EU - Fortune', pricePerUnit: 0.0618},
+                { name: 'EU - Talon', pricePerUnit: 0.0623},
+                { name: 'EU - Arcane', pricePerUnit: 0.0623},
+                { name: 'EU - Zephyr', pricePerUnit: 0.0627},
+                { name: 'EU - Conviction', pricePerUnit: 0.0618},
+                { name: 'EU - Obsidian', pricePerUnit: 0.0580},
+                { name: 'EU - Paola', pricePerUnit: 0.0627}
+            ],
             currency: 'Lucent',
-            pricePerUnit: 0.06,
             increment: 1000,
             increment2: 10000
         },
         'muonline': {
             name: 'Mu Online Bless',
             image: 'images/muonline.jpg',
-            servers: ['Hellheim' , 'Alfheim' , 'Midgard' , 'Arcadia' , 'Fresei' , 'Nidavellir' , 'Ydalir'],
+            servers: [
+                { name: 'Hellheim', pricePerUnit: 0.66 },
+                { name: 'Alfheim', pricePerUnit: 0.66 },
+                { name: 'Midgard', pricePerUnit: 0.66 },
+                { name: 'Arcadia', pricePerUnit: 0.66 },
+                { name: 'Fresei', pricePerUnit: 0.66 },
+                { name: 'Nidavellir', pricePerUnit: 0.66 },
+                { name: 'Ydalir', pricePerUnit: 0.66 }
+            ],
             currency: 'Bless',
-            pricePerUnit: 0.6,
             increment: 50,
             increment2: 500
-        },
-        'pristontale': {
-            name: 'Priston Tale Ouro',
-            image: 'images/pristontale.jpg',
-            servers: ['Cronus' , 'Awell' , 'Valento' , 'Migal' , 'Midranda' , 'Idhas'],
-            currency: 'Ouro',
-            pricePerUnit: 0.0000006,
-            increment: 2000000,
-            increment2: 20000000
         }
     };
     
@@ -111,12 +157,31 @@ document.addEventListener('DOMContentLoaded', function() {
     document.title = `MMOMarket - ${gameData.name}`;
     
     // Configurar o seletor de servidor
+    let currentPricePerUnit = 0;
+
     const serverSelect = document.getElementById('server');
     gameData.servers.forEach(server => {
         const option = document.createElement('option');
-        option.value = server;
-        option.textContent = server;
+        option.value = server.name;
+        option.textContent = server.name;
+        // Armazenar o preço como atributo de dados
+        option.dataset.price = server.pricePerUnit;
         serverSelect.appendChild(option);
+    });
+    
+    // Definir o preço inicial baseado no primeiro servidor
+    if (gameData.servers.length > 0) {
+        currentPricePerUnit = gameData.servers[0].pricePerUnit;
+    }
+    
+    // Adicionar listener para mudança de servidor
+    serverSelect.addEventListener('change', function() {
+        // Encontrar o servidor selecionado
+        const selectedServer = this.options[this.selectedIndex];
+        // Atualizar o preço por unidade
+        currentPricePerUnit = parseFloat(selectedServer.dataset.price);
+        // Recalcular o preço
+        updatePrice();
     });
     
     // Configurar seletor de quantidade
@@ -176,7 +241,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Função para atualizar o preço
     function updatePrice() {
         const quantity = parseInt(quantityInput.value);
-        currentPrice = quantity * gameData.pricePerUnit;
+        currentPrice = quantity * currentPricePerUnit;
         
         // Se houver cupom aplicado, recalcular preço com desconto
         if (appliedCoupon) {
@@ -196,7 +261,7 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('price').textContent = `R$ ${currentPrice.toFixed(2)}`;
         }
         
-        console.log(`updatePrice - Original: ${currentPrice}, Com desconto: ${currentDiscountedPrice}`);
+        console.log(`updatePrice - Original: ${currentPrice}, Com desconto: ${currentDiscountedPrice}, PricePerUnit: ${currentPricePerUnit}`);
     }
     
     // Função para aplicar cupom
