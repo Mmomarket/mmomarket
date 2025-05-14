@@ -1327,3 +1327,46 @@ footer {
     }
   }
   
+  .popup {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: #c0ecd0;
+    color: #2b4f36;
+    padding: 16px 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    max-width: 260px;
+    font-family: sans-serif;
+    z-index: 9999;
+    transition: opacity 0.5s, transform 0.5s;
+  }
+  
+  .popup strong {
+    font-size: 1.1rem;
+    display: block;
+  }
+  
+  .popup p {
+    margin: 8px 0 4px;
+  }
+  
+  .popup small {
+    color: #2b4f36;
+    font-size: 0.85rem;
+  }
+  
+  .popup-close {
+    position: absolute;
+    top: 8px;
+    right: 10px;
+    cursor: pointer;
+    font-weight: bold;
+  }
+  
+  .hidden {
+    opacity: 0;
+    transform: translateY(100px);
+    pointer-events: none;
+  }
+  

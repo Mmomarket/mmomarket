@@ -247,8 +247,59 @@
           <a href="#">Contrato de Licença e Uso e Política de Privacidade</a>
         </div>
       </footer>
+      <div id="purchase-popup" class="popup hidden">
+        <strong id="popup-name">Fulano</strong>
+        <p>Realizou uma compra!</p>
+        <small id="popup-time">*horário atual*</small>
+        <span class="popup-close" onclick="closePopup()">×</span>
+      </div>
       
-    
+      <script>
+        const nicknames = [
+          "KaKaLenda", "BruxaoDark", "NatsuRPG", "Mestreuz", "RaBoyZ", 
+          "DDHunter", "LordHaoni", "akizinho", "tonZera", "Zalion",
+          "Tilintante", "cocovaldo", "Limalho", "ConXX", "Xeretudo",
+          "hugohuga", "TentaSorT", "Jugulovio", "NinjaPalido", "MandaNulds",
+          "gerenteboa", "CUriozzo", "Energurmenor", "Xuxu Beleza NOBRE"
+        ];
+      
+        const popup = document.getElementById('purchase-popup');
+        const nameField = document.getElementById('popup-name');
+        const timeField = document.getElementById('popup-time');
+      
+        function getCurrentTime() {
+          const now = new Date();
+          return now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+      
+        function showPopup() {
+          // FUTURA INTEGRAÇÃO: Aqui você buscará o último nome do seu banco de dados
+          const randomName = nicknames[Math.floor(Math.random() * nicknames.length)];
+      
+          nameField.textContent = randomName;
+          timeField.textContent = getCurrentTime();
+      
+          popup.classList.remove('hidden');
+      
+          setTimeout(() => {
+            popup.classList.add('hidden');
+            scheduleNextPopup(); // Agendar próximo
+          }, 4000); // Popup visível por 4s
+        }
+      
+        function closePopup() {
+          popup.classList.add('hidden');
+        }
+      
+        function scheduleNextPopup() {
+          const nextDelay = Math.floor(Math.random() * (40000 - 5000 + 1)) + 5000;
+          setTimeout(showPopup, nextDelay);
+        }
+      
+        // Inicia primeiro popup
+        scheduleNextPopup();
+      </script>
+      
     <script src="js/main.js"></script>
     <script src="js/carrinho.js"></script>
 </body>

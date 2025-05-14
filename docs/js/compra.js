@@ -94,7 +94,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Configurar a página de acordo com o jogo
     const gameData = games[game];
-    document.getElementById('game-title').textContent = `${gameData.name} ${gameData.increment}`;
+    document.getElementById('game-title').textContent = gameData.name;
     document.getElementById('game-img').src = gameData.image;
     document.getElementById('game-img').alt = gameData.name;
     document.title = `MMOMarket - ${gameData.name}`;
