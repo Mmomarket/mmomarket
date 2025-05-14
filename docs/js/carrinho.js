@@ -8,10 +8,10 @@ document.addEventListener('DOMContentLoaded', function() {
     ? 'http://localhost:3000/api'
     : 'https://mmomarket-backend.onrender.com/api';
     
-    // Função para obter o código de referência
-    function getReferralFromStorage() {
-        return localStorage.getItem('refCode') || null;
-    }
+    // Variáveis para armazenar os valores do carrinho
+    let cartTotalValue = 0;
+    let cartDiscountedValue = 0;
+    let appliedCoupon = null;
     
     // Atualizar contador do carrinho
     function updateCartCount() {
@@ -83,33 +83,52 @@ document.addEventListener('DOMContentLoaded', function() {
                 total += item.price;
             });
             
-            // Variável para cupom aplicado
-            let appliedCoupon = null;
-
-            // Função para atualizar total com desconto
+            // Armazenar o total para uso posterior
+            cartTotalValue = total;
+            cartDiscountedValue = total;
+            
+            // Atualizar total
+            updateTotalWithDiscount();
+            
+            // Adicionar event listeners para remover itens
+            const removeButtons = document.querySelectorAll('.cart-item-remove');
+            removeButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const index = parseInt(this.dataset.index);
+                    cart.splice(index, 1);
+                    localStorage.setItem('cart', JSON.stringify(cart));
+                    
+                    // Recarregar a página para atualizar
+                    window.location.reload();
+                });
+            });
+            
+            // Função para atualizar o total com desconto
             function updateTotalWithDiscount() {
                 if (appliedCoupon) {
-                    const discountAmount = (total * appliedCoupon.discount) / 100;
-                    const finalPrice = total - discountAmount;
+                    const discountAmount = (cartTotalValue * appliedCoupon.discount) / 100;
+                    cartDiscountedValue = cartTotalValue - discountAmount;
                     
-                    // Atualizar exibição do total
                     cartTotal.innerHTML = `
-                        <span class="original-price">R$ ${total.toFixed(2)}</span>
+                        <span class="original-price">R$ ${cartTotalValue.toFixed(2)}</span>
                         <div class="discount-applied">
-                            <span>R$ ${finalPrice.toFixed(2)}</span>
+                            <span>R$ ${cartDiscountedValue.toFixed(2)}</span>
                             <span>-${appliedCoupon.discount}%</span>
                         </div>
                     `;
                 } else {
-                    cartTotal.textContent = `R$ ${total.toFixed(2)}`;
+                    cartDiscountedValue = cartTotalValue;
+                    cartTotal.textContent = `R$ ${cartTotalValue.toFixed(2)}`;
                 }
+                
+                console.log(`updateTotalWithDiscount - Original: ${cartTotalValue}, Com desconto: ${cartDiscountedValue}`);
             }
-
+            
             // Configurar botão de aplicar cupom
             const applyCouponBtn = document.getElementById('apply-coupon');
             const couponInput = document.getElementById('coupon-code');
             const couponMessage = document.getElementById('coupon-message');
-
+            
             if (applyCouponBtn && couponInput && couponMessage) {
                 applyCouponBtn.addEventListener('click', async function() {
                     if (!couponInput.value.trim()) {
@@ -117,8 +136,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         couponMessage.className = 'coupon-message error';
                         return;
                     }
-
-                    const couponCode = couponInput.value.trim();
+                    
+                    const couponCode = couponInput.value.trim().toUpperCase();
                     
                     try {
                         const baseUrl = window.location.hostname === 'localhost' 
@@ -160,22 +179,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             }
             
-            // Inicializar o total
-            updateTotalWithDiscount();
-            
-            // Adicionar event listeners para remover itens
-            const removeButtons = document.querySelectorAll('.cart-item-remove');
-            removeButtons.forEach(button => {
-                button.addEventListener('click', function() {
-                    const index = parseInt(this.dataset.index);
-                    cart.splice(index, 1);
-                    localStorage.setItem('cart', JSON.stringify(cart));
-                    
-                    // Recarregar a página para atualizar
-                    window.location.reload();
-                });
-            });
-            
             // Função para carregar recursos de processamento sob demanda
             function loadProcessResources() {
                 return new Promise((resolve, reject) => {
@@ -190,6 +193,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     script.onerror = () => reject(new Error('Falha ao carregar recursos'));
                     document.head.appendChild(script);
                 });
+            }
+            
+            // Função para obter código de referência
+            function getReferralFromStorage() {
+                return localStorage.getItem('refCode') || null;
             }
             
             // Configurar botão de checkout
@@ -212,9 +220,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Obter itens do carrinho
                 if (cart.length === 0) return;
                 
-                // Calcular total original
-                const originalTotal = cart.reduce((sum, item) => sum + item.price, 0);
-                
                 // Exibir o modal de processamento
                 const processModal = document.getElementById('pm-dialog');
                 if (!processModal) {
@@ -224,14 +229,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 const paymentAmountElement = document.getElementById('payment-amount');
                 if (paymentAmountElement) {
-                    // Mostrar valor com desconto se aplicável
-                    if (appliedCoupon) {
-                        const discountAmount = (originalTotal * appliedCoupon.discount) / 100;
-                        const finalPrice = originalTotal - discountAmount;
-                        paymentAmountElement.textContent = `R$ ${finalPrice.toFixed(2)}`;
-                    } else {
-                        paymentAmountElement.textContent = `R$ ${originalTotal.toFixed(2)}`;
-                    }
+                    paymentAmountElement.textContent = `R$ ${cartDiscountedValue.toFixed(2)}`;
                 }
                 
                 // Mostrar loader
@@ -251,21 +249,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 processModal.style.display = 'block';
                 
                 try {
-                    let finalPrice = total;
-                    if (appliedCoupon) {
-                        const discountAmount = (total * appliedCoupon.discount) / 100;
-                        finalPrice = total - discountAmount;
-                    }
-                    
                     // Dados para enviar ao backend
                     const processData = {
                         items: cart,
-                        total: finalPrice,  // total com desconto
-                        originalTotal: total, // total original
+                        total: cartDiscountedValue, // Valor com desconto
+                        originalTotal: cartTotalValue, // Valor original sem desconto
                         customerEmail: 'cliente@mmomarket.com.br',
                         couponCode: appliedCoupon ? appliedCoupon.code : null,
-                        referralCode: getReferralFromStorage()  // esta função foi implementada anteriormente
+                        referralCode: getReferralFromStorage()
                     };
+                    
+                    console.log("Dados a serem enviados para pagamento:", processData);
                     
                     // Usar o helper para enviar a requisição
                     const result = await window.serviceHelper.prepareProcess(processData);
@@ -315,13 +309,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         const altOptionsButton = document.getElementById('show-alt-options');
                         if (altOptionsButton) {
                             altOptionsButton.addEventListener('click', function() {
-                                // Calcular o valor final com desconto se aplicável
-                                let finalPrice = originalTotal;
-                                if (appliedCoupon) {
-                                    const discountAmount = (originalTotal * appliedCoupon.discount) / 100;
-                                    finalPrice = originalTotal - discountAmount;
-                                }
-                                
                                 qrcodeContainer.innerHTML = `
                                     <div class="alternative-options">
                                         <h3>Opções de pagamento alternativas</h3>
@@ -337,7 +324,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                             <li>Abra o aplicativo do seu banco</li>
                                             <li>Escolha a opção PIX</li>
                                             <li>Cole a chave PIX acima</li>
-                                            <li>Digite o valor: R$ ${finalPrice.toFixed(2)}</li>
+                                            <li>Digite o valor: R$ ${cartDiscountedValue.toFixed(2)}</li>
                                             <li>Na descrição/mensagem, informe: Order ${orderId}</li>
                                             <li>Confirme o pagamento</li>
                                             <li>Clique no botão "Verificar" após o pagamento</li>

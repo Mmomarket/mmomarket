@@ -7,8 +7,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const APP_SERVICE = window.location.hostname === 'localhost' 
     ? 'http://localhost:3000/api'
     : 'https://mmomarket-backend.onrender.com/api';
-    //const BACKEND_URL = 'http://localhost:3000'; // URL base do backend
-    const BACKEND_URL = 'https://mmomarket-backend.onrender.com'
+    
+    const BACKEND_URL = window.location.hostname === 'localhost' 
+    ? 'http://localhost:3000'
+    : 'https://mmomarket-backend.onrender.com';
     
     // Dados dos jogos (em um cenário real, esses dados viriam de uma API ou banco de dados)
     const games = {
@@ -57,14 +59,14 @@ document.addEventListener('DOMContentLoaded', function() {
             increment: 100000000,
             increment2: 1000000000
         },
-        'pristontale': {
-            name: 'Priston Tale Ouro',
-            image: 'images/pristontale.jpg',
-            servers: ['Cronus' , 'Awell' , 'Valento' , 'Migal' , 'Midranda' , 'Idhas'],
+        'secondlife': {
+            name: 'Second Life Lindens',
+            image: 'images/secondlife.jpg',
+            servers: ['Main Grid'],
             currency: 'Lindens',
-            pricePerUnit: 0.0000006,
-            increment: 1000000,
-            increment2: 10000000
+            pricePerUnit: 0.04,
+            increment: 1000,
+            increment2: 10000
         },
         'throne': {
             name: 'T&L Lucent',
@@ -83,6 +85,15 @@ document.addEventListener('DOMContentLoaded', function() {
             pricePerUnit: 0.6,
             increment: 50,
             increment2: 500
+        },
+        'pristontale': {
+            name: 'Priston Tale Ouro',
+            image: 'images/pristontale.jpg',
+            servers: ['Awell'],
+            currency: 'Ouro',
+            pricePerUnit: 0.0000001,
+            increment: 10000000,
+            increment2: 100000000
         }
     };
     
@@ -94,7 +105,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Configurar a página de acordo com o jogo
     const gameData = games[game];
-    document.getElementById('game-title').textContent = gameData.name;
+    document.getElementById('game-title').textContent = `${gameData.name} ${gameData.increment}`;
     document.getElementById('game-img').src = gameData.image;
     document.getElementById('game-img').alt = gameData.name;
     document.title = `MMOMarket - ${gameData.name}`;
@@ -116,17 +127,76 @@ document.addEventListener('DOMContentLoaded', function() {
     const increase2Btn = document.getElementById('increase2');
     const quantityDisplay = document.getElementById('quantityDisplay');
     
+    // Variáveis para cupom e preços
+    let appliedCoupon = null;
+    let currentPrice = 0;
+    let currentDiscountedPrice = 0;
+    
     // Definir a quantidade inicial e mínima
     quantityInput.value = gameData.increment;
     quantityInput.min = gameData.increment;
     quantityDisplay.value = Number(quantityInput.value).toLocaleString();
     
-    // Variáveis para cupom
-    let appliedCoupon = null;
+    // Calcular preço inicial
+    updatePrice();
+    
+    // Adicionar event listeners para os botões de quantidade
+    decreaseBtn.addEventListener('click', function() {
+        const currentValue = parseInt(quantityInput.value);
+        if (currentValue > gameData.increment) {
+            quantityInput.value = currentValue - gameData.increment;
+            quantityDisplay.value = Number(quantityInput.value).toLocaleString();
+            updatePrice();
+        }
+    });
 
-    // Função para obter o código de referência
-    function getReferralFromStorage() {
-        return localStorage.getItem('refCode') || null;
+    decrease2Btn.addEventListener('click', function() {
+        const currentValue = parseInt(quantityInput.value);
+        if (currentValue > gameData.increment2) {
+            quantityInput.value = currentValue - gameData.increment2;
+            quantityDisplay.value = Number(quantityInput.value).toLocaleString();
+            updatePrice();
+        }
+    });
+    
+    increaseBtn.addEventListener('click', function() {
+        const currentValue = parseInt(quantityInput.value);
+        quantityInput.value = currentValue + gameData.increment;
+        quantityDisplay.value = Number(quantityInput.value).toLocaleString();
+        updatePrice();
+    });
+
+    increase2Btn.addEventListener('click', function() {
+        const currentValue = parseInt(quantityInput.value);
+        quantityInput.value = currentValue + gameData.increment2;
+        quantityDisplay.value = Number(quantityInput.value).toLocaleString();
+        updatePrice();
+    });
+    
+    // Função para atualizar o preço
+    function updatePrice() {
+        const quantity = parseInt(quantityInput.value);
+        currentPrice = quantity * gameData.pricePerUnit;
+        
+        // Se houver cupom aplicado, recalcular preço com desconto
+        if (appliedCoupon) {
+            const discountAmount = (currentPrice * appliedCoupon.discount) / 100;
+            currentDiscountedPrice = currentPrice - discountAmount;
+            
+            // Mostrar preço original e com desconto
+            document.getElementById('price').innerHTML = `
+                <span class="original-price">R$ ${currentPrice.toFixed(2)}</span>
+                <div class="discount-applied">
+                    <span>R$ ${currentDiscountedPrice.toFixed(2)}</span>
+                    <span>-${appliedCoupon.discount}%</span>
+                </div>
+            `;
+        } else {
+            currentDiscountedPrice = currentPrice;
+            document.getElementById('price').textContent = `R$ ${currentPrice.toFixed(2)}`;
+        }
+        
+        console.log(`updatePrice - Original: ${currentPrice}, Com desconto: ${currentDiscountedPrice}`);
     }
     
     // Função para aplicar cupom
@@ -144,7 +214,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             
-            const couponCode = couponInput.value.trim();
+            const couponCode = couponInput.value.trim().toUpperCase();
             
             try {
                 const baseUrl = window.location.hostname === 'localhost' 
@@ -168,7 +238,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     applyCouponBtn.disabled = true;
                     
                     // Atualizar preço com desconto
-                    updatePriceWithDiscount();
+                    updatePrice();
                 } else {
                     // Cupom inválido
                     if (couponMessage) {
@@ -189,68 +259,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
-
-    // Função para atualizar preço com desconto
-    function updatePriceWithDiscount() {
-        const quantity = parseInt(quantityInput.value);
-        const originalPrice = quantity * gameData.pricePerUnit;
-        const priceDisplay = document.getElementById('price');
-        
-        if (!priceDisplay) return;
-        
-        if (appliedCoupon) {
-            const discountAmount = (originalPrice * appliedCoupon.discount) / 100;
-            const finalPrice = originalPrice - discountAmount;
-            
-            // Mostrar preço original e com desconto
-            priceDisplay.innerHTML = `
-                <span class="original-price">R$ ${originalPrice.toFixed(2)}</span>
-                <div class="discount-applied">
-                    <span>R$ ${finalPrice.toFixed(2)}</span>
-                    <span>-${appliedCoupon.discount}%</span>
-                </div>
-            `;
-        } else {
-            // Mostrar apenas o preço normal
-            priceDisplay.textContent = `R$ ${originalPrice.toFixed(2)}`;
-        }
-    }
-    
-    // Calcular preço inicial
-    updatePriceWithDiscount();
-    
-    // Adicionar event listeners para os botões de quantidade
-    decreaseBtn.addEventListener('click', function() {
-        const currentValue = parseInt(quantityInput.value);
-        if (currentValue > gameData.increment) {
-            quantityInput.value = currentValue - gameData.increment;
-            quantityDisplay.value = Number(quantityInput.value).toLocaleString();
-            updatePriceWithDiscount();
-        }
-    });
-
-    decrease2Btn.addEventListener('click', function() {
-        const currentValue = parseInt(quantityInput.value);
-        if (currentValue > gameData.increment) {
-            quantityInput.value = currentValue - gameData.increment2;
-            quantityDisplay.value = Number(quantityInput.value).toLocaleString();
-            updatePriceWithDiscount();
-        }
-    });
-    
-    increaseBtn.addEventListener('click', function() {
-        const currentValue = parseInt(quantityInput.value);
-        quantityInput.value = currentValue + gameData.increment;
-        quantityDisplay.value = Number(quantityInput.value).toLocaleString();
-        updatePriceWithDiscount();
-    });
-
-    increase2Btn.addEventListener('click', function() {
-        const currentValue = parseInt(quantityInput.value);
-        quantityInput.value = currentValue + gameData.increment2;
-        quantityDisplay.value = Number(quantityInput.value).toLocaleString();
-        updatePriceWithDiscount();
-    });
     
     // Função para carregar recursos de processamento sob demanda
     function loadProcessResources() {
@@ -268,6 +276,11 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
+    // Função para obter o código de referência
+    function getReferralFromStorage() {
+        return localStorage.getItem('refCode') || null;
+    }
+    
     // Configurar botão de compra
     const buyNowBtn = document.getElementById('buy-now');
     buyNowBtn.addEventListener('click', async function() {
@@ -281,15 +294,6 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!characterName.trim()) {
             alert('Por favor, informe o nome do seu personagem.');
             return;
-        }
-        
-        // Calcular preço original e preço com desconto
-        const originalPrice = quantity * gameData.pricePerUnit;
-        let finalPrice = originalPrice;
-        
-        if (appliedCoupon) {
-            const discountAmount = (originalPrice * appliedCoupon.discount) / 100;
-            finalPrice = originalPrice - discountAmount;
         }
         
         // Primeiro carregamos os recursos auxiliares
@@ -306,7 +310,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (processModal) {
             const paymentAmount = document.getElementById('payment-amount');
             if (paymentAmount) {
-                paymentAmount.textContent = `R$ ${finalPrice.toFixed(2)}`;
+                paymentAmount.textContent = `R$ ${currentDiscountedPrice.toFixed(2)}`;
             }
             
             // Mostrar loader
@@ -325,13 +329,6 @@ document.addEventListener('DOMContentLoaded', function() {
         
         try {
             // Dados para enviar ao backend
-            let finalPrice = price;
-            if (appliedCoupon) {
-                const discountAmount = (price * appliedCoupon.discount) / 100;
-                finalPrice = price - discountAmount;
-            }
-            
-            // Dados para enviar ao backend
             const processData = {
                 items: [{
                     game: game,
@@ -339,14 +336,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     server: serverSelect.value,
                     character: characterName,
                     quantity: quantity,
-                    price: price  // preço original do item
+                    price: currentPrice // Valor original sem desconto
                 }],
-                total: finalPrice,  // total com desconto
-                originalTotal: price, // total original
+                total: currentDiscountedPrice, // Valor com desconto aplicado, se houver
+                originalTotal: currentPrice, // Valor original sem desconto
                 customerEmail: 'cliente@mmomarket.com.br',
                 couponCode: appliedCoupon ? appliedCoupon.code : null,
-                referralCode: getReferralFromStorage()  // esta função foi implementada anteriormente
+                referralCode: getReferralFromStorage()
             };
+            
+            console.log("Dados a serem enviados para pagamento:", processData);
             
             // Alternativa direta ao QR Code para evitar problemas de Adblock
             const qrcodeContainer = document.getElementById('qrcode-container');
@@ -415,7 +414,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                     <li>Abra o aplicativo do seu banco</li>
                                     <li>Escolha a opção PIX</li>
                                     <li>Cole a chave PIX acima</li>
-                                    <li>Digite o valor: R$ ${finalPrice.toFixed(2)}</li>
+                                    <li>Digite o valor: R$ ${currentDiscountedPrice.toFixed(2)}</li>
                                     <li>Na descrição/mensagem, informe: Order ${orderId}</li>
                                     <li>Confirme o pagamento</li>
                                     <li>Clique no botão "Verificar" após o pagamento</li>
@@ -603,9 +602,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             
-            // Calcular preço original (sem desconto para o carrinho)
-            const originalPrice = quantity * gameData.pricePerUnit;
-            
             // Adicionar ao carrinho (localStorage)
             let cart = JSON.parse(localStorage.getItem('cart') || '[]');
             
@@ -615,7 +611,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 server: serverSelect.value,
                 character: characterName,
                 quantity: quantity,
-                price: originalPrice,
+                price: currentPrice,
                 image: gameData.image
             });
             
