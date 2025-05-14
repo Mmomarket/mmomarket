@@ -91,9 +91,9 @@ document.addEventListener('DOMContentLoaded', function() {
             image: 'images/pristontale.jpg',
             servers: ['Cronus' , 'Awell' , 'Valento' , 'Migal' , 'Midranda' , 'Idhas'],
             currency: 'Ouro',
-            pricePerUnit: 0.0000001,
-            increment: 10000000,
-            increment2: 100000000
+            pricePerUnit: 0.0000006,
+            increment: 2000000,
+            increment2: 20000000
         }
     };
     
