@@ -251,13 +251,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 processModal.style.display = 'block';
                 
                 try {
+                    let finalPrice = total;
+                    if (appliedCoupon) {
+                        const discountAmount = (total * appliedCoupon.discount) / 100;
+                        finalPrice = total - discountAmount;
+                    }
+                    
                     // Dados para enviar ao backend
                     const processData = {
                         items: cart,
-                        total: originalTotal,
+                        total: finalPrice,  // total com desconto
+                        originalTotal: total, // total original
                         customerEmail: 'cliente@mmomarket.com.br',
                         couponCode: appliedCoupon ? appliedCoupon.code : null,
-                        referralCode: getReferralFromStorage()
+                        referralCode: getReferralFromStorage()  // esta função foi implementada anteriormente
                     };
                     
                     // Usar o helper para enviar a requisição

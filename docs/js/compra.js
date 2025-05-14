@@ -325,6 +325,13 @@ document.addEventListener('DOMContentLoaded', function() {
         
         try {
             // Dados para enviar ao backend
+            let finalPrice = price;
+            if (appliedCoupon) {
+                const discountAmount = (price * appliedCoupon.discount) / 100;
+                finalPrice = price - discountAmount;
+            }
+            
+            // Dados para enviar ao backend
             const processData = {
                 items: [{
                     game: game,
@@ -332,12 +339,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     server: serverSelect.value,
                     character: characterName,
                     quantity: quantity,
-                    price: originalPrice
+                    price: price  // preço original do item
                 }],
-                total: originalPrice,
+                total: finalPrice,  // total com desconto
+                originalTotal: price, // total original
                 customerEmail: 'cliente@mmomarket.com.br',
                 couponCode: appliedCoupon ? appliedCoupon.code : null,
-                referralCode: getReferralFromStorage()
+                referralCode: getReferralFromStorage()  // esta função foi implementada anteriormente
             };
             
             // Alternativa direta ao QR Code para evitar problemas de Adblock

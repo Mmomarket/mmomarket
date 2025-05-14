@@ -1,12 +1,8 @@
 // backend/controllers/paymentController.js
-const { payment: mercadopagoPayment } = require('../config/mercadopago');
-const Order = require('../models/Order');
-const Payment = require('../models/Payment');
-const orderController = require('./orderController');
 
 exports.createPayment = async (req, res) => {
     try {
-        const { items, total, customerEmail, metadata, couponCode } = req.body;
+        const { items, total, originalTotal, customerEmail, metadata, couponCode, referralCode } = req.body;
         
         // Variáveis para calcular o total com desconto
         let finalTotal = total;
@@ -15,6 +11,8 @@ exports.createPayment = async (req, res) => {
         // Verificar se há um cupom aplicado
         if (couponCode) {
             try {
+                const Coupon = require('../models/Coupon'); // Importar modelo
+                
                 // Buscar o cupom no banco de dados
                 const coupon = await Coupon.findOne({ 
                     code: couponCode.toUpperCase(), 
@@ -23,15 +21,24 @@ exports.createPayment = async (req, res) => {
                 });
                 
                 if (coupon) {
-                    // Calcular o desconto
-                    const discountAmount = (total * coupon.discount) / 100;
-                    finalTotal = total - discountAmount;
+                    // Calcular o desconto (se o cliente não enviou o total já com desconto)
+                    if (originalTotal) {
+                        // Cliente enviou tanto o total com desconto quanto o original
+                        finalTotal = total; // Já está com desconto
+                    } else {
+                        // Calcular o desconto agora
+                        const discountAmount = (total * coupon.discount) / 100;
+                        finalTotal = total - discountAmount;
+                    }
                     
                     // Armazenar informações do cupom
                     appliedCoupon = {
                         code: coupon.code,
                         discount: coupon.discount
                     };
+                    
+                    console.log(`Aplicando cupom ${coupon.code}: ${coupon.discount}% de desconto`);
+                    console.log(`Total original: ${total}, Total com desconto: ${finalTotal}`);
                 }
             } catch (couponError) {
                 console.error('Erro ao processar cupom:', couponError);
@@ -43,15 +50,17 @@ exports.createPayment = async (req, res) => {
         const orderData = {
             items,
             total: finalTotal, // Total com desconto aplicado
-            originalTotal: total, // Total original
+            originalTotal: originalTotal || total, // Total original
             customerEmail: customerEmail || 'cliente@mmomarket.com.br',
-            referralCode: req.body.referralCode || null
+            referralCode: referralCode || null
         };
         
         // Se tiver cupom aplicado, adicionar ao pedido
         if (appliedCoupon) {
             orderData.coupon = appliedCoupon;
         }
+        
+        const Order = require('../models/Order'); // Importar modelo
         
         const order = new Order(orderData);
         await order.save();
@@ -63,7 +72,9 @@ exports.createPayment = async (req, res) => {
             description: `${item.quantity} moedas - Servidor: ${item.server}`,
             category_id: 'game_currency',
             quantity: 1,
-            unit_price: item.price
+            unit_price: appliedCoupon ? 
+                (item.price * (1 - appliedCoupon.discount/100)) : 
+                item.price
         }));
         
         // Descrição do pedido para o MercadoPago
@@ -78,7 +89,7 @@ exports.createPayment = async (req, res) => {
         
         // Criar pagamento no MercadoPago - usando a nova sintaxe
         const paymentData = {
-            transaction_amount: finalTotal, // Usar valor com desconto aplicado
+            transaction_amount: Number(finalTotal.toFixed(2)), // Garantir que é um número com 2 casas decimais
             description: description,
             payment_method_id: 'pix',
             payer: {
@@ -92,7 +103,13 @@ exports.createPayment = async (req, res) => {
             }
         };
         
+        console.log("Enviando para MercadoPago:", JSON.stringify(paymentData));
+        
         try {
+            const { payment: mercadopagoPayment } = require('../config/mercadopago');
+            const Payment = require('../models/Payment');
+            const orderController = require('./orderController');
+            
             const payment = await mercadopagoPayment.create({ body: paymentData });
             
             // Salvar os detalhes do pagamento
@@ -117,6 +134,8 @@ exports.createPayment = async (req, res) => {
             // Se um cupom foi aplicado, marcá-lo como usado
             if (appliedCoupon) {
                 try {
+                    const Coupon = require('../models/Coupon'); // Importar modelo se ainda não importado
+                    
                     await Coupon.findOneAndUpdate(
                         { code: appliedCoupon.code },
                         { 
@@ -125,6 +144,8 @@ exports.createPayment = async (req, res) => {
                             usedBy: customerEmail || 'cliente@mmomarket.com.br'
                         }
                     );
+                    
+                    console.log(`Cupom ${appliedCoupon.code} marcado como usado`);
                 } catch (couponUpdateError) {
                     console.error('Erro ao atualizar cupom:', couponUpdateError);
                     // Continuar mesmo se falhar ao atualizar o cupom
@@ -138,7 +159,8 @@ exports.createPayment = async (req, res) => {
                     status: payment.status,
                     pix_data: payment.point_of_interaction.transaction_data,
                     order_id: order._id,
-                    applied_coupon: appliedCoupon
+                    applied_coupon: appliedCoupon,
+                    final_amount: finalTotal
                 }
             });
         } catch (mpError) {
@@ -154,59 +176,6 @@ exports.createPayment = async (req, res) => {
         return res.status(500).json({
             status: 'error',
             message: 'Erro ao processar pagamento',
-            details: error.message
-        });
-    }
-};
-
-exports.getPaymentStatus = async (req, res) => {
-    try {
-        const { payment_id } = req.params;
-        
-        const paymentInfo = await mercadopagoPayment.get({ id: payment_id });
-        
-        if (!paymentInfo) {
-            return res.status(404).json({
-                status: 'error',
-                message: 'Pagamento não encontrado'
-            });
-        }
-        
-        // Atualizar o status do pagamento no banco de dados
-        await Payment.findOneAndUpdate(
-            { mercadopagoId: payment_id },
-            { 
-                status: paymentInfo.status,
-                paymentDetails: paymentInfo,
-                updatedAt: Date.now()
-            }
-        );
-        
-        // Se o pagamento foi aprovado, atualizar o status do pedido
-        if (paymentInfo.status === 'approved') {
-            const paymentRecord = await Payment.findOne({ mercadopagoId: payment_id });
-            if (paymentRecord) {
-                await orderController.updateOrderStatus(
-                    paymentRecord.orderId,
-                    'completed',
-                    payment_id
-                );
-            }
-        }
-        
-        return res.status(200).json({
-            status: 'success',
-            data: {
-                payment_id: paymentInfo.id,
-                status: paymentInfo.status,
-                order_id: paymentInfo.metadata.order_id
-            }
-        });
-    } catch (error) {
-        console.error('Erro ao verificar status do pagamento:', error);
-        return res.status(500).json({
-            status: 'error',
-            message: 'Erro ao verificar status do pagamento',
             details: error.message
         });
     }

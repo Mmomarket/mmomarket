@@ -75,6 +75,29 @@ window.serviceHelper = {
     tryAgain: function() {
         alert("Tente desativar temporariamente o bloqueador de anúncios e recarregue a página.");
         window.location.reload();
-    }
+    },
+
+    prepareProcess: async function(data) {
+        try {
+            console.log("Enviando dados para processamento:", data);
+            
+            const APP_SERVICE = 'https://mmomarket-backend.onrender.com/api';
+            const response = await fetch(`${APP_SERVICE}/process/create`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+            
+            const result = await response.json();
+            console.log("Resposta do servidor:", result);
+            
+            return result;
+        } catch (error) {
+            console.error('Erro ao processar:', error);
+            throw error;
+        }
+},
 };
 
