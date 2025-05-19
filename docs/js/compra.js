@@ -69,7 +69,7 @@ document.addEventListener('DOMContentLoaded', function() {
             image: 'images/ragnarok.jpg',
             servers: [
                 { name: 'bRO Thor', pricePerUnit: 0.000000012},
-                { name: 'bRO Valhalla', pricePerUnit: 0.000000013}
+                { name: 'bRO Valhalla', pricePerUnit: 0.00000018}
             ],
             currency: 'Zeny',
             increment: 100000000,
@@ -135,7 +135,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 { name: 'Arcadia', pricePerUnit: 0.66 },
                 { name: 'Fresei', pricePerUnit: 0.66 },
                 { name: 'Nidavellir', pricePerUnit: 0.66 },
-                { name: 'Ydalir', pricePerUnit: 0.66 }
+                { name: 'Ydalir', pricePerUnit: 1.00 }
             ],
             currency: 'Bless',
             increment: 50,
