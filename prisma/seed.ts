@@ -154,16 +154,26 @@ const GAMES_DATA = [
 ];
 
 import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
+import { PrismaLibSql } from "@prisma/adapter-libsql";
 import path from "path";
 import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const dbPath = path.resolve(__dirname, "..", "dev.db");
-console.log("DB path:", dbPath);
 
-const adapter = new PrismaBetterSqlite3({
-  url: dbPath,
-});
+function createAdapter() {
+  if (process.env.TURSO_DATABASE_URL) {
+    console.log("Using Turso/LibSQL adapter");
+    return new PrismaLibSql({
+      url: process.env.TURSO_DATABASE_URL,
+      authToken: process.env.TURSO_AUTH_TOKEN,
+    });
+  }
+  const dbPath = path.resolve(__dirname, "..", "dev.db");
+  console.log("DB path:", dbPath);
+  return new PrismaBetterSqlite3({ url: dbPath });
+}
+
+const adapter = createAdapter();
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const prisma = new PrismaClient({ adapter } as any);
 
