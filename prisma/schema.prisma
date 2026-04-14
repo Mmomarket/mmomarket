@@ -1,0 +1,257 @@
+// MMOMarket - Digital Currency Intermediation for MMORPGs
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+// ─── Auth Models ─────────────────────────────────────────────
+model User {
+  id             String    @id @default(cuid())
+  name           String?
+  email          String    @unique
+  emailVerified  DateTime?
+  hashedPassword String?
+  image          String?
+  isAdmin        Boolean   @default(false)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  accounts       Account[]
+  sessions       Session[]
+  wallet         Wallet?
+  sellOrders     Order[]        @relation("SellerOrders")
+  buyOrders      Order[]        @relation("BuyerOrders")
+  sellTrades     Trade[]        @relation("SellerTrades")
+  buyTrades      Trade[]        @relation("BuyerTrades")
+  deposits       Deposit[]
+  withdrawals    Withdrawal[]
+  verifications  Verification[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ─── Game, Server & Currency Models ──────────────────────────
+model Game {
+  id          String     @id @default(cuid())
+  name        String     @unique
+  slug        String     @unique
+  image       String?
+  description String?
+  active      Boolean    @default(true)
+  createdAt   DateTime   @default(now())
+
+  currencies  Currency[]
+  servers     Server[]
+}
+
+model Server {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String
+  gameId      String
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  game         Game          @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  orders       Order[]
+  trades       Trade[]
+  priceHistory PriceHistory[]
+  verifications Verification[]
+
+  @@unique([slug, gameId])
+  @@index([gameId])
+}
+
+model Currency {
+  id          String   @id @default(cuid())
+  name        String
+  code        String
+  gameId      String
+  unitLabel   String   @default("unidade") // e.g. "Gold", "Kamas", "Yang"
+  minTrade    Float    @default(1)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  game         Game          @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  orders       Order[]
+  trades       Trade[]
+  priceHistory PriceHistory[]
+
+  @@unique([code, gameId])
+}
+
+// ─── Wallet & Financial Models ───────────────────────────────
+model Wallet {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  balanceBRL  Float    @default(0)  // available BRL balance
+  frozenBRL   Float    @default(0)  // BRL locked in open buy orders
+  escrowBRL   Float    @default(0)  // BRL locked in pending delivery trades (awaiting confirmation)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Deposit {
+  id                  String   @id @default(cuid())
+  userId              String
+  amountBRL           Float
+  status              String   @default("PENDING") // PENDING, APPROVED, REJECTED
+  mercadoPagoId       String?  // MercadoPago payment ID
+  mercadoPagoUrl      String?  // Payment link
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Withdrawal {
+  id          String   @id @default(cuid())
+  userId      String
+  amountBRL   Float
+  status      String   @default("PENDING") // PENDING, PROCESSING, COMPLETED, REJECTED
+  pixKey      String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ─── Trading Models ──────────────────────────────────────────
+model Order {
+  id            String   @id @default(cuid())
+  type          String   // BUY or SELL
+  userId        String
+  currencyId    String
+  serverId      String?  // linked to Server model
+  amount        Float    // amount of game currency
+  pricePerUnit  Float    // price in BRL per unit of game currency
+  totalBRL      Float    // total = amount * pricePerUnit
+  filledAmount  Float    @default(0)
+  status        String   @default("OPEN") // OPEN, PARTIALLY_FILLED, FILLED, CANCELLED
+  server        String?  // legacy free-text server field
+  characterName String?  // character name for delivery
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user       User     @relation("SellerOrders", fields: [userId], references: [id], onDelete: Cascade)
+  buyer      User?    @relation("BuyerOrders", fields: [buyerId], references: [id])
+  buyerId    String?
+  currency   Currency @relation(fields: [currencyId], references: [id])
+  serverRef  Server?  @relation(fields: [serverId], references: [id])
+  trades     Trade[]
+
+  @@index([currencyId, status])
+  @@index([type, status])
+  @@index([serverId])
+}
+
+model Trade {
+  id            String    @id @default(cuid())
+  orderId       String
+  sellerId      String
+  buyerId       String
+  currencyId    String
+  serverId      String?
+  amount        Float
+  pricePerUnit  Float
+  totalBRL      Float
+  feeBRL        Float    // 2% platform fee
+  sellerReceive Float    // totalBRL - feeBRL
+  status        String   @default("PENDING_DELIVERY") // PENDING_DELIVERY, DELIVERED, CONFIRMED, DISPUTED
+  deliveredAt   DateTime? // when seller marked as delivered (auto-release countdown starts)
+  disputeReason String?   // reason for dispute
+  adminNote     String?   // admin resolution note
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  order    Order    @relation(fields: [orderId], references: [id])
+  seller   User     @relation("SellerTrades", fields: [sellerId], references: [id])
+  buyer    User     @relation("BuyerTrades", fields: [buyerId], references: [id])
+  currency Currency @relation(fields: [currencyId], references: [id])
+  serverRef Server? @relation(fields: [serverId], references: [id])
+
+  @@index([currencyId])
+  @@index([status])
+  @@index([serverId])
+}
+
+// ─── Verification Model ─────────────────────────────────────
+// Sellers must verify they have the funds before an order is visible
+model Verification {
+  id            String   @id @default(cuid())
+  userId        String
+  gameSlug      String
+  serverId      String?
+  server        String?
+  characterName String
+  screenshotUrl String   // uploaded screenshot proving funds
+  amount        Float    // verified amount of game currency
+  status        String   @default("PENDING") // PENDING, APPROVED, REJECTED
+  reviewNote    String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  serverRef Server? @relation(fields: [serverId], references: [id])
+}
+
+// ─── Price History (for graphs) ──────────────────────────────
+model PriceHistory {
+  id           String   @id @default(cuid())
+  currencyId   String
+  serverId     String?
+  avgPrice     Float    // average price per unit in BRL
+  minPrice     Float
+  maxPrice     Float
+  volume       Float    // total units traded
+  volumeBRL    Float    // total BRL traded
+  period       String   // "1h", "1d", "1w"
+  timestamp    DateTime
+  createdAt    DateTime @default(now())
+
+  currency  Currency @relation(fields: [currencyId], references: [id])
+  serverRef Server?  @relation(fields: [serverId], references: [id])
+
+  @@index([currencyId, period, timestamp])
+  @@index([serverId])
+}
