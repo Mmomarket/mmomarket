@@ -17,6 +17,9 @@ export interface CreateDepositPayload {
 export async function createDepositPreference(payload: CreateDepositPayload) {
   const { userId, userEmail, amountBRL, depositId } = payload;
 
+  // DEBUG: Log the NEXTAUTH_URL value to help diagnose MercadoPago back_urls error
+  console.log("[MercadoPago] Using NEXTAUTH_URL:", process.env.NEXTAUTH_URL);
+
   const result = await preference.create({
     body: {
       items: [
