@@ -40,15 +40,24 @@ export async function POST(req: Request) {
     const buffer = Buffer.from(bytes);
 
     const ext = file.name.split(".").pop() || "png";
+
     const filename = `${uuidv4()}.${ext}`;
 
-    const uploadDir = join(process.cwd(), "public", "uploads");
+    // Use /tmp/uploads on Vercel/serverless, public/uploads locally
+    const isServerless =
+      !!process.env.VERCEL || process.env.NODE_ENV === "production";
+    const uploadDir = isServerless
+      ? "/tmp/uploads"
+      : join(process.cwd(), "public", "uploads");
     await mkdir(uploadDir, { recursive: true });
 
     const filepath = join(uploadDir, filename);
     await writeFile(filepath, buffer);
 
-    const url = `/uploads/${filename}`;
+    // Return a URL that works for your app
+    const url = isServerless
+      ? `/api/upload/tmp/${filename}`
+      : `/uploads/${filename}`;
 
     return NextResponse.json({ url }, { status: 201 });
   } catch (error) {
