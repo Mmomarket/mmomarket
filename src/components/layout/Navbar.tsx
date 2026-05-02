@@ -10,7 +10,6 @@ const navLinks = [
   { href: "/", label: "Mercado", icon: "📊" },
   { href: "/negociar", label: "Negociar", icon: "💱" },
   { href: "/carteira", label: "Carteira", icon: "💰" },
-  { href: "/verificacao", label: "Verificação", icon: "✅" },
   { href: "/historico", label: "Histórico", icon: "📋" },
 ];
 

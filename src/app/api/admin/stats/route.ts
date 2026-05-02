@@ -15,17 +15,14 @@ export async function GET() {
       return NextResponse.json({ isAdmin: false });
     }
 
-    const [pendingVerifications, disputedTrades, totalUsers, totalTrades] =
-      await Promise.all([
-        prisma.verification.count({ where: { status: "PENDING" } }),
-        prisma.trade.count({ where: { status: "DISPUTED" } }),
-        prisma.user.count(),
-        prisma.trade.count(),
-      ]);
+    const [disputedTrades, totalUsers, totalTrades] = await Promise.all([
+      prisma.trade.count({ where: { status: "DISPUTED" } }),
+      prisma.user.count(),
+      prisma.trade.count(),
+    ]);
 
     return NextResponse.json({
       isAdmin: true,
-      pendingVerifications,
       disputedTrades,
       totalUsers,
       totalTrades,

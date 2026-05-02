@@ -75,47 +75,9 @@ export async function POST(req: Request) {
           frozenBRL: { increment: totalBRL },
         },
       });
-    } else {
-      // SELL - check seller has verified funds
-      const verifications = await prisma.verification.findMany({
-        where: {
-          userId,
-          status: "APPROVED",
-          // We could filter by game here
-        },
-      });
-
-      const totalVerified = verifications.reduce(
-        (sum: number, v: { amount: number }) => sum + v.amount,
-        0,
-      );
-
-      // Get already committed sell orders
-      const existingSellOrders = await prisma.order.findMany({
-        where: {
-          userId,
-          type: "SELL",
-          status: { in: ["OPEN", "PARTIALLY_FILLED"] },
-          currencyId: data.currencyId,
-        },
-      });
-
-      const totalCommitted = existingSellOrders.reduce(
-        (sum: number, o: { amount: number; filledAmount: number }) =>
-          sum + (o.amount - o.filledAmount),
-        0,
-      );
-
-      if (totalVerified < totalCommitted + data.amount) {
-        return NextResponse.json(
-          {
-            error:
-              "Você precisa verificar seus fundos no jogo antes de criar uma ordem de venda. Vá para a página de verificação.",
-          },
-          { status: 400 },
-        );
-      }
     }
+    // SELL orders: no pre-verification required. Transaction confirmation
+    // and dispute resolution are the integrity mechanism.
 
     const order = await prisma.order.create({
       data: {
