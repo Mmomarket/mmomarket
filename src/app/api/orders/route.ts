@@ -21,6 +21,26 @@ export async function GET(req: Request) {
     const serverId = searchParams.get("serverId");
     const type = searchParams.get("type");
     const status = searchParams.get("status") || "OPEN";
+    const mine = searchParams.get("mine") === "true";
+
+    // ?mine=true returns only the current user's orders (any status)
+    if (mine) {
+      const userId = await getCurrentUserId();
+      if (!userId) return unauthorizedResponse();
+      const orders = await prisma.order.findMany({
+        where: {
+          userId,
+          status: { in: ["OPEN", "PARTIALLY_FILLED"] },
+        },
+        include: {
+          currency: { include: { game: true } },
+          serverRef: true,
+        },
+        orderBy: { createdAt: "desc" },
+        take: 100,
+      });
+      return NextResponse.json(orders);
+    }
 
     const where: Record<string, unknown> = { status };
     if (currencyId) where.currencyId = currencyId;

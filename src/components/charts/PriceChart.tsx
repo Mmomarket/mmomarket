@@ -1,6 +1,6 @@
 "use client";
 
-import { formatBRL } from "@/lib/utils";
+import { formatBRLPrecise } from "@/lib/utils";
 import {
   Area,
   AreaChart,
@@ -78,8 +78,8 @@ export default function PriceChart({
           tick={{ fontSize: 11, fill: "#9ca3af" }}
           tickLine={false}
           axisLine={false}
-          tickFormatter={(v) => formatBRL(v)}
-          width={70}
+          tickFormatter={(v) => formatBRLPrecise(v)}
+          width={80}
         />
         <Tooltip
           contentStyle={{
@@ -89,7 +89,7 @@ export default function PriceChart({
             fontSize: 13,
           }}
           labelStyle={{ color: "#9ca3af" }}
-          formatter={(value) => [formatBRL(Number(value)), "Preço"]}
+          formatter={(value) => [formatBRLPrecise(Number(value)), "Preço"]}
         />
         <Area
           type="monotone"

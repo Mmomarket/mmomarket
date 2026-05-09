@@ -82,6 +82,7 @@ function NegociarContent() {
   const [loadingOrders, setLoadingOrders] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [acceptingOrderId, setAcceptingOrderId] = useState<string | null>(null);
+  const [cancellingOrderId, setCancellingOrderId] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
@@ -242,6 +243,26 @@ function NegociarContent() {
       setError("Erro ao aceitar ordem");
     } finally {
       setAcceptingOrderId(null);
+    }
+  };
+
+  const cancelOrder = async (orderId: string) => {
+    setCancellingOrderId(orderId);
+    setError("");
+    setSuccess("");
+    try {
+      const res = await fetch(`/api/orders/${orderId}`, { method: "DELETE" });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || "Erro ao cancelar ordem");
+      } else {
+        setSuccess("Ordem cancelada com sucesso.");
+        loadOrders();
+      }
+    } catch {
+      setError("Erro ao cancelar ordem");
+    } finally {
+      setCancellingOrderId(null);
     }
   };
 
@@ -518,6 +539,16 @@ function NegociarContent() {
                           </td>
                           <td className="py-3 text-right">
                             {session &&
+                              order.user.id ===
+                                (session.user as { id?: string })?.id ? (
+                                <button
+                                  onClick={() => cancelOrder(order.id)}
+                                  disabled={cancellingOrderId === order.id}
+                                  className="px-2 py-1 text-xs font-medium bg-gray-700 hover:bg-red-700 text-gray-300 hover:text-white rounded transition-colors disabled:opacity-50 cursor-pointer"
+                                >
+                                  {cancellingOrderId === order.id ? "…" : "Cancelar"}
+                                </button>
+                              ) : session &&
                               order.user.id !==
                                 (session.user as { id?: string })?.id && (
                                 <button
@@ -604,6 +635,16 @@ function NegociarContent() {
                           </td>
                           <td className="py-3 text-right">
                             {session &&
+                              order.user.id ===
+                                (session.user as { id?: string })?.id ? (
+                                <button
+                                  onClick={() => cancelOrder(order.id)}
+                                  disabled={cancellingOrderId === order.id}
+                                  className="px-2 py-1 text-xs font-medium bg-gray-700 hover:bg-red-700 text-gray-300 hover:text-white rounded transition-colors disabled:opacity-50 cursor-pointer"
+                                >
+                                  {cancellingOrderId === order.id ? "…" : "Cancelar"}
+                                </button>
+                              ) : session &&
                               order.user.id !==
                                 (session.user as { id?: string })?.id && (
                                 <button

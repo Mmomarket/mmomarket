@@ -6,7 +6,7 @@ import Card, { CardContent, CardHeader } from "@/components/ui/Card";
 import EmptyState from "@/components/ui/EmptyState";
 import Modal from "@/components/ui/Modal";
 import Skeleton from "@/components/ui/Skeleton";
-import { formatBRL, formatNumber } from "@/lib/utils";
+import { formatBRL, formatBRLPrecise, formatNumber } from "@/lib/utils";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -29,6 +29,19 @@ interface Trade {
   seller: { id: string; name: string };
   buyer: { id: string; name: string };
   currency: { name: string; code: string; game: { name: string } };
+  serverRef: { id: string; name: string } | null;
+}
+
+interface ActiveOrder {
+  id: string;
+  type: "BUY" | "SELL";
+  status: string;
+  amount: number;
+  filledAmount: number;
+  pricePerUnit: number;
+  totalBRL: number;
+  createdAt: string;
+  currency: { id: string; name: string; code: string; game: { name: string } };
   serverRef: { id: string; name: string } | null;
 }
 
@@ -164,8 +177,11 @@ export default function HistoricoPage() {
   const { data: session, status: sessionStatus } = useSession();
   const router = useRouter();
   const [trades, setTrades] = useState<Trade[]>([]);
+  const [activeOrders, setActiveOrders] = useState<ActiveOrder[]>([]);
   const [loading, setLoading] = useState(true);
+  const [cancellingOrderId, setCancellingOrderId] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [tab, setTab] = useState<"TRADES" | "ORDERS">("TRADES");
   const [filter, setFilter] = useState<"ALL" | "ACTIVE" | "COMPLETED">("ALL");
   const [disputeModal, setDisputeModal] = useState<Trade | null>(null);
   const [disputeReason, setDisputeReason] = useState("");
@@ -193,13 +209,40 @@ export default function HistoricoPage() {
       .finally(() => setLoading(false));
   }, [session]);
 
+  const loadActiveOrders = useCallback(() => {
+    if (!session) return;
+    fetch("/api/orders?mine=true")
+      .then((r) => r.json())
+      .then((data) => setActiveOrders(Array.isArray(data) ? data : []));
+  }, [session]);
+
+  const cancelOrder = async (orderId: string) => {
+    setCancellingOrderId(orderId);
+    try {
+      const res = await fetch(`/api/orders/${orderId}`, { method: "DELETE" });
+      if (!res.ok) {
+        const err = await res.json();
+        alert(err.error || "Erro ao cancelar ordem");
+        return;
+      }
+      loadActiveOrders();
+    } catch {
+      alert("Erro de conexão");
+    } finally {
+      setCancellingOrderId(null);
+    }
+  };
+
   useEffect(() => {
     if (sessionStatus === "unauthenticated") {
       router.push("/login");
       return;
     }
-    if (session) loadTrades();
-  }, [session, sessionStatus, router, loadTrades]);
+    if (session) {
+      loadTrades();
+      loadActiveOrders();
+    }
+  }, [session, sessionStatus, router, loadTrades, loadActiveOrders]);
 
   useEffect(() => {
     chatBottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -418,19 +461,116 @@ export default function HistoricoPage() {
         </Card>
       </div>
 
-      <div className="flex gap-2">
-        {(["ALL", "ACTIVE", "COMPLETED"] as const).map((f) => (
+      <div className="flex gap-2 flex-wrap">
+        {/* Main tab: Trades vs Orders */}
+        <div className="flex gap-1 bg-gray-800 rounded-lg p-1 mr-2">
+          {(["TRADES", "ORDERS"] as const).map((t) => (
+            <button
+              key={t}
+              onClick={() => setTab(t)}
+              className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors cursor-pointer ${tab === t ? "bg-emerald-600 text-white" : "text-gray-400 hover:text-white"}`}
+            >
+              {t === "TRADES" ? `Trades (${trades.length})` : `Ordens Ativas (${activeOrders.length})`}
+            </button>
+          ))}
+        </div>
+
+        {/* Sub-filter only for trades tab */}
+        {tab === "TRADES" && (["ALL", "ACTIVE", "COMPLETED"] as const).map((f) => (
           <button
             key={f}
             onClick={() => setFilter(f)}
-            className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors cursor-pointer ${filter === f ? "bg-emerald-600 text-white" : "bg-gray-800 text-gray-400 hover:text-white"}`}
+            className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors cursor-pointer ${filter === f ? "bg-gray-600 text-white" : "bg-gray-800 text-gray-400 hover:text-white"}`}
           >
             {f === "ALL" ? "Todos" : f === "ACTIVE" ? "Ativos" : "Finalizados"}
           </button>
         ))}
       </div>
 
-      <Card>
+      {/* ── Active Orders Tab ─────────────────────────────────────── */}
+      {tab === "ORDERS" && (
+        <Card>
+          <CardHeader>
+            <h2 className="font-semibold text-white">Minhas Ordens Abertas</h2>
+          </CardHeader>
+          <CardContent>
+            {activeOrders.length === 0 ? (
+              <EmptyState
+                title="Nenhuma ordem aberta"
+                description="Crie uma ordem de compra ou venda na página Negociar."
+              />
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-gray-500 text-xs border-b border-gray-700/50">
+                      <th className="text-left py-2 font-medium">Tipo</th>
+                      <th className="text-left py-2 font-medium">Jogo / Moeda</th>
+                      <th className="text-left py-2 font-medium">Servidor</th>
+                      <th className="text-right py-2 font-medium">Qtd Restante</th>
+                      <th className="text-right py-2 font-medium">Preço/Un</th>
+                      <th className="text-right py-2 font-medium">Total</th>
+                      <th className="text-right py-2 font-medium">Data</th>
+                      <th className="text-right py-2 font-medium">Ação</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {activeOrders.map((order) => {
+                      const remaining = order.amount - order.filledAmount;
+                      return (
+                        <tr key={order.id} className="border-b border-gray-800/50 hover:bg-gray-800/30">
+                          <td className="py-3">
+                            <Badge variant={order.type === "BUY" ? "success" : "danger"}>
+                              {order.type === "BUY" ? "Compra" : "Venda"}
+                            </Badge>
+                          </td>
+                          <td className="py-3">
+                            <p className="text-white font-medium text-xs">{order.currency.game.name}</p>
+                            <p className="text-gray-400 text-xs">{order.currency.code}</p>
+                          </td>
+                          <td className="py-3 text-gray-400 text-xs">
+                            {order.serverRef?.name || "—"}
+                          </td>
+                          <td className="py-3 text-right text-white font-medium">
+                            {formatNumber(remaining)}
+                            {order.filledAmount > 0 && (
+                              <span className="ml-1 text-xs text-yellow-400">
+                                ({formatNumber(order.filledAmount)} preenchido)
+                              </span>
+                            )}
+                          </td>
+                          <td className="py-3 text-right text-emerald-400">
+                            {formatBRLPrecise(order.pricePerUnit)}
+                          </td>
+                          <td className="py-3 text-right text-white">
+                            {formatBRL(remaining * order.pricePerUnit)}
+                          </td>
+                          <td className="py-3 text-right text-gray-500 text-xs">
+                            {new Date(order.createdAt).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "2-digit" })}
+                          </td>
+                          <td className="py-3 text-right">
+                            <button
+                              onClick={() => cancelOrder(order.id)}
+                              disabled={cancellingOrderId === order.id}
+                              className="px-2 py-1 text-xs font-medium bg-red-700/80 hover:bg-red-600 text-white rounded transition-colors disabled:opacity-50 cursor-pointer"
+                            >
+                              {cancellingOrderId === order.id ? "…" : "Cancelar"}
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* ── Trades Tab ────────────────────────────────────────────── */}
+      {tab === "TRADES" && (
+        <Card>
         <CardHeader>
           <h2 className="font-semibold text-white">
             Trades {filter !== "ALL" && `(${filteredTrades.length})`}
@@ -626,9 +766,10 @@ export default function HistoricoPage() {
             </div>
           )}
         </CardContent>
-      </Card>
+        </Card>
+      )}
 
-      {trades.length > 0 && (
+      {tab === "TRADES" && trades.length > 0 && (
         <div className="text-center text-xs text-gray-600">
           Total em taxas:{" "}
           <span className="text-yellow-400 font-medium">
