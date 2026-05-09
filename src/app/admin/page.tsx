@@ -371,25 +371,50 @@ export default function AdminPage() {
       </Card>
 
       {/* ── Dispute Chat Modal ───────────────────────────────────── */}
-      <Modal isOpen={!!chatTradeId} onClose={closeChat} title="💬 Disputa — Chat (Admin)" className="max-w-2xl">
+      <Modal
+        isOpen={!!chatTradeId}
+        onClose={closeChat}
+        title="💬 Disputa — Chat (Admin)"
+        className="max-w-2xl"
+      >
         <div className="flex flex-col gap-3">
           <div className="h-80 overflow-y-auto space-y-3 pr-1">
             {chatLoading ? (
-              <div className="flex items-center justify-center h-full text-gray-500 text-sm">Carregando mensagens…</div>
+              <div className="flex items-center justify-center h-full text-gray-500 text-sm">
+                Carregando mensagens…
+              </div>
             ) : chatMessages.length === 0 ? (
-              <div className="flex items-center justify-center h-full text-gray-600 text-sm">Nenhuma mensagem ainda.</div>
+              <div className="flex items-center justify-center h-full text-gray-600 text-sm">
+                Nenhuma mensagem ainda.
+              </div>
             ) : (
               chatMessages.map((msg) => (
                 <div key={msg.id} className="flex flex-col items-start">
-                  <div className={`max-w-[90%] rounded-xl px-3 py-2 text-sm ${msg.user.isAdmin ? "bg-purple-900/60 border border-purple-700/50" : "bg-gray-700/60 border border-gray-600/50"}`}>
+                  <div
+                    className={`max-w-[90%] rounded-xl px-3 py-2 text-sm ${msg.user.isAdmin ? "bg-purple-900/60 border border-purple-700/50" : "bg-gray-700/60 border border-gray-600/50"}`}
+                  >
                     <p className="text-xs font-medium mb-1 text-gray-400">
-                      {msg.user.isAdmin ? "🛡️ Admin" : msg.user.name || "Usuário"}
-                      {" · "}{new Date(msg.createdAt).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}
+                      {msg.user.isAdmin
+                        ? "🛡️ Admin"
+                        : msg.user.name || "Usuário"}
+                      {" · "}
+                      {new Date(msg.createdAt).toLocaleString("pt-BR", {
+                        day: "2-digit",
+                        month: "2-digit",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
                     </p>
-                    <p className="text-white whitespace-pre-wrap">{msg.content}</p>
+                    <p className="text-white whitespace-pre-wrap">
+                      {msg.content}
+                    </p>
                     {msg.evidenceUrl && (
-                      <a href={`/api/admin/evidence?url=${encodeURIComponent(msg.evidenceUrl)}`} target="_blank" rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 mt-2 text-xs text-teal-400 hover:text-teal-300 underline">
+                      <a
+                        href={`/api/admin/evidence?url=${encodeURIComponent(msg.evidenceUrl)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 mt-2 text-xs text-teal-400 hover:text-teal-300 underline"
+                      >
                         🎥 Ver Gravação
                       </a>
                     )}
@@ -401,11 +426,23 @@ export default function AdminPage() {
           </div>
           <div className="border-t border-gray-700 pt-3">
             <div className="flex gap-2">
-              <textarea value={chatText} onChange={(e) => setChatText(e.target.value)}
-                onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendChatMessage(); } }}
+              <textarea
+                value={chatText}
+                onChange={(e) => setChatText(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    sendChatMessage();
+                  }
+                }}
                 placeholder="Escreva como admin… (Enter para enviar)"
-                className="flex-1 px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm resize-none focus:ring-2 focus:ring-purple-500 focus:border-transparent h-16" />
-              <Button variant="primary" onClick={sendChatMessage} disabled={!chatText.trim() || sendingMessage}>
+                className="flex-1 px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm resize-none focus:ring-2 focus:ring-purple-500 focus:border-transparent h-16"
+              />
+              <Button
+                variant="primary"
+                onClick={sendChatMessage}
+                disabled={!chatText.trim() || sendingMessage}
+              >
                 {sendingMessage ? "…" : "Enviar"}
               </Button>
             </div>
