@@ -8,7 +8,7 @@ import Input from "@/components/ui/Input";
 import Select from "@/components/ui/Select";
 import Skeleton from "@/components/ui/Skeleton";
 import { PLATFORM_FEE_PERCENT } from "@/lib/constants";
-import { formatBRL, formatNumber } from "@/lib/utils";
+import { formatBRL, formatBRLPrecise, formatNumber } from "@/lib/utils";
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useState } from "react";
@@ -46,8 +46,8 @@ interface Order {
   serverId: string | null;
   serverRef: Server | null;
   createdAt: string;
-  currency: { name: string; code: string; game: { name: string } };
-  user: { name: string };
+  currency: { id: string; name: string; code: string; game: { name: string } };
+  user: { id: string; name: string };
 }
 
 export default function NegociarPage() {
@@ -75,12 +75,13 @@ function NegociarContent() {
   const [selectedServerId, setSelectedServerId] = useState("");
   const [orderType, setOrderType] = useState<"BUY" | "SELL">("BUY");
   const [amount, setAmount] = useState("");
-  const [pricePerUnit, setPricePerUnit] = useState("");
+  const [totalBRLInput, setTotalBRLInput] = useState("");
   const [server, setServer] = useState("");
   const [orders, setOrders] = useState<Order[]>([]);
   const [loadingGames, setLoadingGames] = useState(true);
   const [loadingOrders, setLoadingOrders] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [acceptingOrderId, setAcceptingOrderId] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
@@ -135,7 +136,10 @@ function NegociarContent() {
   const currencies = selectedGame?.currencies || [];
   const servers = selectedGame?.servers || [];
 
-  const totalBRL = parseFloat(amount || "0") * parseFloat(pricePerUnit || "0");
+  const totalBRL = parseFloat(totalBRLInput || "0");
+  const parsedAmount = parseFloat(amount || "0");
+  const pricePerUnit =
+    totalBRL > 0 && parsedAmount > 0 ? totalBRL / parsedAmount : 0;
   const fee = totalBRL * (PLATFORM_FEE_PERCENT / 100);
   const netTotal = orderType === "SELL" ? totalBRL - fee : totalBRL + fee;
 
@@ -173,7 +177,7 @@ function NegociarContent() {
           serverId: selectedServerId,
           type: orderType,
           amount: parseFloat(amount),
-          pricePerUnit: parseFloat(pricePerUnit),
+          pricePerUnit: pricePerUnit,
           server: server || undefined,
         }),
       });
@@ -193,13 +197,51 @@ function NegociarContent() {
         }`,
       );
       setAmount("");
-      setPricePerUnit("");
+      setTotalBRLInput("");
       setServer("");
       loadOrders();
     } catch {
       setError("Erro ao criar ordem");
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const acceptOrder = async (order: Order) => {
+    if (!session) {
+      router.push("/login");
+      return;
+    }
+    setAcceptingOrderId(order.id);
+    setError("");
+    setSuccess("");
+    try {
+      const counterType = order.type === "BUY" ? "SELL" : "BUY";
+      const remaining = order.amount - order.filledAmount;
+      const res = await fetch("/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: counterType,
+          currencyId: order.currency.id,
+          serverId: order.serverId,
+          amount: remaining,
+          pricePerUnit: order.pricePerUnit,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || "Erro ao aceitar ordem");
+      } else {
+        setSuccess(
+          `Ordem aceita! ${counterType === "SELL" ? "Entregue a moeda ao comprador." : "Aguarde a entrega do vendedor."}`,
+        );
+        loadOrders();
+      }
+    } catch {
+      setError("Erro ao aceitar ordem");
+    } finally {
+      setAcceptingOrderId(null);
     }
   };
 
@@ -309,7 +351,7 @@ function NegociarContent() {
                 id="amount"
                 label="Quantidade"
                 type="number"
-                placeholder="Ex: 1000"
+                placeholder="Ex: 1000000"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 required
@@ -317,17 +359,38 @@ function NegociarContent() {
                 step="any"
               />
 
-              <Input
-                id="price"
-                label="Preço por Unidade (BRL)"
-                type="number"
-                placeholder="Ex: 0.50"
-                value={pricePerUnit}
-                onChange={(e) => setPricePerUnit(e.target.value)}
-                required
-                min="0"
-                step="any"
-              />
+              <div>
+                <Input
+                  id="totalBRL"
+                  label="Preço Total (BRL)"
+                  type="number"
+                  placeholder="Ex: 25.00"
+                  value={totalBRLInput}
+                  onChange={(e) => setTotalBRLInput(e.target.value)}
+                  required
+                  min="0"
+                  step="any"
+                />
+                {pricePerUnit > 0 && (
+                  <p className="mt-1 text-xs text-gray-500">
+                    ≈ {formatBRLPrecise(pricePerUnit)} por unidade
+                  </p>
+                )}
+              </div>
+
+              {orderType === "SELL" && (
+                <div className="bg-amber-950/40 border border-amber-700/40 rounded-lg px-4 py-3 text-xs text-amber-300 space-y-1">
+                  <p className="font-semibold">
+                    ⚠️ Aviso importante para vendedores
+                  </p>
+                  <p>
+                    Em caso de disputa, o ônus da prova recai sobre o vendedor.
+                    Grave ou tire print da entrega no jogo antes e depois de
+                    transferir as moedas — esse registro é sua única garantia em
+                    uma contestação.
+                  </p>
+                </div>
+              )}
 
               <Input
                 id="server"
@@ -428,6 +491,7 @@ function NegociarContent() {
                         <th className="text-right py-2 font-medium">
                           Servidor
                         </th>
+                        <th className="text-right py-2 font-medium">Ação</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -443,13 +507,28 @@ function NegociarContent() {
                             {formatNumber(order.amount - order.filledAmount)}
                           </td>
                           <td className="py-3 text-right text-emerald-400">
-                            {formatBRL(order.pricePerUnit)}
+                            {formatBRLPrecise(order.pricePerUnit)}
                           </td>
                           <td className="py-3 text-right text-white">
                             {formatBRL(order.totalBRL)}
                           </td>
                           <td className="py-3 text-right text-gray-500 text-xs">
                             {order.serverRef?.name || order.server || "—"}
+                          </td>
+                          <td className="py-3 text-right">
+                            {session &&
+                              order.user.id !==
+                                (session.user as { id?: string })?.id && (
+                                <button
+                                  onClick={() => acceptOrder(order)}
+                                  disabled={acceptingOrderId === order.id}
+                                  className="px-2 py-1 text-xs font-medium bg-red-700/80 hover:bg-red-600 text-white rounded transition-colors disabled:opacity-50 cursor-pointer"
+                                >
+                                  {acceptingOrderId === order.id
+                                    ? "…"
+                                    : "Aceitar"}
+                                </button>
+                              )}
                           </td>
                         </tr>
                       ))}
@@ -498,6 +577,7 @@ function NegociarContent() {
                         <th className="text-right py-2 font-medium">
                           Servidor
                         </th>
+                        <th className="text-right py-2 font-medium">Ação</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -513,13 +593,28 @@ function NegociarContent() {
                             {formatNumber(order.amount - order.filledAmount)}
                           </td>
                           <td className="py-3 text-right text-red-400">
-                            {formatBRL(order.pricePerUnit)}
+                            {formatBRLPrecise(order.pricePerUnit)}
                           </td>
                           <td className="py-3 text-right text-white">
                             {formatBRL(order.totalBRL)}
                           </td>
                           <td className="py-3 text-right text-gray-500 text-xs">
                             {order.serverRef?.name || order.server || "—"}
+                          </td>
+                          <td className="py-3 text-right">
+                            {session &&
+                              order.user.id !==
+                                (session.user as { id?: string })?.id && (
+                                <button
+                                  onClick={() => acceptOrder(order)}
+                                  disabled={acceptingOrderId === order.id}
+                                  className="px-2 py-1 text-xs font-medium bg-emerald-700/80 hover:bg-emerald-600 text-white rounded transition-colors disabled:opacity-50 cursor-pointer"
+                                >
+                                  {acceptingOrderId === order.id
+                                    ? "…"
+                                    : "Aceitar"}
+                                </button>
+                              )}
                           </td>
                         </tr>
                       ))}

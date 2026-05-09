@@ -12,6 +12,27 @@ export function formatBRL(value: number): string {
   }).format(value);
 }
 
+/**
+ * Like formatBRL but auto-increases decimal places for very small values
+ * (useful for price-per-unit of game currencies, e.g. R$ 0,000025)
+ */
+export function formatBRLPrecise(value: number): string {
+  if (!isFinite(value) || isNaN(value)) return "—";
+  const abs = Math.abs(value);
+  let decimals = 2;
+  if (abs > 0 && abs < 0.01) {
+    // -mag gives the position of the first significant digit after the decimal
+    const mag = Math.floor(Math.log10(abs));
+    decimals = Math.min(-mag + 1, 10);
+  }
+  return new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
+  }).format(value);
+}
+
 export function formatNumber(value: number): string {
   return new Intl.NumberFormat("pt-BR").format(value);
 }

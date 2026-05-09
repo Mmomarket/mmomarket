@@ -190,6 +190,15 @@ async function matchBuyOrder(buyOrderId: string) {
       }),
     ]);
 
+    // Record price history for chart (non-blocking)
+    upsertPriceHistory(
+      buyOrder.currencyId,
+      buyOrder.serverId ?? "",
+      sellOrder.pricePerUnit,
+      tradeAmount,
+      tradeTotalBRL,
+    ).catch(() => {});
+
     remainingAmount -= tradeAmount;
   }
 }
@@ -264,6 +273,74 @@ async function matchSellOrder(sellOrderId: string) {
       }),
     ]);
 
+    // Record price history for chart (non-blocking)
+    upsertPriceHistory(
+      sellOrder.currencyId,
+      sellOrder.serverId ?? "",
+      sellOrder.pricePerUnit,
+      tradeAmount,
+      tradeTotalBRL,
+    ).catch(() => {});
+
     remainingAmount -= tradeAmount;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Price history aggregation (4-hour buckets)
+// ---------------------------------------------------------------------------
+async function upsertPriceHistory(
+  currencyId: string,
+  serverId: string,
+  pricePerUnit: number,
+  amount: number,
+  totalBRL: number,
+) {
+  if (!serverId) return;
+  const now = new Date();
+  const bucketHour = Math.floor(now.getUTCHours() / 4) * 4;
+  const bucket = new Date(
+    Date.UTC(
+      now.getUTCFullYear(),
+      now.getUTCMonth(),
+      now.getUTCDate(),
+      bucketHour,
+      0,
+      0,
+      0,
+    ),
+  );
+
+  const existing = await prisma.priceHistory.findFirst({
+    where: { currencyId, serverId, period: "4h", timestamp: bucket },
+  });
+
+  if (existing) {
+    const newVolume = existing.volume + amount;
+    const newVolumeBRL = existing.volumeBRL + totalBRL;
+    await prisma.priceHistory.update({
+      where: { id: existing.id },
+      data: {
+        avgPrice: newVolumeBRL / newVolume, // volume-weighted avg
+        minPrice: Math.min(existing.minPrice, pricePerUnit),
+        maxPrice: Math.max(existing.maxPrice, pricePerUnit),
+        volume: newVolume,
+        volumeBRL: newVolumeBRL,
+      },
+    });
+  } else {
+    await prisma.priceHistory.create({
+      data: {
+        currencyId,
+        serverId,
+        period: "4h",
+        timestamp: bucket,
+        avgPrice: pricePerUnit,
+        minPrice: pricePerUnit,
+        maxPrice: pricePerUnit,
+        volume: amount,
+        volumeBRL: totalBRL,
+      },
+    });
   }
 }
