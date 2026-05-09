@@ -4,7 +4,7 @@ import PriceChart from "@/components/charts/PriceChart";
 import Badge from "@/components/ui/Badge";
 import Card, { CardContent, CardHeader } from "@/components/ui/Card";
 import Skeleton from "@/components/ui/Skeleton";
-import { formatBRL, formatPercent } from "@/lib/utils";
+import { formatBRL, formatBRLPrecise, formatPercent } from "@/lib/utils";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -234,7 +234,7 @@ export default function HomePage() {
                   {priceData && (
                     <div className="flex items-center gap-3 mt-1">
                       <span className="text-2xl font-bold text-white">
-                        {formatBRL(priceData.currentPrice)}
+                        {formatBRLPrecise(priceData.currentPrice)}
                       </span>
                       <Badge
                         variant={
@@ -319,7 +319,7 @@ export default function HomePage() {
                     <div className="flex justify-between">
                       <span className="text-sm text-gray-400">Preço Atual</span>
                       <span className="text-sm font-medium text-white">
-                        {formatBRL(priceData.currentPrice)}
+                        {formatBRLPrecise(priceData.currentPrice)}
                       </span>
                     </div>
                     <div className="flex justify-between">
@@ -337,13 +337,13 @@ export default function HomePage() {
                     <div className="flex justify-between">
                       <span className="text-sm text-gray-400">Máxima</span>
                       <span className="text-sm font-medium text-emerald-400">
-                        {formatBRL(priceData.high)}
+                        {formatBRLPrecise(priceData.high)}
                       </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-sm text-gray-400">Mínima</span>
                       <span className="text-sm font-medium text-red-400">
-                        {formatBRL(priceData.low)}
+                        {formatBRLPrecise(priceData.low)}
                       </span>
                     </div>
                     <div className="flex justify-between">
@@ -356,7 +356,7 @@ export default function HomePage() {
                     <div className="flex justify-between">
                       <span className="text-sm text-gray-400">Amplitude</span>
                       <span className="text-sm font-medium text-yellow-400">
-                        {formatBRL(priceData.high - priceData.low)}
+                        {formatBRLPrecise(priceData.high - priceData.low)}
                       </span>
                     </div>
                   </>

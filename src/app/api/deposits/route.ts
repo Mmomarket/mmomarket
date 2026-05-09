@@ -7,7 +7,7 @@ import { z } from "zod";
 const depositSchema = z.object({
   amountBRL: z
     .number()
-    .min(5, "Depósito mínimo: R$ 5,00")
+    .min(1, "Depósito mínimo: R$ 1,00")
     .max(50000, "Depósito máximo: R$ 50.000,00"),
 });
 
