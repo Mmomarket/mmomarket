@@ -24,6 +24,7 @@ interface DisputedTrade {
   feeBRL: number;
   sellerReceive: number;
   status: string;
+  evidenceUrl: string | null;
   disputeReason: string | null;
   adminNote: string | null;
   createdAt: string;
@@ -239,6 +240,19 @@ export default function AdminPage() {
                           Motivo:{" "}
                         </span>
                         {trade.disputeReason}
+                      </div>
+                    )}
+                    {trade.evidenceUrl && (
+                      <div className="flex items-center gap-2 text-sm">
+                        <span className="text-gray-400">Evidência:</span>
+                        <a
+                          href={`/api/admin/evidence?url=${encodeURIComponent(trade.evidenceUrl)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-teal-400 hover:text-teal-300 underline"
+                        >
+                          🎥 Ver Gravação
+                        </a>
                       </div>
                     )}
                   </div>

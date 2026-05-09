@@ -48,7 +48,7 @@ export async function POST(req: Request) {
     const filename = `evidence/${userId}/${Date.now()}.${ext}`;
 
     const blob = await put(filename, file, {
-      access: "public",
+      access: "private",
       contentType: file.type,
     });
 

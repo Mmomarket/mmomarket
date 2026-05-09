@@ -386,10 +386,9 @@ function NegociarContent() {
                   <p>
                     Em caso de disputa, o ônus da prova recai sobre o vendedor.{" "}
                     <strong>Grave em vídeo a entrega das moedas no jogo</strong>{" "}
-                    — antes e depois da transferência. Prints e capturas de tela
-                    não são aceitos como prova, pois são fáceis de falsificar.
-                    Apenas gravações em vídeo são reconhecidas como evidência
-                    válida em uma contestação.
+                    Prints e capturas de tela não são aceitos como prova. Apenas
+                    gravações em vídeo são reconhecidas como evidência válida em
+                    uma contestação.
                   </p>
                 </div>
               )}

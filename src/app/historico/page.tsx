@@ -507,9 +507,7 @@ export default function HistoricoPage() {
               {uploadProgress === "uploading" && (
                 <>
                   <span className="text-2xl mb-1 animate-pulse">⏳</span>
-                  <span className="text-sm text-gray-400">
-                    Enviando vídeo…
-                  </span>
+                  <span className="text-sm text-gray-400">Enviando vídeo…</span>
                 </>
               )}
               {uploadProgress === "done" && (
