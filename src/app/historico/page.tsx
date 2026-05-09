@@ -179,7 +179,9 @@ export default function HistoricoPage() {
   const [trades, setTrades] = useState<Trade[]>([]);
   const [activeOrders, setActiveOrders] = useState<ActiveOrder[]>([]);
   const [loading, setLoading] = useState(true);
-  const [cancellingOrderId, setCancellingOrderId] = useState<string | null>(null);
+  const [cancellingOrderId, setCancellingOrderId] = useState<string | null>(
+    null,
+  );
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [tab, setTab] = useState<"TRADES" | "ORDERS">("TRADES");
   const [filter, setFilter] = useState<"ALL" | "ACTIVE" | "COMPLETED">("ALL");
@@ -470,21 +472,28 @@ export default function HistoricoPage() {
               onClick={() => setTab(t)}
               className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors cursor-pointer ${tab === t ? "bg-emerald-600 text-white" : "text-gray-400 hover:text-white"}`}
             >
-              {t === "TRADES" ? `Trades (${trades.length})` : `Ordens Ativas (${activeOrders.length})`}
+              {t === "TRADES"
+                ? `Trades (${trades.length})`
+                : `Ordens Ativas (${activeOrders.length})`}
             </button>
           ))}
         </div>
 
         {/* Sub-filter only for trades tab */}
-        {tab === "TRADES" && (["ALL", "ACTIVE", "COMPLETED"] as const).map((f) => (
-          <button
-            key={f}
-            onClick={() => setFilter(f)}
-            className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors cursor-pointer ${filter === f ? "bg-gray-600 text-white" : "bg-gray-800 text-gray-400 hover:text-white"}`}
-          >
-            {f === "ALL" ? "Todos" : f === "ACTIVE" ? "Ativos" : "Finalizados"}
-          </button>
-        ))}
+        {tab === "TRADES" &&
+          (["ALL", "ACTIVE", "COMPLETED"] as const).map((f) => (
+            <button
+              key={f}
+              onClick={() => setFilter(f)}
+              className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors cursor-pointer ${filter === f ? "bg-gray-600 text-white" : "bg-gray-800 text-gray-400 hover:text-white"}`}
+            >
+              {f === "ALL"
+                ? "Todos"
+                : f === "ACTIVE"
+                  ? "Ativos"
+                  : "Finalizados"}
+            </button>
+          ))}
       </div>
 
       {/* ── Active Orders Tab ─────────────────────────────────────── */}
@@ -505,9 +514,13 @@ export default function HistoricoPage() {
                   <thead>
                     <tr className="text-gray-500 text-xs border-b border-gray-700/50">
                       <th className="text-left py-2 font-medium">Tipo</th>
-                      <th className="text-left py-2 font-medium">Jogo / Moeda</th>
+                      <th className="text-left py-2 font-medium">
+                        Jogo / Moeda
+                      </th>
                       <th className="text-left py-2 font-medium">Servidor</th>
-                      <th className="text-right py-2 font-medium">Qtd Restante</th>
+                      <th className="text-right py-2 font-medium">
+                        Qtd Restante
+                      </th>
                       <th className="text-right py-2 font-medium">Preço/Un</th>
                       <th className="text-right py-2 font-medium">Total</th>
                       <th className="text-right py-2 font-medium">Data</th>
@@ -518,15 +531,26 @@ export default function HistoricoPage() {
                     {activeOrders.map((order) => {
                       const remaining = order.amount - order.filledAmount;
                       return (
-                        <tr key={order.id} className="border-b border-gray-800/50 hover:bg-gray-800/30">
+                        <tr
+                          key={order.id}
+                          className="border-b border-gray-800/50 hover:bg-gray-800/30"
+                        >
                           <td className="py-3">
-                            <Badge variant={order.type === "BUY" ? "success" : "danger"}>
+                            <Badge
+                              variant={
+                                order.type === "BUY" ? "success" : "danger"
+                              }
+                            >
                               {order.type === "BUY" ? "Compra" : "Venda"}
                             </Badge>
                           </td>
                           <td className="py-3">
-                            <p className="text-white font-medium text-xs">{order.currency.game.name}</p>
-                            <p className="text-gray-400 text-xs">{order.currency.code}</p>
+                            <p className="text-white font-medium text-xs">
+                              {order.currency.game.name}
+                            </p>
+                            <p className="text-gray-400 text-xs">
+                              {order.currency.code}
+                            </p>
                           </td>
                           <td className="py-3 text-gray-400 text-xs">
                             {order.serverRef?.name || "—"}
@@ -546,7 +570,14 @@ export default function HistoricoPage() {
                             {formatBRL(remaining * order.pricePerUnit)}
                           </td>
                           <td className="py-3 text-right text-gray-500 text-xs">
-                            {new Date(order.createdAt).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "2-digit" })}
+                            {new Date(order.createdAt).toLocaleDateString(
+                              "pt-BR",
+                              {
+                                day: "2-digit",
+                                month: "2-digit",
+                                year: "2-digit",
+                              },
+                            )}
                           </td>
                           <td className="py-3 text-right">
                             <button
@@ -554,7 +585,9 @@ export default function HistoricoPage() {
                               disabled={cancellingOrderId === order.id}
                               className="px-2 py-1 text-xs font-medium bg-red-700/80 hover:bg-red-600 text-white rounded transition-colors disabled:opacity-50 cursor-pointer"
                             >
-                              {cancellingOrderId === order.id ? "…" : "Cancelar"}
+                              {cancellingOrderId === order.id
+                                ? "…"
+                                : "Cancelar"}
                             </button>
                           </td>
                         </tr>
@@ -571,148 +604,137 @@ export default function HistoricoPage() {
       {/* ── Trades Tab ────────────────────────────────────────────── */}
       {tab === "TRADES" && (
         <Card>
-        <CardHeader>
-          <h2 className="font-semibold text-white">
-            Trades {filter !== "ALL" && `(${filteredTrades.length})`}
-          </h2>
-        </CardHeader>
-        <CardContent>
-          {loading ? (
-            <div className="space-y-4">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <Skeleton key={i} className="h-24" />
-              ))}
-            </div>
-          ) : filteredTrades.length === 0 ? (
-            <EmptyState
-              title="Nenhum trade encontrado"
-              description={
-                filter === "ALL"
-                  ? "Seus trades aparecerão aqui assim que forem executados."
-                  : "Nenhum trade nesta categoria."
-              }
-            />
-          ) : (
-            <div className="space-y-4">
-              {filteredTrades.map((trade) => {
-                const isBuyer = userId === trade.buyerId;
-                const isSeller = userId === trade.sellerId;
-                const counterparty = isBuyer
-                  ? trade.seller.name
-                  : trade.buyer.name;
-                const config = statusConfig[trade.status] ?? {
-                  label: trade.status,
-                  variant: "default" as const,
-                  icon: "",
-                };
-                const isLoading = actionLoading === trade.id;
-                const autoReleaseElapsed =
-                  trade.deliveredAt &&
-                  Date.now() - new Date(trade.deliveredAt).getTime() >
-                    AUTO_RELEASE_HOURS * 60 * 60 * 1000;
+          <CardHeader>
+            <h2 className="font-semibold text-white">
+              Trades {filter !== "ALL" && `(${filteredTrades.length})`}
+            </h2>
+          </CardHeader>
+          <CardContent>
+            {loading ? (
+              <div className="space-y-4">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <Skeleton key={i} className="h-24" />
+                ))}
+              </div>
+            ) : filteredTrades.length === 0 ? (
+              <EmptyState
+                title="Nenhum trade encontrado"
+                description={
+                  filter === "ALL"
+                    ? "Seus trades aparecerão aqui assim que forem executados."
+                    : "Nenhum trade nesta categoria."
+                }
+              />
+            ) : (
+              <div className="space-y-4">
+                {filteredTrades.map((trade) => {
+                  const isBuyer = userId === trade.buyerId;
+                  const isSeller = userId === trade.sellerId;
+                  const counterparty = isBuyer
+                    ? trade.seller.name
+                    : trade.buyer.name;
+                  const config = statusConfig[trade.status] ?? {
+                    label: trade.status,
+                    variant: "default" as const,
+                    icon: "",
+                  };
+                  const isLoading = actionLoading === trade.id;
+                  const autoReleaseElapsed =
+                    trade.deliveredAt &&
+                    Date.now() - new Date(trade.deliveredAt).getTime() >
+                      AUTO_RELEASE_HOURS * 60 * 60 * 1000;
 
-                return (
-                  <div
-                    key={trade.id}
-                    className="border border-gray-800 rounded-lg p-4 hover:bg-gray-800/30 transition-colors"
-                  >
-                    <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
-                      <div className="flex items-center gap-3">
-                        <Badge variant={isBuyer ? "success" : "danger"}>
-                          {isBuyer ? " Compra" : " Venda"}
-                        </Badge>
-                        <Badge variant={config.variant}>
-                          {config.icon} {config.label}
-                        </Badge>
-                      </div>
-                      <span className="text-xs text-gray-500">
-                        {new Date(trade.createdAt).toLocaleDateString("pt-BR", {
-                          day: "2-digit",
-                          month: "2-digit",
-                          year: "2-digit",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </span>
-                    </div>
-
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm mb-3">
-                      <div>
-                        <p className="text-gray-500 text-xs">Jogo / Moeda</p>
-                        <p className="text-white font-medium">
-                          {trade.currency.game.name}
-                        </p>
-                        <p className="text-gray-400 text-xs">
-                          {trade.currency.code}
-                          {trade.serverRef && (
-                            <span className="text-teal-400">
-                              {" "}
-                              {trade.serverRef.name}
-                            </span>
+                  return (
+                    <div
+                      key={trade.id}
+                      className="border border-gray-800 rounded-lg p-4 hover:bg-gray-800/30 transition-colors"
+                    >
+                      <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+                        <div className="flex items-center gap-3">
+                          <Badge variant={isBuyer ? "success" : "danger"}>
+                            {isBuyer ? " Compra" : " Venda"}
+                          </Badge>
+                          <Badge variant={config.variant}>
+                            {config.icon} {config.label}
+                          </Badge>
+                        </div>
+                        <span className="text-xs text-gray-500">
+                          {new Date(trade.createdAt).toLocaleDateString(
+                            "pt-BR",
+                            {
+                              day: "2-digit",
+                              month: "2-digit",
+                              year: "2-digit",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            },
                           )}
-                        </p>
+                        </span>
                       </div>
-                      <div>
-                        <p className="text-gray-500 text-xs">Quantidade</p>
-                        <p className="text-white font-medium">
-                          {formatNumber(trade.amount)}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-gray-500 text-xs">Total</p>
-                        <p className="text-white font-medium">
-                          {formatBRL(trade.totalBRL)}
-                        </p>
-                        <p className="text-yellow-400 text-xs">
-                          Taxa: {formatBRL(trade.feeBRL)}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-gray-500 text-xs">Contraparte</p>
-                        <p className="text-gray-300">{counterparty}</p>
-                      </div>
-                    </div>
 
-                    {trade.status === "DELIVERED" && trade.deliveredAt && (
-                      <div className="text-xs text-orange-400 mb-3">
-                        {" "}
-                        {getTimeRemaining(trade.deliveredAt)}
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm mb-3">
+                        <div>
+                          <p className="text-gray-500 text-xs">Jogo / Moeda</p>
+                          <p className="text-white font-medium">
+                            {trade.currency.game.name}
+                          </p>
+                          <p className="text-gray-400 text-xs">
+                            {trade.currency.code}
+                            {trade.serverRef && (
+                              <span className="text-teal-400">
+                                {" "}
+                                {trade.serverRef.name}
+                              </span>
+                            )}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-gray-500 text-xs">Quantidade</p>
+                          <p className="text-white font-medium">
+                            {formatNumber(trade.amount)}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-gray-500 text-xs">Total</p>
+                          <p className="text-white font-medium">
+                            {formatBRL(trade.totalBRL)}
+                          </p>
+                          <p className="text-yellow-400 text-xs">
+                            Taxa: {formatBRL(trade.feeBRL)}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-gray-500 text-xs">Contraparte</p>
+                          <p className="text-gray-300">{counterparty}</p>
+                        </div>
                       </div>
-                    )}
-                    {trade.status === "DISPUTED" && trade.disputeReason && (
-                      <div className="text-xs text-red-400 bg-red-900/20 rounded p-2 mb-3">
-                        {" "}
-                        {trade.disputeReason}
-                      </div>
-                    )}
 
-                    <div className="flex flex-wrap gap-2">
-                      {isSeller && trade.status === "PENDING_DELIVERY" && (
-                        <Button
-                          size="sm"
-                          onClick={() =>
-                            handleAction(trade.id, "MARK_DELIVERED")
-                          }
-                          disabled={isLoading}
-                        >
-                          {isLoading ? "Processando..." : " Marcar Entregue"}
-                        </Button>
+                      {trade.status === "DELIVERED" && trade.deliveredAt && (
+                        <div className="text-xs text-orange-400 mb-3">
+                          {" "}
+                          {getTimeRemaining(trade.deliveredAt)}
+                        </div>
                       )}
-                      {isBuyer && trade.status === "DELIVERED" && (
-                        <Button
-                          size="sm"
-                          variant="primary"
-                          onClick={() => handleAction(trade.id, "CONFIRM")}
-                          disabled={isLoading}
-                        >
-                          {isLoading
-                            ? "Processando..."
-                            : " Confirmar Recebimento"}
-                        </Button>
+                      {trade.status === "DISPUTED" && trade.disputeReason && (
+                        <div className="text-xs text-red-400 bg-red-900/20 rounded p-2 mb-3">
+                          {" "}
+                          {trade.disputeReason}
+                        </div>
                       )}
-                      {isSeller &&
-                        trade.status === "DELIVERED" &&
-                        autoReleaseElapsed && (
+
+                      <div className="flex flex-wrap gap-2">
+                        {isSeller && trade.status === "PENDING_DELIVERY" && (
+                          <Button
+                            size="sm"
+                            onClick={() =>
+                              handleAction(trade.id, "MARK_DELIVERED")
+                            }
+                            disabled={isLoading}
+                          >
+                            {isLoading ? "Processando..." : " Marcar Entregue"}
+                          </Button>
+                        )}
+                        {isBuyer && trade.status === "DELIVERED" && (
                           <Button
                             size="sm"
                             variant="primary"
@@ -721,12 +743,37 @@ export default function HistoricoPage() {
                           >
                             {isLoading
                               ? "Processando..."
-                              : " Auto-Liberar Escrow"}
+                              : " Confirmar Recebimento"}
                           </Button>
                         )}
-                      {isBuyer &&
-                        (trade.status === "PENDING_DELIVERY" ||
-                          trade.status === "DELIVERED") && (
+                        {isSeller &&
+                          trade.status === "DELIVERED" &&
+                          autoReleaseElapsed && (
+                            <Button
+                              size="sm"
+                              variant="primary"
+                              onClick={() => handleAction(trade.id, "CONFIRM")}
+                              disabled={isLoading}
+                            >
+                              {isLoading
+                                ? "Processando..."
+                                : " Auto-Liberar Escrow"}
+                            </Button>
+                          )}
+                        {isBuyer &&
+                          (trade.status === "PENDING_DELIVERY" ||
+                            trade.status === "DELIVERED") && (
+                            <Button
+                              size="sm"
+                              variant="danger"
+                              onClick={() => setDisputeModal(trade)}
+                              disabled={isLoading}
+                            >
+                              {" "}
+                              Abrir Disputa
+                            </Button>
+                          )}
+                        {isSeller && trade.status === "DELIVERED" && (
                           <Button
                             size="sm"
                             variant="danger"
@@ -737,35 +784,24 @@ export default function HistoricoPage() {
                             Abrir Disputa
                           </Button>
                         )}
-                      {isSeller && trade.status === "DELIVERED" && (
-                        <Button
-                          size="sm"
-                          variant="danger"
-                          onClick={() => setDisputeModal(trade)}
-                          disabled={isLoading}
-                        >
-                          {" "}
-                          Abrir Disputa
-                        </Button>
-                      )}
-                      {trade.status === "DISPUTED" && (
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => openChat(trade.id)}
-                          disabled={isLoading}
-                        >
-                          {" "}
-                          Ver Disputa
-                        </Button>
-                      )}
+                        {trade.status === "DISPUTED" && (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => openChat(trade.id)}
+                            disabled={isLoading}
+                          >
+                            {" "}
+                            Ver Disputa
+                          </Button>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </CardContent>
+                  );
+                })}
+              </div>
+            )}
+          </CardContent>
         </Card>
       )}
 
