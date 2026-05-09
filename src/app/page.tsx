@@ -4,7 +4,7 @@ import PriceChart from "@/components/charts/PriceChart";
 import Badge from "@/components/ui/Badge";
 import Card, { CardContent, CardHeader } from "@/components/ui/Card";
 import Skeleton from "@/components/ui/Skeleton";
-import { formatBRL, formatBRLPrecise, formatPercent } from "@/lib/utils";
+import { formatBRLPrecise, formatPercent } from "@/lib/utils";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
