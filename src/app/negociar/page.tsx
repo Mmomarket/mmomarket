@@ -384,10 +384,12 @@ function NegociarContent() {
                     ⚠️ Aviso importante para vendedores
                   </p>
                   <p>
-                    Em caso de disputa, o ônus da prova recai sobre o vendedor.
-                    Grave ou tire print da entrega no jogo antes e depois de
-                    transferir as moedas — esse registro é sua única garantia em
-                    uma contestação.
+                    Em caso de disputa, o ônus da prova recai sobre o vendedor.{" "}
+                    <strong>Grave em vídeo a entrega das moedas no jogo</strong>{" "}
+                    — antes e depois da transferência. Prints e capturas de tela
+                    não são aceitos como prova, pois são fáceis de falsificar.
+                    Apenas gravações em vídeo são reconhecidas como evidência
+                    válida em uma contestação.
                   </p>
                 </div>
               )}

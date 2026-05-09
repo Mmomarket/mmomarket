@@ -9,6 +9,7 @@ const AUTO_RELEASE_HOURS = 48;
 const actionSchema = z.object({
   action: z.enum(["MARK_DELIVERED", "CONFIRM", "DISPUTE"]),
   disputeReason: z.string().optional(),
+  evidenceUrl: z.string().url().optional(),
 });
 
 export async function GET(
@@ -64,7 +65,7 @@ export async function PATCH(
 
     const { id } = await params;
     const body = await req.json();
-    const { action, disputeReason } = actionSchema.parse(body);
+    const { action, disputeReason, evidenceUrl } = actionSchema.parse(body);
 
     const trade = await prisma.trade.findUnique({
       where: { id },
@@ -83,7 +84,7 @@ export async function PATCH(
       case "CONFIRM":
         return await confirmDelivery(trade, userId);
       case "DISPUTE":
-        return await openDispute(trade, userId, disputeReason);
+        return await openDispute(trade, userId, disputeReason, evidenceUrl);
       default:
         return NextResponse.json({ error: "Ação inválida" }, { status: 400 });
     }
@@ -214,6 +215,7 @@ async function openDispute(
   trade: { id: string; sellerId: string; buyerId: string; status: string },
   userId: string,
   disputeReason?: string,
+  evidenceUrl?: string,
 ) {
   // Only buyer can dispute
   if (trade.buyerId !== userId) {
@@ -230,11 +232,22 @@ async function openDispute(
     );
   }
 
+  if (!evidenceUrl) {
+    return NextResponse.json(
+      {
+        error:
+          "É obrigatório enviar uma gravação em vídeo como prova antes de abrir uma disputa.",
+      },
+      { status: 400 },
+    );
+  }
+
   const updated = await prisma.trade.update({
     where: { id: trade.id },
     data: {
       status: "DISPUTED",
       disputeReason: disputeReason || "Motivo não especificado",
+      evidenceUrl,
     },
   });
 

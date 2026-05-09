@@ -30,6 +30,7 @@
     "@prisma/adapter-better-sqlite3": "^7.7.0",
     "@prisma/adapter-libsql": "^7.7.0",
     "@prisma/client": "^7.7.0",
+    "@vercel/blob": "^2.3.3",
     "bcryptjs": "^3.0.3",
     "better-sqlite3": "^12.9.0",
     "clsx": "^2.1.1",

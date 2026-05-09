@@ -21,6 +21,7 @@ interface Trade {
   status: string;
   deliveredAt: string | null;
   disputeReason: string | null;
+  evidenceUrl: string | null;
   createdAt: string;
   updatedAt: string;
   sellerId: string;
@@ -74,6 +75,11 @@ export default function HistoricoPage() {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [disputeModal, setDisputeModal] = useState<string | null>(null);
   const [disputeReason, setDisputeReason] = useState("");
+  const [evidenceUrl, setEvidenceUrl] = useState<string | null>(null);
+  const [uploadProgress, setUploadProgress] = useState<
+    "idle" | "uploading" | "done" | "error"
+  >("idle");
+  const [uploadError, setUploadError] = useState("");
   const [filter, setFilter] = useState<"ALL" | "ACTIVE" | "COMPLETED">("ALL");
 
   const userId = (session?.user as { id?: string } | undefined)?.id;
@@ -98,17 +104,55 @@ export default function HistoricoPage() {
     }
   }, [session, sessionStatus, router, loadTrades]);
 
+  const handleEvidenceUpload = async (file: File) => {
+    setUploadProgress("uploading");
+    setUploadError("");
+    setEvidenceUrl(null);
+    try {
+      const form = new FormData();
+      form.append("file", file);
+      const res = await fetch("/api/upload/evidence", {
+        method: "POST",
+        body: form,
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setUploadProgress("error");
+        setUploadError(data.error || "Erro ao enviar vídeo");
+      } else {
+        setEvidenceUrl(data.url);
+        setUploadProgress("done");
+      }
+    } catch {
+      setUploadProgress("error");
+      setUploadError("Erro de conexão ao enviar vídeo");
+    }
+  };
+
+  const closeDisputeModal = () => {
+    setDisputeModal(null);
+    setDisputeReason("");
+    setEvidenceUrl(null);
+    setUploadProgress("idle");
+    setUploadError("");
+  };
+
   const handleAction = async (
     tradeId: string,
     action: "MARK_DELIVERED" | "CONFIRM" | "DISPUTE",
     reason?: string,
+    evidence?: string,
   ) => {
     setActionLoading(tradeId);
     try {
       const res = await fetch(`/api/trades/${tradeId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action, disputeReason: reason }),
+        body: JSON.stringify({
+          action,
+          disputeReason: reason,
+          evidenceUrl: evidence,
+        }),
       });
       if (!res.ok) {
         const err = await res.json();
@@ -120,8 +164,7 @@ export default function HistoricoPage() {
       alert("Erro de conexão");
     } finally {
       setActionLoading(null);
-      setDisputeModal(null);
-      setDisputeReason("");
+      closeDisputeModal();
     }
   };
 
@@ -408,43 +451,129 @@ export default function HistoricoPage() {
       {/* Dispute Modal */}
       <Modal
         isOpen={!!disputeModal}
-        onClose={() => {
-          setDisputeModal(null);
-          setDisputeReason("");
-        }}
+        onClose={closeDisputeModal}
         title="Abrir Disputa"
       >
-        <div className="space-y-4">
-          <p className="text-sm text-gray-400">
-            Descreva o motivo da disputa. Um administrador irá analisar e
-            resolver a situação. O escrow ficará retido até a resolução.
-          </p>
-          <textarea
-            value={disputeReason}
-            onChange={(e) => setDisputeReason(e.target.value)}
-            placeholder="Descreva o problema (ex: vendedor não entregou a moeda no jogo, quantidade incorreta...)"
-            className="w-full h-32 px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm resize-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-          />
-          <div className="flex gap-2 justify-end">
-            <Button
-              variant="ghost"
-              onClick={() => {
-                setDisputeModal(null);
-                setDisputeReason("");
-              }}
+        <div className="space-y-5">
+          <div className="bg-amber-950/40 border border-amber-700/40 rounded-lg px-4 py-3 text-xs text-amber-300 space-y-1">
+            <p className="font-semibold">📹 Gravação em vídeo obrigatória</p>
+            <p>
+              Para abrir uma disputa é necessário enviar uma gravação de vídeo
+              como prova. Prints e capturas de tela não são aceitos — vídeos são
+              a única forma de evidência reconhecida, pois são muito mais
+              difíceis de falsificar.
+            </p>
+            <p>
+              Grave sua tela mostrando o histórico da negociação e a ausência da
+              entrega no jogo. O administrador irá analisar o vídeo para
+              resolver a disputa.
+            </p>
+          </div>
+
+          {/* Video upload */}
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-300">
+              Gravação em vídeo (obrigatório)
+            </label>
+            <label
+              className={`flex flex-col items-center justify-center w-full h-28 border-2 border-dashed rounded-lg cursor-pointer transition-colors ${
+                uploadProgress === "done"
+                  ? "border-emerald-600 bg-emerald-900/20"
+                  : uploadProgress === "error"
+                    ? "border-red-600 bg-red-900/20"
+                    : "border-gray-600 bg-gray-800/50 hover:border-gray-500"
+              }`}
             >
+              <input
+                type="file"
+                accept="video/mp4,video/webm,video/quicktime,video/x-matroska,video/avi,video/x-msvideo"
+                className="hidden"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) handleEvidenceUpload(f);
+                }}
+              />
+              {uploadProgress === "idle" && (
+                <>
+                  <span className="text-2xl mb-1">🎥</span>
+                  <span className="text-sm text-gray-400">
+                    Clique para selecionar um vídeo
+                  </span>
+                  <span className="text-xs text-gray-600 mt-1">
+                    MP4, WebM, MOV, MKV — até 500 MB
+                  </span>
+                </>
+              )}
+              {uploadProgress === "uploading" && (
+                <>
+                  <span className="text-2xl mb-1 animate-pulse">⏳</span>
+                  <span className="text-sm text-gray-400">
+                    Enviando vídeo…
+                  </span>
+                </>
+              )}
+              {uploadProgress === "done" && (
+                <>
+                  <span className="text-2xl mb-1">✅</span>
+                  <span className="text-sm text-emerald-400">
+                    Vídeo enviado com sucesso
+                  </span>
+                  <span className="text-xs text-gray-500 mt-1">
+                    Clique para substituir
+                  </span>
+                </>
+              )}
+              {uploadProgress === "error" && (
+                <>
+                  <span className="text-2xl mb-1">❌</span>
+                  <span className="text-sm text-red-400">
+                    {uploadError || "Falha no envio"}
+                  </span>
+                  <span className="text-xs text-gray-500 mt-1">
+                    Clique para tentar novamente
+                  </span>
+                </>
+              )}
+            </label>
+          </div>
+
+          {/* Reason */}
+          <div className="space-y-1">
+            <label className="block text-sm font-medium text-gray-300">
+              Descrição do problema
+            </label>
+            <textarea
+              value={disputeReason}
+              onChange={(e) => setDisputeReason(e.target.value)}
+              placeholder="Descreva o problema (ex: vendedor não entregou a moeda, quantidade incorreta…)"
+              className="w-full h-28 px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm resize-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+            />
+          </div>
+
+          <div className="flex gap-2 justify-end">
+            <Button variant="ghost" onClick={closeDisputeModal}>
               Cancelar
             </Button>
             <Button
               variant="danger"
-              disabled={!disputeReason.trim() || actionLoading !== null}
+              disabled={
+                !disputeReason.trim() ||
+                uploadProgress !== "done" ||
+                !evidenceUrl ||
+                actionLoading !== null
+              }
               onClick={() => {
-                if (disputeModal) {
-                  handleAction(disputeModal, "DISPUTE", disputeReason);
+                if (disputeModal && evidenceUrl) {
+                  handleAction(
+                    disputeModal,
+                    "DISPUTE",
+                    disputeReason,
+                    evidenceUrl,
+                  );
                 }
               }}
             >
-              {actionLoading ? "Enviando..." : "Confirmar Disputa"}
+              {actionLoading ? "Enviando…" : "Confirmar Disputa"}
             </Button>
           </div>
         </div>

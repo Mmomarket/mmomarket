@@ -200,6 +200,7 @@ model Trade {
   status        String   @default("PENDING_DELIVERY") // PENDING_DELIVERY, DELIVERED, CONFIRMED, DISPUTED
   deliveredAt   DateTime? // when seller marked as delivered (auto-release countdown starts)
   disputeReason String?   // reason for dispute
+  evidenceUrl   String?   // seller-uploaded video evidence for dispute resolution
   adminNote     String?   // admin resolution note
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
