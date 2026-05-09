@@ -20,16 +20,17 @@ model User {
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 
-  accounts       Account[]
-  sessions       Session[]
-  wallet         Wallet?
-  sellOrders     Order[]        @relation("SellerOrders")
-  buyOrders      Order[]        @relation("BuyerOrders")
-  sellTrades     Trade[]        @relation("SellerTrades")
-  buyTrades      Trade[]        @relation("BuyerTrades")
-  deposits       Deposit[]
-  withdrawals    Withdrawal[]
-  verifications  Verification[]
+  accounts        Account[]
+  sessions        Session[]
+  wallet          Wallet?
+  sellOrders      Order[]          @relation("SellerOrders")
+  buyOrders       Order[]          @relation("BuyerOrders")
+  sellTrades      Trade[]          @relation("SellerTrades")
+  buyTrades       Trade[]          @relation("BuyerTrades")
+  deposits        Deposit[]
+  withdrawals     Withdrawal[]
+  verifications   Verification[]
+  disputeMessages DisputeMessage[]
 }
 
 model Account {
@@ -205,15 +206,30 @@ model Trade {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  order    Order    @relation(fields: [orderId], references: [id])
-  seller   User     @relation("SellerTrades", fields: [sellerId], references: [id])
-  buyer    User     @relation("BuyerTrades", fields: [buyerId], references: [id])
-  currency Currency @relation(fields: [currencyId], references: [id])
-  serverRef Server? @relation(fields: [serverId], references: [id])
+  order           Order            @relation(fields: [orderId], references: [id])
+  seller          User             @relation("SellerTrades", fields: [sellerId], references: [id])
+  buyer           User             @relation("BuyerTrades", fields: [buyerId], references: [id])
+  currency        Currency         @relation(fields: [currencyId], references: [id])
+  serverRef       Server?          @relation(fields: [serverId], references: [id])
+  disputeMessages DisputeMessage[]
 
   @@index([currencyId])
   @@index([status])
   @@index([serverId])
+}
+
+model DisputeMessage {
+  id          String   @id @default(cuid())
+  tradeId     String
+  userId      String
+  content     String
+  evidenceUrl String?
+  createdAt   DateTime @default(now())
+
+  trade Trade @relation(fields: [tradeId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id])
+
+  @@index([tradeId])
 }
 
 // ─── Verification Model ─────────────────────────────────────

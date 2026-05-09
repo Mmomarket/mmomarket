@@ -2,7 +2,7 @@ import { getCurrentUserId, unauthorizedResponse } from "@/lib/auth";
 import { put } from "@vercel/blob";
 import { NextResponse } from "next/server";
 
-const MAX_SIZE_BYTES = 500 * 1024 * 1024; // 500 MB
+const MAX_SIZE_BYTES = 200 * 1024 * 1024; // 200 MB
 const ALLOWED_TYPES = [
   "video/mp4",
   "video/webm",

@@ -9,7 +9,7 @@ const AUTO_RELEASE_HOURS = 48;
 const actionSchema = z.object({
   action: z.enum(["MARK_DELIVERED", "CONFIRM", "DISPUTE"]),
   disputeReason: z.string().optional(),
-  evidenceUrl: z.string().url().optional(),
+  evidenceUrl: z.string().url().optional(), // optional for buyer, mandatory for seller
 });
 
 export async function GET(
@@ -209,7 +209,10 @@ async function confirmDelivery(
 }
 
 /**
- * Buyer opens a dispute. Escrow stays locked until admin resolves.
+ * Either party can open a dispute.
+ * - Seller: must provide evidence (video of the delivery they performed).
+ * - Buyer: evidence is optional (they may not have a recording of nothing happening).
+ * Opening a dispute creates the first DisputeMessage in the thread.
  */
 async function openDispute(
   trade: { id: string; sellerId: string; buyerId: string; status: string },
@@ -217,12 +220,11 @@ async function openDispute(
   disputeReason?: string,
   evidenceUrl?: string,
 ) {
-  // Only buyer can dispute
-  if (trade.buyerId !== userId) {
-    return NextResponse.json(
-      { error: "Apenas o comprador pode abrir uma disputa" },
-      { status: 403 },
-    );
+  const isSeller = trade.sellerId === userId;
+  const isBuyer = trade.buyerId === userId;
+
+  if (!isSeller && !isBuyer) {
+    return NextResponse.json({ error: "Acesso negado" }, { status: 403 });
   }
 
   if (trade.status !== "PENDING_DELIVERY" && trade.status !== "DELIVERED") {
@@ -232,24 +234,52 @@ async function openDispute(
     );
   }
 
-  if (!evidenceUrl) {
+  // Seller can only dispute after marking delivered (they claim they delivered and buyer won't confirm)
+  if (isSeller && trade.status !== "DELIVERED") {
     return NextResponse.json(
       {
         error:
-          "É obrigatório enviar uma gravação em vídeo como prova antes de abrir uma disputa.",
+          "Marque a entrega como concluída antes de abrir uma disputa. Você só pode disputar após informar que entregou as moedas.",
       },
       { status: 400 },
     );
   }
 
-  const updated = await prisma.trade.update({
-    where: { id: trade.id },
-    data: {
-      status: "DISPUTED",
-      disputeReason: disputeReason || "Motivo não especificado",
-      evidenceUrl,
-    },
-  });
+  // Seller MUST provide video evidence (they recorded the delivery)
+  if (isSeller && !evidenceUrl) {
+    return NextResponse.json(
+      {
+        error:
+          "O vendedor deve enviar uma gravação em vídeo da entrega para abrir uma disputa.",
+      },
+      { status: 400 },
+    );
+  }
 
-  return NextResponse.json(updated);
+  const openingContent =
+    disputeReason?.trim() ||
+    (isSeller
+      ? "Vendedor afirma ter entregado as moedas e aguarda confirmação."
+      : "Comprador não recebeu as moedas.");
+
+  await prisma.$transaction([
+    prisma.trade.update({
+      where: { id: trade.id },
+      data: {
+        status: "DISPUTED",
+        disputeReason: openingContent,
+        evidenceUrl: evidenceUrl ?? null,
+      },
+    }),
+    prisma.disputeMessage.create({
+      data: {
+        tradeId: trade.id,
+        userId,
+        content: openingContent,
+        evidenceUrl: evidenceUrl ?? null,
+      },
+    }),
+  ]);
+
+  return NextResponse.json({ status: "DISPUTED" });
 }

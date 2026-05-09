@@ -3,11 +3,12 @@
 import Button from "@/components/ui/Button";
 import Card, { CardContent, CardHeader } from "@/components/ui/Card";
 import EmptyState from "@/components/ui/EmptyState";
+import Modal from "@/components/ui/Modal";
 import Skeleton from "@/components/ui/Skeleton";
 import { formatBRL, formatNumber } from "@/lib/utils";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 interface AdminStats {
   isAdmin: boolean;
@@ -35,6 +36,15 @@ interface DisputedTrade {
   serverRef: { id: string; name: string } | null;
 }
 
+interface DisputeMessage {
+  id: string;
+  userId: string;
+  content: string;
+  evidenceUrl: string | null;
+  createdAt: string;
+  user: { id: string; name: string | null; isAdmin: boolean };
+}
+
 export default function AdminPage() {
   const { data: session, status: sessionStatus } = useSession();
   const router = useRouter();
@@ -43,6 +53,14 @@ export default function AdminPage() {
   const [disputes, setDisputes] = useState<DisputedTrade[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+
+  // Chat state
+  const [chatTradeId, setChatTradeId] = useState<string | null>(null);
+  const [chatMessages, setChatMessages] = useState<DisputeMessage[]>([]);
+  const [chatLoading, setChatLoading] = useState(false);
+  const [chatText, setChatText] = useState("");
+  const [sendingMessage, setSendingMessage] = useState(false);
+  const chatBottomRef = useRef<HTMLDivElement>(null);
 
   const loadData = useCallback(async () => {
     if (!session) return;
@@ -78,6 +96,53 @@ export default function AdminPage() {
       loadData();
     }
   }, [session, sessionStatus, router, loadData]);
+
+  useEffect(() => {
+    chatBottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [chatMessages]);
+
+  const openChat = async (tradeId: string) => {
+    setChatTradeId(tradeId);
+    setChatMessages([]);
+    setChatText("");
+    setChatLoading(true);
+    try {
+      const res = await fetch(`/api/trades/${tradeId}/messages`);
+      if (res.ok) setChatMessages(await res.json());
+    } finally {
+      setChatLoading(false);
+    }
+  };
+
+  const closeChat = () => {
+    setChatTradeId(null);
+    setChatMessages([]);
+    setChatText("");
+  };
+
+  const sendChatMessage = async () => {
+    if (!chatTradeId || !chatText.trim()) return;
+    setSendingMessage(true);
+    try {
+      const res = await fetch(`/api/trades/${chatTradeId}/messages`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: chatText.trim() }),
+      });
+      if (res.ok) {
+        const msg = await res.json();
+        setChatMessages((prev) => [...prev, msg]);
+        setChatText("");
+      } else {
+        const err = await res.json();
+        alert(err.error || "Erro ao enviar mensagem");
+      }
+    } catch {
+      alert("Erro de conexão");
+    } finally {
+      setSendingMessage(false);
+    }
+  };
 
   const handleDispute = async (
     tradeId: string,
@@ -259,6 +324,14 @@ export default function AdminPage() {
                   <div className="flex flex-wrap gap-2 border-t border-red-900/30 pt-3">
                     <Button
                       size="sm"
+                      variant="ghost"
+                      onClick={() => openChat(trade.id)}
+                      disabled={actionLoading === trade.id}
+                    >
+                      💬 Ver Chat
+                    </Button>
+                    <Button
+                      size="sm"
                       variant="primary"
                       onClick={() =>
                         handleDispute(
@@ -296,6 +369,49 @@ export default function AdminPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* ── Dispute Chat Modal ───────────────────────────────────── */}
+      <Modal isOpen={!!chatTradeId} onClose={closeChat} title="💬 Disputa — Chat (Admin)" className="max-w-2xl">
+        <div className="flex flex-col gap-3">
+          <div className="h-80 overflow-y-auto space-y-3 pr-1">
+            {chatLoading ? (
+              <div className="flex items-center justify-center h-full text-gray-500 text-sm">Carregando mensagens…</div>
+            ) : chatMessages.length === 0 ? (
+              <div className="flex items-center justify-center h-full text-gray-600 text-sm">Nenhuma mensagem ainda.</div>
+            ) : (
+              chatMessages.map((msg) => (
+                <div key={msg.id} className="flex flex-col items-start">
+                  <div className={`max-w-[90%] rounded-xl px-3 py-2 text-sm ${msg.user.isAdmin ? "bg-purple-900/60 border border-purple-700/50" : "bg-gray-700/60 border border-gray-600/50"}`}>
+                    <p className="text-xs font-medium mb-1 text-gray-400">
+                      {msg.user.isAdmin ? "🛡️ Admin" : msg.user.name || "Usuário"}
+                      {" · "}{new Date(msg.createdAt).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}
+                    </p>
+                    <p className="text-white whitespace-pre-wrap">{msg.content}</p>
+                    {msg.evidenceUrl && (
+                      <a href={`/api/admin/evidence?url=${encodeURIComponent(msg.evidenceUrl)}`} target="_blank" rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 mt-2 text-xs text-teal-400 hover:text-teal-300 underline">
+                        🎥 Ver Gravação
+                      </a>
+                    )}
+                  </div>
+                </div>
+              ))
+            )}
+            <div ref={chatBottomRef} />
+          </div>
+          <div className="border-t border-gray-700 pt-3">
+            <div className="flex gap-2">
+              <textarea value={chatText} onChange={(e) => setChatText(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendChatMessage(); } }}
+                placeholder="Escreva como admin… (Enter para enviar)"
+                className="flex-1 px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm resize-none focus:ring-2 focus:ring-purple-500 focus:border-transparent h-16" />
+              <Button variant="primary" onClick={sendChatMessage} disabled={!chatText.trim() || sendingMessage}>
+                {sendingMessage ? "…" : "Enviar"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }
