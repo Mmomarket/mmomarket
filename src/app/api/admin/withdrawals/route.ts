@@ -4,6 +4,7 @@ import {
   isCurrentUserAdmin,
   unauthorizedResponse,
 } from "@/lib/auth";
+import { generatePixCode } from "@/lib/pix";
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { z } from "zod";
@@ -49,7 +50,7 @@ export async function PATCH(req: Request) {
 
     const withdrawal = await prisma.withdrawal.findUnique({
       where: { id: withdrawalId },
-      include: { user: { select: { email: true } } },
+      include: { user: { select: { email: true, name: true } } },
     });
 
     if (!withdrawal) {
@@ -86,9 +87,7 @@ export async function PATCH(req: Request) {
       });
     }
 
-    // APPROVE — mark as COMPLETED immediately.
-    // The admin must manually send the Pix via the MercadoPago dashboard.
-    // The Pix key details are returned in the response for easy copy-paste.
+    // APPROVE — generate Pix BR Code QR for the admin to scan, then mark COMPLETED.
     let pixKey = withdrawal.pixKey || "";
     let pixKeyType = (withdrawal.pixKeyType as string) || "EVP";
 
@@ -99,17 +98,29 @@ export async function PATCH(req: Request) {
       pixKey = pixKey.substring(colonIdx + 1);
     }
 
+    // Generate scannable Pix BR Code (EMV standard)
+    const userName = withdrawal.user.name ?? withdrawal.user.email ?? "Usuario";
+    const pixCode = generatePixCode({
+      pixKey,
+      merchantName: userName,
+      merchantCity: "SAO PAULO",
+      amount: withdrawal.amountBRL,
+      txId: withdrawalId.replace(/[^A-Za-z0-9]/g, "").substring(0, 25),
+      description: `Saque MMOMarket`,
+    });
+
     await prisma.withdrawal.update({
       where: { id: withdrawalId },
       data: { status: "COMPLETED" },
     });
 
     return NextResponse.json({
-      message: `Saque marcado como concluído. Envie R$ ${withdrawal.amountBRL.toFixed(2)} via Pix para a chave abaixo.`,
+      message: `Saque aprovado! Escaneie o QR code Pix abaixo para enviar R$ ${withdrawal.amountBRL.toFixed(2)}.`,
       pixKey,
       pixKeyType,
       amountBRL: withdrawal.amountBRL,
       userEmail: withdrawal.user.email,
+      pixCode, // full EMV string for QR rendering
     });
   } catch (error) {
     if (error instanceof z.ZodError) {

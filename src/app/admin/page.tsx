@@ -8,6 +8,7 @@ import Skeleton from "@/components/ui/Skeleton";
 import { formatBRL, formatNumber } from "@/lib/utils";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { QRCodeSVG } from "qrcode.react";
 import { useCallback, useEffect, useRef, useState } from "react";
 interface AdminStats {
   isAdmin: boolean;
@@ -81,6 +82,13 @@ export default function AdminPage() {
   const [withdrawalLoading, setWithdrawalLoading] = useState<string | null>(
     null,
   );
+  const [pixQR, setPixQR] = useState<{
+    code: string;
+    amount: number;
+    pixKey: string;
+    pixKeyType: string;
+    userEmail: string;
+  } | null>(null);
 
   // Chat state
   const [chatTradeId, setChatTradeId] = useState<string | null>(null);
@@ -225,16 +233,14 @@ export default function AdminPage() {
       });
       const data = await res.json();
       if (res.ok) {
-        if (action === "APPROVE" && data.pixKey) {
-          // Show Pix details for manual transfer
-          const msg =
-            `✅ Saque aprovado!\n\n` +
-            `Envie via Pix no painel do MercadoPago:\n\n` +
-            `💰 Valor: R$ ${Number(data.amountBRL).toFixed(2)}\n` +
-            `🔑 Chave: ${data.pixKey}\n` +
-            `📋 Tipo: ${data.pixKeyType}\n` +
-            `👤 Usuário: ${data.userEmail ?? ""}`;
-          alert(msg);
+        if (action === "APPROVE" && data.pixCode) {
+          setPixQR({
+            code: data.pixCode,
+            amount: data.amountBRL,
+            pixKey: data.pixKey ?? "",
+            pixKeyType: data.pixKeyType ?? "",
+            userEmail: data.userEmail ?? "",
+          });
         } else {
           alert(data.message || "Processado com sucesso!");
         }
@@ -523,8 +529,13 @@ export default function AdminPage() {
                       </p>
                       {w.pixKey && (
                         <p className="text-xs text-gray-400 font-mono">
-                          Pix ({(w as AdminWithdrawal & { pixKeyType?: string }).pixKeyType ?? "—"}
-                          ): <span className="text-yellow-300 select-all">{w.pixKey}</span>
+                          Pix (
+                          {(w as AdminWithdrawal & { pixKeyType?: string })
+                            .pixKeyType ?? "—"}
+                          ):{" "}
+                          <span className="text-yellow-300 select-all">
+                            {w.pixKey}
+                          </span>
                         </p>
                       )}
                     </div>
@@ -719,6 +730,45 @@ export default function AdminPage() {
             </div>
           </div>
         </div>
+      </Modal>
+
+      {/* Pix QR Code Modal */}
+      <Modal
+        isOpen={!!pixQR}
+        onClose={() => setPixQR(null)}
+        title="📲 Pagar via Pix"
+      >
+        {pixQR && (
+          <div className="flex flex-col items-center gap-4 py-4">
+            <QRCodeSVG value={pixQR.code} size={256} />
+            <p className="text-xl font-bold text-white">
+              R$ {Number(pixQR.amount).toFixed(2)}
+            </p>
+            <div className="text-sm text-gray-400 text-center space-y-1">
+              <p>
+                <span className="text-gray-300 font-medium">Chave:</span>{" "}
+                <span className="font-mono">{pixQR.pixKey}</span>
+              </p>
+              <p>
+                <span className="text-gray-300 font-medium">Tipo:</span>{" "}
+                {pixQR.pixKeyType}
+              </p>
+              <p>
+                <span className="text-gray-300 font-medium">Usuário:</span>{" "}
+                {pixQR.userEmail}
+              </p>
+            </div>
+            <p className="text-xs text-gray-500">
+              Escaneie com seu app bancário para pagar
+            </p>
+            <Button
+              variant="secondary"
+              onClick={() => navigator.clipboard.writeText(pixQR.code)}
+            >
+              📋 Copiar código Pix Copia e Cola
+            </Button>
+          </div>
+        )}
       </Modal>
     </div>
   );
