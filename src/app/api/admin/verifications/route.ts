@@ -4,6 +4,7 @@ import {
   isCurrentUserAdmin,
   unauthorizedResponse,
 } from "@/lib/auth";
+import { sendVerificationResultEmail } from "@/lib/email";
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { z } from "zod";
@@ -74,6 +75,23 @@ export async function PATCH(req: Request) {
         reviewNote: reviewNote || null,
       },
     });
+
+    // Notify user (non-blocking)
+    prisma.user
+      .findUnique({
+        where: { id: verification.userId },
+        select: { email: true },
+      })
+      .then((u) => {
+        if (u?.email) {
+          return sendVerificationResultEmail(u.email, {
+            status: action === "APPROVE" ? "APPROVED" : "REJECTED",
+            gameSlug: verification.gameSlug,
+            reviewNote,
+          });
+        }
+      })
+      .catch(() => {});
 
     return NextResponse.json(updated);
   } catch (error) {

@@ -47,6 +47,16 @@ export function calculateFee(totalBRL: number, feePercent: number = 2): number {
   return totalBRL * (feePercent / 100);
 }
 
+/**
+ * Round a BRL monetary value to 2 decimal places using banker's rounding
+ * (round-half-to-even) to prevent float drift accumulation across many
+ * wallet transactions.  Always call this before persisting or comparing
+ * financial amounts.
+ */
+export function roundMoney(value: number): number {
+  return Math.round((value + Number.EPSILON) * 100) / 100;
+}
+
 export function slugify(text: string): string {
   return text
     .toLowerCase()

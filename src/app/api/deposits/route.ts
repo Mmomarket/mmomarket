@@ -1,6 +1,7 @@
 import { getCurrentUserId, unauthorizedResponse } from "@/lib/auth";
 import { createDepositPreference } from "@/lib/mercadopago";
 import prisma from "@/lib/prisma";
+import { getClientIp, rateLimit } from "@/lib/ratelimit";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -11,18 +12,27 @@ const depositSchema = z.object({
     .max(50000, "Depósito máximo: R$ 50.000,00"),
 });
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
     const userId = await getCurrentUserId();
     if (!userId) return unauthorizedResponse();
 
+    const { searchParams } = new URL(req.url);
+    const cursor = searchParams.get("cursor") || undefined;
+    const limit = Math.min(parseInt(searchParams.get("limit") || "50"), 100);
+
     const deposits = await prisma.deposit.findMany({
       where: { userId },
       orderBy: { createdAt: "desc" },
-      take: 50,
+      take: limit + 1,
+      ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
     });
 
-    return NextResponse.json(deposits);
+    const hasMore = deposits.length > limit;
+    const items = hasMore ? deposits.slice(0, limit) : deposits;
+    const nextCursor = hasMore ? items[items.length - 1].id : null;
+
+    return NextResponse.json({ deposits: items, nextCursor, hasMore });
   } catch (error) {
     console.error("Deposits GET error:", error);
     return NextResponse.json(
@@ -33,6 +43,18 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
+  // 10 deposit attempts per hour per IP
+  const rl = rateLimit("deposits", getClientIp(req), {
+    limit: 10,
+    windowMs: 60 * 60 * 1000,
+  });
+  if (!rl.ok) {
+    return NextResponse.json(
+      { error: "Muitas tentativas. Tente novamente mais tarde." },
+      { status: 429 },
+    );
+  }
+
   try {
     const userId = await getCurrentUserId();
     if (!userId) return unauthorizedResponse();

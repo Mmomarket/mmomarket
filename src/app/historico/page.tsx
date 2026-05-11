@@ -206,7 +206,9 @@ export default function HistoricoPage() {
     fetch("/api/trades")
       .then((r) => r.json())
       .then((data) => {
-        setTrades(Array.isArray(data) ? data : []);
+        // Support both old array format and new paginated { trades, nextCursor } format
+        const list = Array.isArray(data) ? data : (data.trades ?? []);
+        setTrades(list);
       })
       .finally(() => setLoading(false));
   }, [session]);

@@ -40,6 +40,22 @@ export async function POST(req: Request) {
     const body = await req.json();
     const data = verificationSchema.parse(body);
 
+    // Reject if user already has a PENDING or APPROVED verification for this server
+    const existing = await prisma.verification.findFirst({
+      where: {
+        userId,
+        serverId: data.serverId,
+        status: { in: ["PENDING", "APPROVED"] },
+      },
+    });
+    if (existing) {
+      const msg =
+        existing.status === "APPROVED"
+          ? "Você já possui uma verificação aprovada para este servidor."
+          : "Você já tem uma verificação pendente para este servidor. Aguarde a revisão.";
+      return NextResponse.json({ error: msg }, { status: 409 });
+    }
+
     const verification = await prisma.verification.create({
       data: {
         userId,

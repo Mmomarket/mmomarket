@@ -93,20 +93,25 @@ export async function PATCH(req: Request) {
       data: { status: "PROCESSING" },
     });
 
-    // Parse pixKey (stored as "TYPE:key")
-    const pixKeyStored = withdrawal.pixKey || "";
-    const colonIdx = pixKeyStored.indexOf(":");
-    const pixKeyType =
-      colonIdx > 0
-        ? (pixKeyStored.substring(0, colonIdx) as
-            | "CPF"
-            | "CNPJ"
-            | "EMAIL"
-            | "PHONE"
-            | "EVP")
-        : "EVP";
-    const pixKey =
-      colonIdx > 0 ? pixKeyStored.substring(colonIdx + 1) : pixKeyStored;
+    // Parse pixKey — new rows store type in pixKeyType, legacy rows store "TYPE:value"
+    const pixKeyTypeStored = withdrawal.pixKeyType as
+      | "CPF"
+      | "CNPJ"
+      | "EMAIL"
+      | "PHONE"
+      | "EVP"
+      | null;
+
+    let pixKey = withdrawal.pixKey || "";
+    let pixKeyType: "CPF" | "CNPJ" | "EMAIL" | "PHONE" | "EVP" =
+      pixKeyTypeStored || "EVP";
+
+    // Legacy format fallback: "TYPE:value"
+    if (!pixKeyTypeStored && pixKey.includes(":")) {
+      const colonIdx = pixKey.indexOf(":");
+      pixKeyType = pixKey.substring(0, colonIdx) as typeof pixKeyType;
+      pixKey = pixKey.substring(colonIdx + 1);
+    }
 
     try {
       const payout = await createPixPayout({

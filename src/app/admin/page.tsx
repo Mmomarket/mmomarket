@@ -9,7 +9,6 @@ import { formatBRL, formatNumber } from "@/lib/utils";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
-
 interface AdminStats {
   isAdmin: boolean;
   disputedTrades: number;
@@ -45,14 +44,27 @@ interface DisputeMessage {
   user: { id: string; name: string | null; isAdmin: boolean };
 }
 
+interface AdminWithdrawal {
+  id: string;
+  amountBRL: number;
+  status: string;
+  pixKey: string | null;
+  createdAt: string;
+  user: { id: string; name: string | null; email: string };
+}
+
 export default function AdminPage() {
   const { data: session, status: sessionStatus } = useSession();
   const router = useRouter();
 
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [disputes, setDisputes] = useState<DisputedTrade[]>([]);
+  const [withdrawals, setWithdrawals] = useState<AdminWithdrawal[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [withdrawalLoading, setWithdrawalLoading] = useState<string | null>(
+    null,
+  );
 
   // Chat state
   const [chatTradeId, setChatTradeId] = useState<string | null>(null);
@@ -65,9 +77,10 @@ export default function AdminPage() {
   const loadData = useCallback(async () => {
     if (!session) return;
     try {
-      const [statsRes, disputesRes] = await Promise.all([
+      const [statsRes, disputesRes, withdrawalsRes] = await Promise.all([
         fetch("/api/admin/stats"),
         fetch("/api/admin/disputes"),
+        fetch("/api/admin/withdrawals"),
       ]);
 
       const statsData = await statsRes.json();
@@ -79,6 +92,9 @@ export default function AdminPage() {
 
       if (disputesRes.ok) {
         setDisputes(await disputesRes.json());
+      }
+      if (withdrawalsRes.ok) {
+        setWithdrawals(await withdrawalsRes.json());
       }
     } catch {
       router.push("/");
@@ -144,6 +160,31 @@ export default function AdminPage() {
     }
   };
 
+  const handleWithdrawal = async (
+    withdrawalId: string,
+    action: "APPROVE" | "REJECT",
+  ) => {
+    setWithdrawalLoading(withdrawalId);
+    try {
+      const res = await fetch("/api/admin/withdrawals", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ withdrawalId, action }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        alert(data.message || "Processado com sucesso!");
+        loadData();
+      } else {
+        alert(data.error || "Erro ao processar saque");
+      }
+    } catch {
+      alert("Erro de conexão");
+    } finally {
+      setWithdrawalLoading(null);
+    }
+  };
+
   const handleDispute = async (
     tradeId: string,
     resolution: "RELEASE_TO_SELLER" | "REFUND_TO_BUYER",
@@ -199,13 +240,21 @@ export default function AdminPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <Card>
           <CardContent className="py-4 text-center">
             <p className="text-xl font-bold text-red-400">
               {stats.disputedTrades}
             </p>
             <p className="text-xs text-gray-500 mt-1">Disputas Abertas</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="py-4 text-center">
+            <p className="text-xl font-bold text-yellow-400">
+              {withdrawals.filter((w) => w.status === "PENDING").length}
+            </p>
+            <p className="text-xs text-gray-500 mt-1">Saques Pendentes</p>
           </CardContent>
         </Card>
         <Card>
@@ -365,6 +414,75 @@ export default function AdminPage() {
                   </div>
                 </div>
               ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* ── Withdrawals ─────────────────────────────────────────── */}
+      <Card>
+        <CardHeader>
+          <h2 className="font-semibold text-yellow-400">
+            Saques Pendentes (
+            {withdrawals.filter((w) => w.status === "PENDING").length})
+          </h2>
+        </CardHeader>
+        <CardContent>
+          {withdrawals.filter((w) => w.status === "PENDING").length === 0 ? (
+            <EmptyState
+              title="Nenhum saque pendente"
+              description="Não há saques aguardando processamento."
+            />
+          ) : (
+            <div className="space-y-3">
+              {withdrawals
+                .filter((w) => w.status === "PENDING")
+                .map((w) => (
+                  <div
+                    key={w.id}
+                    className="border border-yellow-900/50 rounded-lg p-4 bg-yellow-900/10 flex flex-col sm:flex-row sm:items-center gap-3"
+                  >
+                    <div className="flex-1 space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-white font-semibold">
+                          {formatBRL(w.amountBRL)}
+                        </span>
+                        <span className="text-xs text-gray-500">
+                          {new Date(w.createdAt).toLocaleString("pt-BR")}
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-300">
+                        {w.user.name}{" "}
+                        <span className="text-gray-500 text-xs">
+                          ({w.user.email})
+                        </span>
+                      </p>
+                      {w.pixKey && (
+                        <p className="text-xs text-gray-400 font-mono">
+                          Pix: {w.pixKey}
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="primary"
+                        onClick={() => handleWithdrawal(w.id, "APPROVE")}
+                        disabled={withdrawalLoading === w.id}
+                      >
+                        {withdrawalLoading === w.id ? "..." : "✅ Aprovar"}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="danger"
+                        onClick={() => handleWithdrawal(w.id, "REJECT")}
+                        disabled={withdrawalLoading === w.id}
+                      >
+                        {withdrawalLoading === w.id ? "..." : "❌ Rejeitar"}
+                      </Button>
+                    </div>
+                  </div>
+                ))}
             </div>
           )}
         </CardContent>

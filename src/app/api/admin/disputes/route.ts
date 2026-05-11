@@ -4,6 +4,7 @@ import {
   isCurrentUserAdmin,
   unauthorizedResponse,
 } from "@/lib/auth";
+import { sendDisputeResolvedEmail } from "@/lib/email";
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { z } from "zod";
@@ -115,6 +116,21 @@ export async function PATCH(req: Request) {
         }),
       ]);
     }
+
+    // Notify both parties (non-blocking)
+    prisma.user
+      .findMany({
+        where: { id: { in: [trade.sellerId, trade.buyerId] } },
+        select: { email: true },
+      })
+      .then((users) =>
+        Promise.all(
+          users.map((u) =>
+            sendDisputeResolvedEmail(u.email, { resolution, adminNote }),
+          ),
+        ),
+      )
+      .catch(() => {});
 
     return NextResponse.json({
       message: `Disputa resolvida: ${resolution === "RELEASE_TO_SELLER" ? "Liberado para vendedor" : "Reembolsado para comprador"}`,

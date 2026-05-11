@@ -1,6 +1,9 @@
 import { getCurrentUserId, unauthorizedResponse } from "@/lib/auth";
 import { PLATFORM_FEE_PERCENT } from "@/lib/constants";
+import { sendTradeMatchedEmail } from "@/lib/email";
 import prisma from "@/lib/prisma";
+import { getClientIp, rateLimit } from "@/lib/ratelimit";
+import { roundMoney } from "@/lib/utils";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -50,7 +53,18 @@ export async function GET(req: Request) {
     const orders = await prisma.order.findMany({
       where,
       include: {
-        user: { select: { id: true, name: true, image: true } },
+        user: {
+          select: {
+            id: true,
+            name: true,
+            image: true,
+            verifications: {
+              where: { status: "APPROVED" },
+              take: 1,
+              select: { id: true },
+            },
+          },
+        },
         currency: { include: { game: true } },
         serverRef: true,
       },
@@ -69,13 +83,45 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
+  // 20 orders per minute per user
+  const rl = rateLimit("orders", getClientIp(req), {
+    limit: 20,
+    windowMs: 60_000,
+  });
+  if (!rl.ok) {
+    return NextResponse.json(
+      { error: "Muitas requisições. Aguarde um momento." },
+      { status: 429 },
+    );
+  }
+
   try {
     const userId = await getCurrentUserId();
     if (!userId) return unauthorizedResponse();
 
     const body = await req.json();
     const data = createOrderSchema.parse(body);
-    const totalBRL = data.amount * data.pricePerUnit;
+    const totalBRL = roundMoney(data.amount * data.pricePerUnit);
+
+    // SELL orders: seller must have an approved verification for this server
+    if (data.type === "SELL") {
+      const verification = await prisma.verification.findFirst({
+        where: {
+          userId,
+          serverId: data.serverId,
+          status: "APPROVED",
+        },
+      });
+      if (!verification) {
+        return NextResponse.json(
+          {
+            error:
+              "Você precisa ter uma verificação aprovada para este servidor antes de criar ordens de venda. Acesse a página de Verificação.",
+          },
+          { status: 403 },
+        );
+      }
+    }
 
     if (data.type === "BUY") {
       // Check buyer has enough BRL balance
@@ -163,8 +209,8 @@ async function matchBuyOrder(buyOrderId: string) {
 
     const availableAmount = sellOrder.amount - sellOrder.filledAmount;
     const tradeAmount = Math.min(remainingAmount, availableAmount);
-    const tradeTotalBRL = tradeAmount * sellOrder.pricePerUnit;
-    const fee = tradeTotalBRL * (PLATFORM_FEE_PERCENT / 100);
+    const tradeTotalBRL = roundMoney(tradeAmount * sellOrder.pricePerUnit);
+    const fee = roundMoney(tradeTotalBRL * (PLATFORM_FEE_PERCENT / 100));
 
     await prisma.$transaction([
       // Create trade (status defaults to PENDING_DELIVERY)
@@ -219,6 +265,15 @@ async function matchBuyOrder(buyOrderId: string) {
       tradeTotalBRL,
     ).catch(() => {});
 
+    // Notify both parties (non-blocking)
+    notifyTradeMatched(
+      buyOrder.userId,
+      sellOrder.userId,
+      buyOrder.currencyId,
+      tradeAmount,
+      tradeTotalBRL,
+    ).catch(() => {});
+
     remainingAmount -= tradeAmount;
   }
 }
@@ -249,8 +304,8 @@ async function matchSellOrder(sellOrderId: string) {
 
     const availableAmount = buyOrder.amount - buyOrder.filledAmount;
     const tradeAmount = Math.min(remainingAmount, availableAmount);
-    const tradeTotalBRL = tradeAmount * sellOrder.pricePerUnit;
-    const fee = tradeTotalBRL * (PLATFORM_FEE_PERCENT / 100);
+    const tradeTotalBRL = roundMoney(tradeAmount * sellOrder.pricePerUnit);
+    const fee = roundMoney(tradeTotalBRL * (PLATFORM_FEE_PERCENT / 100));
 
     await prisma.$transaction([
       prisma.trade.create({
@@ -302,8 +357,48 @@ async function matchSellOrder(sellOrderId: string) {
       tradeTotalBRL,
     ).catch(() => {});
 
+    // Notify both parties (non-blocking)
+    notifyTradeMatched(
+      buyOrder.userId,
+      sellOrder.userId,
+      sellOrder.currencyId,
+      tradeAmount,
+      tradeTotalBRL,
+    ).catch(() => {});
+
     remainingAmount -= tradeAmount;
   }
+}
+
+// ---------------------------------------------------------------------------
+// Email notification helper
+// ---------------------------------------------------------------------------
+async function notifyTradeMatched(
+  buyerId: string,
+  sellerId: string,
+  currencyId: string,
+  amount: number,
+  totalBRL: number,
+) {
+  const [buyer, seller, currency] = await Promise.all([
+    prisma.user.findUnique({ where: { id: buyerId }, select: { email: true } }),
+    prisma.user.findUnique({
+      where: { id: sellerId },
+      select: { email: true },
+    }),
+    prisma.currency.findUnique({
+      where: { id: currencyId },
+      include: { game: true },
+    }),
+  ]);
+  if (!buyer?.email || !seller?.email || !currency) return;
+  await sendTradeMatchedEmail(buyer.email, seller.email, {
+    gameName: currency.game.name,
+    currencyCode: currency.code,
+    amount,
+    totalBRL,
+    tradeId: "",
+  });
 }
 
 // ---------------------------------------------------------------------------

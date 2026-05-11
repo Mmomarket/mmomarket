@@ -103,6 +103,36 @@ async function main() {
     )`,
   );
 
+  // ── Withdrawal.pixKeyType column ─────────────────────────────────────────
+  await safeExec(
+    "Withdrawal.pixKeyType column",
+    "ALTER TABLE Withdrawal ADD COLUMN pixKeyType TEXT",
+  );
+
+  // Backfill pixKeyType from legacy "TYPE:value" format in pixKey
+  try {
+    await db.execute(`
+      UPDATE Withdrawal
+      SET pixKeyType = CASE
+        WHEN pixKey LIKE 'CPF:%'   THEN 'CPF'
+        WHEN pixKey LIKE 'CNPJ:%'  THEN 'CNPJ'
+        WHEN pixKey LIKE 'EMAIL:%' THEN 'EMAIL'
+        WHEN pixKey LIKE 'PHONE:%' THEN 'PHONE'
+        WHEN pixKey LIKE 'EVP:%'   THEN 'EVP'
+        ELSE 'EVP'
+      END
+      WHERE pixKey IS NOT NULL AND pixKeyType IS NULL
+    `);
+    await db.execute(`
+      UPDATE Withdrawal
+      SET pixKey = SUBSTR(pixKey, INSTR(pixKey, ':') + 1)
+      WHERE pixKey LIKE '%:%' AND pixKeyType IS NOT NULL
+    `);
+    console.log("✅  Withdrawal pixKey/pixKeyType backfill");
+  } catch (e) {
+    console.log("⏭️   Withdrawal backfill — skipped:", e.message);
+  }
+
   console.log("\n✅  All migrations applied. Turso is now in sync.\n");
 }
 

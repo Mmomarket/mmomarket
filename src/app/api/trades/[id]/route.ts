@@ -1,4 +1,5 @@
 import { getCurrentUserId, unauthorizedResponse } from "@/lib/auth";
+import { sendDeliveryMarkedEmail, sendDisputeOpenedEmail } from "@/lib/email";
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { z } from "zod";
@@ -128,11 +129,22 @@ async function markDelivered(
 
   const updated = await prisma.trade.update({
     where: { id: trade.id },
+    include: {
+      buyer: { select: { email: true } },
+      currency: { include: { game: true } },
+    },
     data: {
       status: "DELIVERED",
       deliveredAt: new Date(),
     },
   });
+
+  // Notify buyer (non-blocking)
+  sendDeliveryMarkedEmail(updated.buyer.email, {
+    gameName: updated.currency.game.name,
+    currencyCode: updated.currency.code,
+    tradeId: trade.id,
+  }).catch(() => {});
 
   return NextResponse.json(updated);
 }
@@ -162,7 +174,11 @@ async function confirmDelivery(
     Date.now() - new Date(trade.deliveredAt).getTime() >
       AUTO_RELEASE_HOURS * 60 * 60 * 1000;
 
-  // Only buyer can confirm, OR auto-release if time has passed (anyone involved)
+  // Only buyer can confirm, OR auto-release if time has passed (only trade participants)
+  const isParticipant = trade.buyerId === userId || trade.sellerId === userId;
+  if (!isParticipant) {
+    return NextResponse.json({ error: "Acesso negado" }, { status: 403 });
+  }
   if (trade.buyerId !== userId && !isAutoRelease) {
     return NextResponse.json(
       { error: "Apenas o comprador pode confirmar o recebimento" },
@@ -280,6 +296,23 @@ async function openDispute(
       },
     }),
   ]);
+
+  // Notify all admins (non-blocking)
+  prisma.user
+    .findMany({ where: { isAdmin: true }, select: { email: true } })
+    .then((admins) => {
+      const opener = isSeller ? "Vendedor" : "Comprador";
+      return Promise.all(
+        admins.map((a) =>
+          sendDisputeOpenedEmail(a.email, {
+            tradeId: trade.id,
+            openedByName: opener,
+            reason: openingContent,
+          }),
+        ),
+      );
+    })
+    .catch(() => {});
 
   return NextResponse.json({ status: "DISPUTED" });
 }

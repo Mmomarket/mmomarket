@@ -150,7 +150,8 @@ model Withdrawal {
   userId      String
   amountBRL   Float
   status      String   @default("PENDING") // PENDING, PROCESSING, COMPLETED, REJECTED
-  pixKey      String?
+  pixKey      String?  // the key value (CPF number, email address, etc.)
+  pixKeyType  String?  // CPF, CNPJ, EMAIL, PHONE, EVP
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

@@ -15,18 +15,27 @@ const withdrawalSchema = z.object({
 });
 
 // GET /api/withdrawals - List user's withdrawals
-export async function GET() {
+export async function GET(req: Request) {
   try {
     const userId = await getCurrentUserId();
     if (!userId) return unauthorizedResponse();
 
+    const { searchParams } = new URL(req.url);
+    const cursor = searchParams.get("cursor") || undefined;
+    const limit = Math.min(parseInt(searchParams.get("limit") || "50"), 100);
+
     const withdrawals = await prisma.withdrawal.findMany({
       where: { userId },
       orderBy: { createdAt: "desc" },
-      take: 50,
+      take: limit + 1,
+      ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
     });
 
-    return NextResponse.json(withdrawals);
+    const hasMore = withdrawals.length > limit;
+    const items = hasMore ? withdrawals.slice(0, limit) : withdrawals;
+    const nextCursor = hasMore ? items[items.length - 1].id : null;
+
+    return NextResponse.json({ withdrawals: items, nextCursor, hasMore });
   } catch (error) {
     console.error("Withdrawals GET error:", error);
     return NextResponse.json(
@@ -91,7 +100,8 @@ export async function POST(req: Request) {
         data: {
           userId,
           amountBRL,
-          pixKey: `${pixKeyType}:${pixKey}`,
+          pixKey, // just the key value
+          pixKeyType, // type stored separately
           status: "PENDING",
         },
       });
