@@ -14,7 +14,10 @@ export async function POST(req: Request) {
     const file = form.get("file") as File | null;
 
     if (!file) {
-      return NextResponse.json({ error: "Nenhum arquivo enviado" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Nenhum arquivo enviado" },
+        { status: 400 },
+      );
     }
 
     if (!ALLOWED_TYPES.includes(file.type)) {
