@@ -225,7 +225,19 @@ export default function AdminPage() {
       });
       const data = await res.json();
       if (res.ok) {
-        alert(data.message || "Processado com sucesso!");
+        if (action === "APPROVE" && data.pixKey) {
+          // Show Pix details for manual transfer
+          const msg =
+            `✅ Saque aprovado!\n\n` +
+            `Envie via Pix no painel do MercadoPago:\n\n` +
+            `💰 Valor: R$ ${Number(data.amountBRL).toFixed(2)}\n` +
+            `🔑 Chave: ${data.pixKey}\n` +
+            `📋 Tipo: ${data.pixKeyType}\n` +
+            `👤 Usuário: ${data.userEmail ?? ""}`;
+          alert(msg);
+        } else {
+          alert(data.message || "Processado com sucesso!");
+        }
         loadData();
       } else {
         alert(data.error || "Erro ao processar saque");
@@ -511,7 +523,8 @@ export default function AdminPage() {
                       </p>
                       {w.pixKey && (
                         <p className="text-xs text-gray-400 font-mono">
-                          Pix: {w.pixKey}
+                          Pix ({(w as AdminWithdrawal & { pixKeyType?: string }).pixKeyType ?? "—"}
+                          ): <span className="text-yellow-300 select-all">{w.pixKey}</span>
                         </p>
                       )}
                     </div>

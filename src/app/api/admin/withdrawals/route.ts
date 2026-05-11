@@ -4,7 +4,6 @@ import {
   isCurrentUserAdmin,
   unauthorizedResponse,
 } from "@/lib/auth";
-import { createPixPayout } from "@/lib/mercadopago";
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { z } from "zod";
@@ -87,70 +86,31 @@ export async function PATCH(req: Request) {
       });
     }
 
-    // APPROVE — attempt MercadoPago payout
-    // Mark as PROCESSING first
-    await prisma.withdrawal.update({
-      where: { id: withdrawalId },
-      data: { status: "PROCESSING" },
-    });
-
-    // Parse pixKey — new rows store type in pixKeyType, legacy rows store "TYPE:value"
-    const pixKeyTypeStored = withdrawal.pixKeyType as
-      | "CPF"
-      | "CNPJ"
-      | "EMAIL"
-      | "PHONE"
-      | "EVP"
-      | null;
-
+    // APPROVE — mark as COMPLETED immediately.
+    // The admin must manually send the Pix via the MercadoPago dashboard.
+    // The Pix key details are returned in the response for easy copy-paste.
     let pixKey = withdrawal.pixKey || "";
-    let pixKeyType: "CPF" | "CNPJ" | "EMAIL" | "PHONE" | "EVP" =
-      pixKeyTypeStored || "EVP";
+    let pixKeyType = (withdrawal.pixKeyType as string) || "EVP";
 
     // Legacy format fallback: "TYPE:value"
-    if (!pixKeyTypeStored && pixKey.includes(":")) {
+    if (!withdrawal.pixKeyType && pixKey.includes(":")) {
       const colonIdx = pixKey.indexOf(":");
-      pixKeyType = pixKey.substring(0, colonIdx) as typeof pixKeyType;
+      pixKeyType = pixKey.substring(0, colonIdx);
       pixKey = pixKey.substring(colonIdx + 1);
     }
 
-    try {
-      const payout = await createPixPayout({
-        withdrawalId,
-        amountBRL: withdrawal.amountBRL,
-        pixKey,
-        pixKeyType,
-        payerEmail: withdrawal.user.email ?? "pagamentos@mmomarket.com.br",
-        description: `Saque MMOMarket - ${withdrawal.userId}`,
-      });
+    await prisma.withdrawal.update({
+      where: { id: withdrawalId },
+      data: { status: "COMPLETED" },
+    });
 
-      await prisma.withdrawal.update({
-        where: { id: withdrawalId },
-        data: {
-          status: payout.status === "approved" ? "COMPLETED" : "PROCESSING",
-        },
-      });
-
-      return NextResponse.json({
-        message: `Pagamento enviado via MercadoPago. Status: ${payout.status}`,
-        payoutId: payout.id,
-        payoutStatus: payout.status,
-      });
-    } catch (mpError) {
-      // If MercadoPago fails, revert to PENDING so admin can retry
-      await prisma.withdrawal.update({
-        where: { id: withdrawalId },
-        data: { status: "PENDING" },
-      });
-
-      console.error("MercadoPago payout error:", mpError);
-      return NextResponse.json(
-        {
-          error: `Erro ao processar pagamento via MercadoPago: ${mpError instanceof Error ? mpError.message : "Erro desconhecido"}. Saque retornado para PENDING.`,
-        },
-        { status: 502 },
-      );
-    }
+    return NextResponse.json({
+      message: `Saque marcado como concluído. Envie R$ ${withdrawal.amountBRL.toFixed(2)} via Pix para a chave abaixo.`,
+      pixKey,
+      pixKeyType,
+      amountBRL: withdrawal.amountBRL,
+      userEmail: withdrawal.user.email,
+    });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
