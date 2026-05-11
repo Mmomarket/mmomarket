@@ -102,6 +102,7 @@ export async function PATCH(req: Request) {
     const userName = withdrawal.user.name ?? withdrawal.user.email ?? "Usuario";
     const pixCode = generatePixCode({
       pixKey,
+      pixKeyType,
       merchantName: userName,
       merchantCity: "SAO PAULO",
       amount: withdrawal.amountBRL,

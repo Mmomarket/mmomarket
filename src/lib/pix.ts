@@ -24,62 +24,111 @@ function emv(id: string, value: string): string {
   return `${id}${String(value.length).padStart(2, "0")}${value}`;
 }
 
+/** Strip diacritics, uppercase, keep only chars allowed in EMV text fields. */
+function sanitizeAscii(s: string, max: number): string {
+  return s
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^A-Za-z0-9 ]/g, "")
+    .toUpperCase()
+    .substring(0, max)
+    .trim();
+}
+
+/**
+ * Normalize a Pix key based on its type so banking apps accept it.
+ *
+ *  - CPF   → 11 digits only (strip dots/hyphens)
+ *  - CNPJ  → 14 digits only (strip dots/hyphens/slashes)
+ *  - PHONE → E.164 format: +55XXXXXXXXXXX
+ *  - EMAIL → lowercase, trimmed
+ *  - EVP   → keep as-is (UUID format)
+ */
+export function normalizePixKey(key: string, type: string): string {
+  const t = type.toUpperCase();
+  switch (t) {
+    case "CPF":
+      return key.replace(/\D/g, "").substring(0, 11);
+    case "CNPJ":
+      return key.replace(/\D/g, "").substring(0, 14);
+    case "PHONE": {
+      const digits = key.replace(/\D/g, "");
+      if (key.trimStart().startsWith("+")) {
+        return "+" + digits;
+      }
+      // If 13 digits and starts with 55, already has country code
+      if (digits.length === 13 && digits.startsWith("55")) {
+        return "+" + digits;
+      }
+      return "+55" + digits;
+    }
+    case "EMAIL":
+      return key.trim().toLowerCase();
+    case "EVP":
+    default:
+      return key.trim();
+  }
+}
+
 export interface PixCodeParams {
   pixKey: string;
-  merchantName: string; // max 25 chars
-  merchantCity: string; // max 15 chars
+  pixKeyType?: string; // used for key normalization
+  merchantName: string; // max 25 chars, will be uppercased automatically
+  merchantCity: string; // max 15 chars, will be uppercased automatically
   amount: number;
   txId?: string; // max 25 chars, alphanumeric
-  description?: string; // additional info, max 72 chars
+  description?: string; // optional info field (max 72 chars)
 }
 
 export function generatePixCode(params: PixCodeParams): string {
   const {
     pixKey,
+    pixKeyType = "EVP",
     merchantName,
     merchantCity,
     amount,
-    txId = "***",
+    txId,
     description,
   } = params;
 
-  // Sanitize: strip diacritics and special chars (Pix spec requires ASCII)
-  const sanitize = (s: string, max: number) =>
-    s
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .replace(/[^A-Za-z0-9 ]/g, "")
-      .substring(0, max)
-      .trim();
+  // Normalize the Pix key based on type
+  const normalizedKey = normalizePixKey(pixKey, pixKeyType);
 
-  const name = sanitize(merchantName, 25);
-  const city = sanitize(merchantCity, 15);
-  const safeTxId = txId
-    .replace(/[^A-Za-z0-9]/g, "")
-    .substring(0, 25)
-    .padEnd(1, "1");
+  // Sanitize text fields: strip accents, uppercase, ASCII only
+  const name = sanitizeAscii(merchantName, 25) || "MMOMKT";
+  const city = sanitizeAscii(merchantCity, 15) || "BRASIL";
+
+  // txId: alphanumeric 1–25 chars. Use "***" for static (no specific tx).
+  const rawTxId = txId
+    ? txId.replace(/[^A-Za-z0-9]/g, "").substring(0, 25) || "***"
+    : "***";
+
+  // Amount: force 2 decimal places (works with Prisma Decimal or JS number)
+  const amountStr = Number(amount).toFixed(2);
 
   // ID 26 — Merchant Account Information (Pix)
   const gui = emv("00", "BR.GOV.BCB.PIX");
-  const key = emv("01", pixKey);
-  const descField = description ? emv("02", sanitize(description, 72)) : "";
-  const merchantAccountInfo = emv("26", gui + key + descField);
+  const keyField = emv("01", normalizedKey);
+  const descField = description
+    ? emv("02", sanitizeAscii(description, 72))
+    : "";
+  const merchantAccountInfo = emv("26", gui + keyField + descField);
 
-  // ID 62 — Additional Data Field
-  const additionalData = emv("62", emv("05", safeTxId));
+  // ID 62 — Additional Data Field (transaction ID)
+  const additionalData = emv("62", emv("05", rawTxId));
 
-  // Build payload (without CRC)
+  // Assemble payload (all fields in ascending ID order)
   const payload =
     emv("00", "01") + // Payload format indicator
-    merchantAccountInfo +
-    emv("52", "0000") + // MCC (generic)
-    emv("53", "986") + // Currency: BRL
-    emv("54", amount.toFixed(2)) + // Amount
-    emv("58", "BR") + // Country
-    emv("59", name) + // Merchant name
-    emv("60", city) + // Merchant city
-    additionalData +
-    "6304"; // CRC tag + length placeholder
+    merchantAccountInfo + // ID 26
+    emv("52", "0000") + // ID 52: MCC (generic)
+    emv("53", "986") + // ID 53: Currency BRL
+    emv("54", amountStr) + // ID 54: Transaction amount
+    emv("58", "BR") + // ID 58: Country code
+    emv("59", name) + // ID 59: Merchant name (uppercase)
+    emv("60", city) + // ID 60: Merchant city (uppercase)
+    additionalData + // ID 62
+    "6304"; // CRC tag (value appended below)
 
   return payload + crc16(payload);
 }
