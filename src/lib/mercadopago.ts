@@ -86,10 +86,9 @@ export interface PayoutResult {
 
 /**
  * Send a PIX payout via MercadoPago's payment creation with
- * `payment_method_id: "pix_transfer"`.
+ * `payment_method_id: "pix"` and `payment_type_id: "bank_transfer"`.
  *
- * This creates an outbound Pix transfer from your MercadoPago
- * account to the recipient's Pix key.
+ * The recipient is identified by `receiver.pix_key` + `receiver.pix_key_type`.
  *
  * NOTE: Your MercadoPago account must have the "money transfer"
  * permission enabled. In sandbox mode this will simulate success.
@@ -116,16 +115,12 @@ export async function createPixPayout(
       transaction_amount: payload.amountBRL,
       description:
         payload.description || `Saque MMOMarket #${payload.withdrawalId}`,
-      payment_method_id: "pix_transfer",
+      payment_method_id: "pix",
+      payment_type_id: "bank_transfer",
       external_reference: payload.withdrawalId,
-      point_of_interaction: {
-        type: "PIX_TRANSFER",
-        transaction_data: {
-          bank_info: {
-            pix_key: payload.pixKey,
-            pix_key_type: payload.pixKeyType,
-          },
-        },
+      receiver: {
+        pix_key: payload.pixKey,
+        pix_key_type: payload.pixKeyType,
       },
     }),
   });
