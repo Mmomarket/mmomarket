@@ -74,6 +74,7 @@ export interface CreatePayoutPayload {
   amountBRL: number;
   pixKey: string;
   pixKeyType: "CPF" | "CNPJ" | "EMAIL" | "PHONE" | "EVP"; // EVP = random key
+  payerEmail?: string;
   description?: string;
 }
 
@@ -118,6 +119,9 @@ export async function createPixPayout(
       payment_method_id: "pix",
       payment_type_id: "bank_transfer",
       external_reference: payload.withdrawalId,
+      payer: {
+        email: payload.payerEmail ?? "pagamentos@mmomarket.com.br",
+      },
       receiver: {
         pix_key: payload.pixKey,
         pix_key_type: payload.pixKeyType,

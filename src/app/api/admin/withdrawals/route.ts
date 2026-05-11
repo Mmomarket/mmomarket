@@ -50,6 +50,7 @@ export async function PATCH(req: Request) {
 
     const withdrawal = await prisma.withdrawal.findUnique({
       where: { id: withdrawalId },
+      include: { user: { select: { email: true } } },
     });
 
     if (!withdrawal) {
@@ -119,6 +120,7 @@ export async function PATCH(req: Request) {
         amountBRL: withdrawal.amountBRL,
         pixKey,
         pixKeyType,
+        payerEmail: withdrawal.user.email ?? "pagamentos@mmomarket.com.br",
         description: `Saque MMOMarket - ${withdrawal.userId}`,
       });
 
