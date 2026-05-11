@@ -48,6 +48,40 @@ async function safeExec(label, sql) {
 async function main() {
   console.log(`\n🔧  Turso schema migration\n   URL: ${url}\n`);
 
+  // ── KYC Verification table (replaces old game-based Verification) ────────
+  // Drop old table first (no production KYC data exists yet)
+  try {
+    await db.execute("DROP TABLE IF EXISTS Verification");
+    console.log("✅  Dropped old Verification table");
+  } catch (e) {
+    console.log("⏭️   Drop Verification —", e.message);
+  }
+  await safeExec(
+    "KYC Verification table",
+    `CREATE TABLE IF NOT EXISTS Verification (
+      id          TEXT NOT NULL PRIMARY KEY,
+      userId      TEXT NOT NULL UNIQUE,
+      phone       TEXT NOT NULL,
+      selfieUrl   TEXT NOT NULL,
+      idFrontUrl  TEXT NOT NULL,
+      idBackUrl   TEXT,
+      status      TEXT NOT NULL DEFAULT 'PENDING',
+      reviewNote  TEXT,
+      submittedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      reviewedAt  DATETIME,
+      updatedAt   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (userId) REFERENCES User(id) ON DELETE CASCADE
+    )`,
+  );
+  await safeExec(
+    "Verification.userId index",
+    "CREATE INDEX IF NOT EXISTS Verification_userId_idx ON Verification(userId)",
+  );
+  await safeExec(
+    "Verification.status index",
+    "CREATE INDEX IF NOT EXISTS Verification_status_idx ON Verification(status)",
+  );
+
   // ── Trade table additions ─────────────────────────────────────────────────
   await safeExec(
     "Trade.evidenceUrl column",

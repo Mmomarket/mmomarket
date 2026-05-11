@@ -72,7 +72,14 @@ export async function GET(req: Request) {
       take: 100,
     });
 
-    return NextResponse.json(orders);
+    // Sort: verified users first, then by createdAt desc
+    const sorted = [...orders].sort((a, b) => {
+      const aVerified = (a.user?.verifications?.length ?? 0) > 0 ? 0 : 1;
+      const bVerified = (b.user?.verifications?.length ?? 0) > 0 ? 0 : 1;
+      return aVerified - bVerified;
+    });
+
+    return NextResponse.json(sorted);
   } catch (error) {
     console.error("Orders GET error:", error);
     return NextResponse.json(
@@ -103,26 +110,7 @@ export async function POST(req: Request) {
     const data = createOrderSchema.parse(body);
     const totalBRL = roundMoney(data.amount * data.pricePerUnit);
 
-    // SELL orders: seller must have an approved verification for this server
-    if (data.type === "SELL") {
-      const verification = await prisma.verification.findFirst({
-        where: {
-          userId,
-          serverId: data.serverId,
-          status: "APPROVED",
-        },
-      });
-      if (!verification) {
-        return NextResponse.json(
-          {
-            error:
-              "Você precisa ter uma verificação aprovada para este servidor antes de criar ordens de venda. Acesse a página de Verificação.",
-          },
-          { status: 403 },
-        );
-      }
-    }
-
+    // SELL orders: no pre-verification required.
     if (data.type === "BUY") {
       // Check buyer has enough BRL balance
       const wallet = await prisma.wallet.findUnique({ where: { userId } });

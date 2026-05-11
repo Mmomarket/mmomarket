@@ -636,7 +636,18 @@ function NegociarContent() {
                           className="border-b border-gray-800/50 hover:bg-gray-800/30"
                         >
                           <td className="py-3 text-gray-300">
-                            {order.user.name}
+                            <span className="flex items-center gap-1">
+                              {order.user.name}
+                              {order.user.verifications &&
+                                order.user.verifications.length > 0 && (
+                                  <span
+                                    title="Usuário verificado"
+                                    className="text-teal-400 text-xs font-bold"
+                                  >
+                                    ✓
+                                  </span>
+                                )}
+                            </span>
                           </td>
                           <td className="py-3 text-right text-white font-medium">
                             {formatNumber(order.amount - order.filledAmount)}

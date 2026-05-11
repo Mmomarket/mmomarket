@@ -4,7 +4,6 @@ import {
   isCurrentUserAdmin,
   unauthorizedResponse,
 } from "@/lib/auth";
-import { sendVerificationResultEmail } from "@/lib/email";
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { z } from "zod";
@@ -19,9 +18,8 @@ export async function GET() {
     const verifications = await prisma.verification.findMany({
       include: {
         user: { select: { id: true, name: true, email: true } },
-        serverRef: true,
       },
-      orderBy: { createdAt: "desc" },
+      orderBy: { submittedAt: "desc" },
     });
 
     return NextResponse.json(verifications);
@@ -73,25 +71,9 @@ export async function PATCH(req: Request) {
       data: {
         status: action === "APPROVE" ? "APPROVED" : "REJECTED",
         reviewNote: reviewNote || null,
+        reviewedAt: new Date(),
       },
     });
-
-    // Notify user (non-blocking)
-    prisma.user
-      .findUnique({
-        where: { id: verification.userId },
-        select: { email: true },
-      })
-      .then((u) => {
-        if (u?.email) {
-          return sendVerificationResultEmail(u.email, {
-            status: action === "APPROVE" ? "APPROVED" : "REJECTED",
-            gameSlug: verification.gameSlug,
-            reviewNote,
-          });
-        }
-      })
-      .catch(() => {});
 
     return NextResponse.json(updated);
   } catch (error) {

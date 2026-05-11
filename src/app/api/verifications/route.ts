@@ -4,12 +4,10 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 const verificationSchema = z.object({
-  gameSlug: z.string().min(1),
-  serverId: z.string().min(1, "Servidor é obrigatório"),
-  server: z.string().optional(),
-  characterName: z.string().min(1, "Nome do personagem é obrigatório"),
-  screenshotUrl: z.string().min(1, "Screenshot é obrigatório"),
-  amount: z.number().positive("Quantidade deve ser positiva"),
+  phone: z.string().min(10, "Telefone inválido").max(20),
+  selfieUrl: z.string().url("URL da selfie inválida"),
+  idFrontUrl: z.string().url("URL do documento (frente) inválida"),
+  idBackUrl: z.string().url().optional(),
 });
 
 export async function GET() {
@@ -17,16 +15,15 @@ export async function GET() {
     const userId = await getCurrentUserId();
     if (!userId) return unauthorizedResponse();
 
-    const verifications = await prisma.verification.findMany({
+    const verification = await prisma.verification.findUnique({
       where: { userId },
-      orderBy: { createdAt: "desc" },
     });
 
-    return NextResponse.json(verifications);
+    return NextResponse.json(verification ?? null);
   } catch (error) {
     console.error("Verifications GET error:", error);
     return NextResponse.json(
-      { error: "Erro ao buscar verificações" },
+      { error: "Erro ao buscar verificação" },
       { status: 500 },
     );
   }
@@ -40,32 +37,37 @@ export async function POST(req: Request) {
     const body = await req.json();
     const data = verificationSchema.parse(body);
 
-    // Reject if user already has a PENDING or APPROVED verification for this server
-    const existing = await prisma.verification.findFirst({
-      where: {
-        userId,
-        serverId: data.serverId,
-        status: { in: ["PENDING", "APPROVED"] },
-      },
+    // If already approved, don't allow resubmission
+    const existing = await prisma.verification.findUnique({
+      where: { userId },
     });
-    if (existing) {
-      const msg =
-        existing.status === "APPROVED"
-          ? "Você já possui uma verificação aprovada para este servidor."
-          : "Você já tem uma verificação pendente para este servidor. Aguarde a revisão.";
-      return NextResponse.json({ error: msg }, { status: 409 });
+    if (existing?.status === "APPROVED") {
+      return NextResponse.json(
+        { error: "Sua identidade já foi verificada." },
+        { status: 409 },
+      );
     }
 
-    const verification = await prisma.verification.create({
-      data: {
+    // Upsert: user can resubmit if REJECTED
+    const verification = await prisma.verification.upsert({
+      where: { userId },
+      create: {
         userId,
-        gameSlug: data.gameSlug,
-        serverId: data.serverId,
-        server: data.server,
-        characterName: data.characterName,
-        screenshotUrl: data.screenshotUrl,
-        amount: data.amount,
+        phone: data.phone,
+        selfieUrl: data.selfieUrl,
+        idFrontUrl: data.idFrontUrl,
+        idBackUrl: data.idBackUrl ?? null,
         status: "PENDING",
+      },
+      update: {
+        phone: data.phone,
+        selfieUrl: data.selfieUrl,
+        idFrontUrl: data.idFrontUrl,
+        idBackUrl: data.idBackUrl ?? null,
+        status: "PENDING",
+        reviewNote: null,
+        reviewedAt: null,
+        submittedAt: new Date(),
       },
     });
 
@@ -79,7 +81,7 @@ export async function POST(req: Request) {
     }
     console.error("Verifications POST error:", error);
     return NextResponse.json(
-      { error: "Erro ao criar verificação" },
+      { error: "Erro ao enviar verificação" },
       { status: 500 },
     );
   }

@@ -53,6 +53,18 @@ interface AdminWithdrawal {
   user: { id: string; name: string | null; email: string };
 }
 
+interface KYCVerification {
+  id: string;
+  phone: string;
+  selfieUrl: string;
+  idFrontUrl: string;
+  idBackUrl: string | null;
+  status: string;
+  reviewNote: string | null;
+  submittedAt: string;
+  user: { id: string; name: string | null; email: string };
+}
+
 export default function AdminPage() {
   const { data: session, status: sessionStatus } = useSession();
   const router = useRouter();
@@ -60,6 +72,10 @@ export default function AdminPage() {
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [disputes, setDisputes] = useState<DisputedTrade[]>([]);
   const [withdrawals, setWithdrawals] = useState<AdminWithdrawal[]>([]);
+  const [kycVerifications, setKycVerifications] = useState<KYCVerification[]>(
+    [],
+  );
+  const [kycLoading, setKycLoading] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [withdrawalLoading, setWithdrawalLoading] = useState<string | null>(
@@ -77,11 +93,14 @@ export default function AdminPage() {
   const loadData = useCallback(async () => {
     if (!session) return;
     try {
-      const [statsRes, disputesRes, withdrawalsRes] = await Promise.all([
-        fetch("/api/admin/stats"),
-        fetch("/api/admin/disputes"),
-        fetch("/api/admin/withdrawals"),
-      ]);
+      const [statsRes, disputesRes, withdrawalsRes, kycRes] = await Promise.all(
+        [
+          fetch("/api/admin/stats"),
+          fetch("/api/admin/disputes"),
+          fetch("/api/admin/withdrawals"),
+          fetch("/api/admin/verifications"),
+        ],
+      );
 
       const statsData = await statsRes.json();
       if (!statsData.isAdmin) {
@@ -95,6 +114,9 @@ export default function AdminPage() {
       }
       if (withdrawalsRes.ok) {
         setWithdrawals(await withdrawalsRes.json());
+      }
+      if (kycRes.ok) {
+        setKycVerifications(await kycRes.json());
       }
     } catch {
       router.push("/");
@@ -157,6 +179,36 @@ export default function AdminPage() {
       alert("Erro de conexão");
     } finally {
       setSendingMessage(false);
+    }
+  };
+
+  const reviewKYC = async (
+    verificationId: string,
+    action: "APPROVE" | "REJECT",
+  ) => {
+    setKycLoading(verificationId);
+    try {
+      const res = await fetch("/api/admin/verifications", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ verificationId, action }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setKycVerifications((prev) =>
+          prev.map((v) =>
+            v.id === verificationId
+              ? { ...v, status: action === "APPROVE" ? "APPROVED" : "REJECTED" }
+              : v,
+          ),
+        );
+      } else {
+        alert(data.error || "Erro ao processar verificação");
+      }
+    } catch {
+      alert("Erro de conexão");
+    } finally {
+      setKycLoading(null);
     }
   };
 
@@ -480,6 +532,94 @@ export default function AdminPage() {
                       >
                         {withdrawalLoading === w.id ? "..." : "❌ Rejeitar"}
                       </Button>
+                    </div>
+                  </div>
+                ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* ── KYC Verifications ───────────────────────────────────── */}
+      <Card>
+        <CardHeader>
+          <h2 className="font-semibold text-teal-400">
+            Verificações KYC Pendentes (
+            {kycVerifications.filter((v) => v.status === "PENDING").length})
+          </h2>
+        </CardHeader>
+        <CardContent>
+          {kycVerifications.filter((v) => v.status === "PENDING").length ===
+          0 ? (
+            <EmptyState
+              title="Nenhuma verificação pendente"
+              description="Não há documentos aguardando revisão."
+            />
+          ) : (
+            <div className="space-y-4">
+              {kycVerifications
+                .filter((v) => v.status === "PENDING")
+                .map((v) => (
+                  <div
+                    key={v.id}
+                    className="bg-gray-800/50 border border-gray-700 rounded-lg p-4 space-y-3"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <p className="font-medium text-white">{v.user.name}</p>
+                        <p className="text-xs text-gray-400">{v.user.email}</p>
+                        <p className="text-xs text-gray-400">📞 {v.phone}</p>
+                        <p className="text-xs text-gray-500">
+                          Enviado em{" "}
+                          {new Date(v.submittedAt).toLocaleDateString("pt-BR")}
+                        </p>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="primary"
+                          onClick={() => reviewKYC(v.id, "APPROVE")}
+                          disabled={kycLoading === v.id}
+                        >
+                          {kycLoading === v.id ? "..." : "✅ Aprovar"}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="danger"
+                          onClick={() => reviewKYC(v.id, "REJECT")}
+                          disabled={kycLoading === v.id}
+                        >
+                          {kycLoading === v.id ? "..." : "❌ Rejeitar"}
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="flex gap-3 flex-wrap">
+                      <a
+                        href={`/api/admin/evidence?url=${encodeURIComponent(v.selfieUrl)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-teal-400 underline"
+                      >
+                        🤳 Ver Selfie
+                      </a>
+                      <a
+                        href={`/api/admin/evidence?url=${encodeURIComponent(v.idFrontUrl)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-teal-400 underline"
+                      >
+                        🪪 Frente do Doc
+                      </a>
+                      {v.idBackUrl && (
+                        <a
+                          href={`/api/admin/evidence?url=${encodeURIComponent(v.idBackUrl)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs text-teal-400 underline"
+                        >
+                          🪪 Verso do Doc
+                        </a>
+                      )}
                     </div>
                   </div>
                 ))}

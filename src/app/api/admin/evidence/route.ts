@@ -37,7 +37,11 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "URL inválida" }, { status: 400 });
     }
 
-    if (!parsedUrl.hostname.endsWith(".public.blob.vercel-storage.com")) {
+    // Allow both public and private Vercel Blob store hostnames
+    if (
+      !parsedUrl.hostname.endsWith(".public.blob.vercel-storage.com") &&
+      !parsedUrl.hostname.endsWith(".private.blob.vercel-storage.com")
+    ) {
       return NextResponse.json(
         { error: "URL não pertence ao armazenamento autorizado" },
         { status: 400 },

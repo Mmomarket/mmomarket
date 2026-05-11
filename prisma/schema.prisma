@@ -95,7 +95,6 @@ model Server {
   orders       Order[]
   trades       Trade[]
   priceHistory PriceHistory[]
-  verifications Verification[]
 
   @@unique([slug, gameId])
   @@index([gameId])
@@ -233,24 +232,23 @@ model DisputeMessage {
   @@index([tradeId])
 }
 
-// ─── Verification Model ─────────────────────────────────────
-// Sellers must verify they have the funds before an order is visible
+// ─── Identity Verification (KYC) ─────────────────────────────
+// Users can optionally submit a KYC to get a verified badge on their orders.
+// Manually reviewed by admins. Not required to trade.
 model Verification {
-  id            String   @id @default(cuid())
-  userId        String
-  gameSlug      String
-  serverId      String?
-  server        String?
-  characterName String
-  screenshotUrl String   // uploaded screenshot proving funds
-  amount        Float    // verified amount of game currency
-  status        String   @default("PENDING") // PENDING, APPROVED, REJECTED
-  reviewNote    String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id          String   @id @default(cuid())
+  userId      String   @unique // one active KYC per user
+  phone       String   // phone number provided by user
+  selfieUrl   String   // private blob URL — selfie photo
+  idFrontUrl  String   // private blob URL — ID document front
+  idBackUrl   String?  // private blob URL — ID document back (optional)
+  status      String   @default("PENDING") // PENDING | APPROVED | REJECTED
+  reviewNote  String?  // admin note shown to user on rejection
+  submittedAt DateTime @default(now())
+  reviewedAt  DateTime?
+  updatedAt   DateTime @updatedAt
 
-  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  serverRef Server? @relation(fields: [serverId], references: [id])
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 // ─── Price History (for graphs) ──────────────────────────────
