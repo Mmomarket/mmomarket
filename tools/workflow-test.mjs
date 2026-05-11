@@ -262,7 +262,11 @@ async function main() {
     const r = await req("/api/auth/register", {
       method: "POST",
       // Use a VALID password so duplicate-email check fires before password validation
-      body: { name: "Dup", email: state.seller.email, password: "duplicate123" },
+      body: {
+        name: "Dup",
+        email: state.seller.email,
+        password: "duplicate123",
+      },
     });
     expectStatus(r.status, 409);
     return { error: r.json?.error };
@@ -350,13 +354,22 @@ async function main() {
     });
     // Response shape: { deposit: { id, ... }, paymentUrl } — or error if MP not configured
     if (r.status === 400 || r.status === 500) {
-      return { warning: `MP not configured: ${r.json?.error ?? r.text?.slice(0, 100)}` };
+      return {
+        warning: `MP not configured: ${r.json?.error ?? r.text?.slice(0, 100)}`,
+      };
     }
     expectStatus(r.status, 201, 200);
     // Accept either a top-level id OR a nested deposit.id
     const depositId = r.json?.deposit?.id ?? r.json?.id ?? r.json?.paymentId;
-    expect(depositId, `No deposit id in response: ${JSON.stringify(r.json).slice(0,200)}`);
-    return { depositId, paymentUrl: r.json?.paymentUrl, mpError: r.json?.error };
+    expect(
+      depositId,
+      `No deposit id in response: ${JSON.stringify(r.json).slice(0, 200)}`,
+    );
+    return {
+      depositId,
+      paymentUrl: r.json?.paymentUrl,
+      mpError: r.json?.error,
+    };
   });
 
   await test("GET /api/deposits — paginated list (buyer)", async () => {
@@ -511,7 +524,10 @@ async function main() {
     });
     // A 400 due to insufficient balance (buyer wallet is 0 BRL) is expected in dev
     if (r.status === 400 && r.json?.error?.toLowerCase().includes("saldo")) {
-      return { note: "Buyer has no BRL balance — trade matching skipped (expected in dev without real deposit)", error: r.json?.error };
+      return {
+        note: "Buyer has no BRL balance — trade matching skipped (expected in dev without real deposit)",
+        error: r.json?.error,
+      };
     }
     expectStatus(r.status, 201, 200);
     state.buyOrderId = r.json?.order?.id ?? r.json?.id;
