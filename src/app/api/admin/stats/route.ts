@@ -12,7 +12,7 @@ export async function GET() {
     const userId = await getCurrentUserId();
     if (!userId) return unauthorizedResponse();
     if (!(await isCurrentUserAdmin())) {
-      return NextResponse.json({ isAdmin: false });
+      return NextResponse.json({ error: "Acesso negado" }, { status: 403 });
     }
 
     const [disputedTrades, totalUsers, totalTrades] = await Promise.all([

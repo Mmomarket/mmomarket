@@ -10,16 +10,20 @@ import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
 const AUTO_RELEASE_HOURS = 48;
-const CRON_SECRET = process.env.CRON_SECRET;
 
 export async function GET(req: Request) {
-  // Protect the cron endpoint — only Vercel's cron runner should call this.
-  // Vercel automatically sets Authorization: Bearer <CRON_SECRET> on cron invocations.
-  if (CRON_SECRET) {
-    const authHeader = req.headers.get("authorization");
-    if (authHeader !== `Bearer ${CRON_SECRET}`) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+  // Always require CRON_SECRET — set it in .env (local) and Vercel dashboard (prod).
+  // Vercel automatically passes Authorization: Bearer <CRON_SECRET> on scheduled invocations.
+  const cronSecret = process.env.CRON_SECRET;
+  if (!cronSecret) {
+    return NextResponse.json(
+      { error: "CRON_SECRET env var is not configured" },
+      { status: 401 },
+    );
+  }
+  const authHeader = req.headers.get("authorization");
+  if (authHeader !== `Bearer ${cronSecret}`) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const cutoff = new Date(Date.now() - AUTO_RELEASE_HOURS * 60 * 60 * 1000);

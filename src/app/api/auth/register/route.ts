@@ -25,6 +25,23 @@ export async function POST(req: Request) {
 
   try {
     const body = await req.json();
+
+    // Check duplicate email BEFORE running full schema validation so we always
+    // return 409 (not 400) when the email is already taken.
+    const rawEmail =
+      typeof body?.email === "string" ? body.email.trim().toLowerCase() : null;
+    if (rawEmail) {
+      const existing = await prisma.user.findUnique({
+        where: { email: rawEmail },
+      });
+      if (existing) {
+        return NextResponse.json(
+          { error: "Este email já está cadastrado" },
+          { status: 409 },
+        );
+      }
+    }
+
     const { name, email, password } = registerSchema.parse(body);
 
     const existingUser = await prisma.user.findUnique({
