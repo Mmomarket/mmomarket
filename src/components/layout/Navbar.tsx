@@ -11,6 +11,7 @@ const navLinks = [
   { href: "/negociar", label: "Negociar", icon: "💱" },
   { href: "/carteira", label: "Carteira", icon: "💰" },
   { href: "/historico", label: "Histórico", icon: "📋" },
+  { href: "/verificacao", label: "Verificação", icon: "✅" },
 ];
 
 export default function Navbar() {
@@ -22,8 +23,8 @@ export default function Navbar() {
   useEffect(() => {
     if (session) {
       fetch("/api/admin/stats")
-        .then((r) => r.json())
-        .then((data) => setIsAdmin(data.isAdmin === true))
+        .then((r) => (r.ok ? r.json() : null))
+        .then((data) => setIsAdmin(data?.isAdmin === true))
         .catch(() => setIsAdmin(false));
     }
   }, [session]);
