@@ -165,24 +165,26 @@ export default function HomePage() {
         {/* Bottom gradient fade into page */}
         <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-gray-950 to-transparent pointer-events-none" />
         {/* Content */}
-        <div className="relative z-10 text-center space-y-5 px-4 py-16 sm:py-24 max-w-4xl mx-auto">
-          <h1 className="text-4xl sm:text-6xl font-bold tracking-tight">
-            Negocie moedas de{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-300">
-              MMORPGs
-            </span>
-          </h1>
-          <p className="text-gray-300 text-lg max-w-2xl mx-auto">
-            Compre e venda moedas digitais dos maiores MMORPGs do Brasil com
-            segurança. Taxa de apenas 2% por transação.
-          </p>
-          <div className="flex items-center justify-center pt-2">
-            <Link
-              href="/login"
-              className="px-8 py-3 bg-emerald-600 text-white font-semibold hover:bg-emerald-500 transition-colors text-base"
-            >
-              Logar e Negociar
-            </Link>
+        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center text-center px-4 py-16 sm:py-24">
+          <div className="space-y-5 max-w-4xl w-full mx-auto">
+            <h1 className="text-4xl sm:text-6xl font-bold tracking-tight">
+              Negocie moedas de{" "}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-300">
+                MMORPGs
+              </span>
+            </h1>
+            <p className="text-gray-300 text-lg max-w-2xl mx-auto">
+              Compre e venda moedas digitais dos maiores MMORPGs do Brasil com
+              segurança. Taxa de apenas 2% por transação.
+            </p>
+            <div className="flex items-center justify-center pt-2">
+              <Link
+                href="/login"
+                className="px-8 py-3 bg-emerald-600 text-white font-semibold hover:bg-emerald-500 transition-colors text-base"
+              >
+                Logar e Negociar
+              </Link>
+            </div>
           </div>
         </div>
       </div>
