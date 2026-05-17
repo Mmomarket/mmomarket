@@ -350,7 +350,23 @@ export default function AdminPage() {
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">🛡️ Painel Administrativo</h1>
+        <h1 className="text-2xl font-bold flex items-center gap-2">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="w-6 h-6"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"
+            />
+          </svg>{" "}
+          Painel Administrativo
+        </h1>
         <p className="text-gray-500 mt-1">
           Resolva disputas entre compradores e vendedores
         </p>
@@ -408,7 +424,7 @@ export default function AdminPage() {
               {disputes.map((trade) => (
                 <div
                   key={trade.id}
-                  className="border border-red-900/50 rounded-lg p-4 bg-red-900/10"
+                  className="border border-red-900/50 p-4 bg-red-900/10"
                 >
                   <div className="space-y-2 mb-4">
                     <div className="flex items-center justify-between">
@@ -417,7 +433,7 @@ export default function AdminPage() {
                         {trade.serverRef && (
                           <span className="text-teal-400 text-sm font-normal">
                             {" "}
-                            · 🖥️ {trade.serverRef.name}
+                            · {trade.serverRef.name}
                           </span>
                         )}
                       </h3>
@@ -482,7 +498,21 @@ export default function AdminPage() {
                           rel="noopener noreferrer"
                           className="inline-flex items-center gap-1 text-teal-400 hover:text-teal-300 underline"
                         >
-                          🎥 Ver Gravação
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="w-3.5 h-3.5"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            strokeWidth={2}
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M15 10l4.553-2.276A1 1 0 0121 8.723v6.554a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"
+                            />
+                          </svg>{" "}
+                          Ver Gravação
                         </a>
                       </div>
                     )}
@@ -494,7 +524,21 @@ export default function AdminPage() {
                       onClick={() => openChat(trade.id)}
                       disabled={actionLoading === trade.id}
                     >
-                      💬 Ver Chat
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="w-4 h-4 inline mr-1"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M8 10h.01M12 10h.01M16 10h.01M21 16c0 1.1-.9 2-2 2H7l-4 4V6a2 2 0 012-2h14a2 2 0 012 2v10z"
+                        />
+                      </svg>{" "}
+                      Ver Chat
                     </Button>
                     <Button
                       size="sm"
@@ -508,9 +552,27 @@ export default function AdminPage() {
                       }
                       disabled={actionLoading === trade.id}
                     >
-                      {actionLoading === trade.id
-                        ? "..."
-                        : "💰 Liberar para Vendedor"}
+                      {actionLoading === trade.id ? (
+                        "..."
+                      ) : (
+                        <>
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="w-4 h-4 inline mr-1"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            strokeWidth={2}
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm0-6C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"
+                            />
+                          </svg>{" "}
+                          Liberar para Vendedor
+                        </>
+                      )}
                     </Button>
                     <Button
                       size="sm"
@@ -526,7 +588,7 @@ export default function AdminPage() {
                     >
                       {actionLoading === trade.id
                         ? "..."
-                        : "↩️ Reembolsar Comprador"}
+                        : "Reembolsar Comprador"}
                     </Button>
                   </div>
                 </div>
@@ -557,7 +619,7 @@ export default function AdminPage() {
                 .map((w) => (
                   <div
                     key={w.id}
-                    className="border border-yellow-900/50 rounded-lg p-4 bg-yellow-900/10 flex flex-col sm:flex-row sm:items-center gap-3"
+                    className="border border-yellow-900/50 p-4 bg-yellow-900/10 flex flex-col sm:flex-row sm:items-center gap-3"
                   >
                     <div className="flex-1 space-y-1">
                       <div className="flex items-center gap-2">
@@ -593,7 +655,28 @@ export default function AdminPage() {
                         onClick={() => handleGetQR(w.id)}
                         disabled={withdrawalLoading === w.id}
                       >
-                        {withdrawalLoading === w.id ? "..." : "📲 QR Code"}
+                        {withdrawalLoading === w.id ? (
+                          "..."
+                        ) : (
+                          <>
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="w-4 h-4 inline mr-1"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                              strokeWidth={2}
+                            >
+                              <rect x="3" y="3" width="18" height="18" rx="0" />
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M9 9h6M9 12h6M9 15h4"
+                              />
+                            </svg>{" "}
+                            QR Code
+                          </>
+                        )}
                       </Button>
                       <Button
                         size="sm"
@@ -601,7 +684,27 @@ export default function AdminPage() {
                         onClick={() => handleCompleteWithdrawal(w.id)}
                         disabled={withdrawalLoading === w.id}
                       >
-                        {withdrawalLoading === w.id ? "..." : "✅ Concluir"}
+                        {withdrawalLoading === w.id ? (
+                          "..."
+                        ) : (
+                          <>
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="w-4 h-4 inline mr-1"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                              strokeWidth={2}
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M5 13l4 4L19 7"
+                              />
+                            </svg>{" "}
+                            Concluir
+                          </>
+                        )}
                       </Button>
                       <Button
                         size="sm"
@@ -612,7 +715,21 @@ export default function AdminPage() {
                         }}
                         disabled={withdrawalLoading === w.id}
                       >
-                        ❌ Rejeitar
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="w-4 h-4 inline mr-1"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          strokeWidth={2}
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M6 18L18 6M6 6l12 12"
+                          />
+                        </svg>{" "}
+                        Rejeitar
                       </Button>
                     </div>
                   </div>
@@ -644,13 +761,29 @@ export default function AdminPage() {
                 .map((v) => (
                   <div
                     key={v.id}
-                    className="bg-gray-800/50 border border-gray-700 rounded-lg p-4 space-y-3"
+                    className="bg-gray-800/50 border border-gray-700 p-4 space-y-3"
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div>
                         <p className="font-medium text-white">{v.user.name}</p>
                         <p className="text-xs text-gray-400">{v.user.email}</p>
-                        <p className="text-xs text-gray-400">📞 {v.phone}</p>
+                        <p className="text-xs text-gray-400">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="w-3.5 h-3.5 inline mr-1"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            strokeWidth={2}
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
+                            />
+                          </svg>{" "}
+                          {v.phone}
+                        </p>
                         <p className="text-xs text-gray-500">
                           Enviado em{" "}
                           {new Date(v.submittedAt).toLocaleDateString("pt-BR")}
@@ -663,7 +796,27 @@ export default function AdminPage() {
                           onClick={() => reviewKYC(v.id, "APPROVE")}
                           disabled={kycLoading === v.id}
                         >
-                          {kycLoading === v.id ? "..." : "✅ Aprovar"}
+                          {kycLoading === v.id ? (
+                            "..."
+                          ) : (
+                            <>
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="w-4 h-4 inline mr-1"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                                strokeWidth={2}
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  d="M5 13l4 4L19 7"
+                                />
+                              </svg>{" "}
+                              Aprovar
+                            </>
+                          )}
                         </Button>
                         <Button
                           size="sm"
@@ -671,7 +824,27 @@ export default function AdminPage() {
                           onClick={() => reviewKYC(v.id, "REJECT")}
                           disabled={kycLoading === v.id}
                         >
-                          {kycLoading === v.id ? "..." : "❌ Rejeitar"}
+                          {kycLoading === v.id ? (
+                            "..."
+                          ) : (
+                            <>
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="w-4 h-4 inline mr-1"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                                strokeWidth={2}
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  d="M6 18L18 6M6 6l12 12"
+                                />
+                              </svg>{" "}
+                              Rejeitar
+                            </>
+                          )}
                         </Button>
                       </div>
                     </div>
@@ -680,26 +853,75 @@ export default function AdminPage() {
                         href={`/api/admin/evidence?url=${encodeURIComponent(v.selfieUrl)}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-xs text-teal-400 underline"
+                        className="text-xs text-teal-400 underline inline-flex items-center gap-1"
                       >
-                        🤳 Ver Selfie
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="w-3.5 h-3.5"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          strokeWidth={2}
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+                          />
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
+                          />
+                        </svg>{" "}
+                        Ver Selfie
                       </a>
                       <a
                         href={`/api/admin/evidence?url=${encodeURIComponent(v.idFrontUrl)}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-xs text-teal-400 underline"
+                        className="text-xs text-teal-400 underline inline-flex items-center gap-1"
                       >
-                        🪪 Frente do Doc
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="w-3.5 h-3.5"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          strokeWidth={2}
+                        >
+                          <rect x="2" y="5" width="20" height="14" rx="0" />
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M7 15h3m4 0h3M7 11h3m4 0h3"
+                          />
+                        </svg>{" "}
+                        Frente do Doc
                       </a>
                       {v.idBackUrl && (
                         <a
                           href={`/api/admin/evidence?url=${encodeURIComponent(v.idBackUrl)}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-xs text-teal-400 underline"
+                          className="text-xs text-teal-400 underline inline-flex items-center gap-1"
                         >
-                          🪪 Verso do Doc
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="w-3.5 h-3.5"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            strokeWidth={2}
+                          >
+                            <rect x="2" y="5" width="20" height="14" rx="0" />
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M7 15h3m4 0h3M7 11h3m4 0h3"
+                            />
+                          </svg>{" "}
+                          Verso do Doc
                         </a>
                       )}
                     </div>
@@ -714,7 +936,7 @@ export default function AdminPage() {
       <Modal
         isOpen={!!chatTradeId}
         onClose={closeChat}
-        title="💬 Disputa — Chat (Admin)"
+        title="Disputa — Chat (Admin)"
         className="max-w-2xl"
       >
         <div className="flex flex-col gap-3">
@@ -731,12 +953,30 @@ export default function AdminPage() {
               chatMessages.map((msg) => (
                 <div key={msg.id} className="flex flex-col items-start">
                   <div
-                    className={`max-w-[90%] rounded-xl px-3 py-2 text-sm ${msg.user.isAdmin ? "bg-purple-900/60 border border-purple-700/50" : "bg-gray-700/60 border border-gray-600/50"}`}
+                    className={`max-w-[90%] px-3 py-2 text-sm ${msg.user.isAdmin ? "bg-purple-900/60 border border-purple-700/50" : "bg-gray-700/60 border border-gray-600/50"}`}
                   >
                     <p className="text-xs font-medium mb-1 text-gray-400">
-                      {msg.user.isAdmin
-                        ? "🛡️ Admin"
-                        : msg.user.name || "Usuário"}
+                      {msg.user.isAdmin ? (
+                        <>
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="w-3.5 h-3.5 inline mr-1"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            strokeWidth={2}
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"
+                            />
+                          </svg>
+                          Admin
+                        </>
+                      ) : (
+                        msg.user.name || "Usuário"
+                      )}
                       {" · "}
                       {new Date(msg.createdAt).toLocaleString("pt-BR", {
                         day: "2-digit",
@@ -755,7 +995,21 @@ export default function AdminPage() {
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-1 mt-2 text-xs text-teal-400 hover:text-teal-300 underline"
                       >
-                        🎥 Ver Gravação
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="w-3.5 h-3.5"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          strokeWidth={2}
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M15 10l4.553-2.276A1 1 0 0121 8.723v6.554a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"
+                          />
+                        </svg>{" "}
+                        Ver Gravação
                       </a>
                     )}
                   </div>
@@ -776,7 +1030,7 @@ export default function AdminPage() {
                   }
                 }}
                 placeholder="Escreva como admin… (Enter para enviar)"
-                className="flex-1 px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm resize-none focus:ring-2 focus:ring-purple-500 focus:border-transparent h-16"
+                className="flex-1 px-3 py-2 bg-gray-800 border border-gray-700 text-white text-sm resize-none focus:ring-2 focus:ring-purple-500 focus:border-transparent h-16"
               />
               <Button
                 variant="primary"
@@ -794,7 +1048,7 @@ export default function AdminPage() {
       <Modal
         isOpen={!!pixQR}
         onClose={() => setPixQR(null)}
-        title="📲 Pagar via Pix"
+        title="Pagar via Pix"
       >
         {pixQR && (
           <div className="flex flex-col items-center gap-4 py-4">
@@ -825,16 +1079,48 @@ export default function AdminPage() {
                 variant="secondary"
                 onClick={() => navigator.clipboard.writeText(pixQR.code)}
               >
-                📋 Copiar Pix Copia e Cola
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="w-4 h-4 inline mr-1"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"
+                  />
+                </svg>{" "}
+                Copiar Pix Copia e Cola
               </Button>
               <Button
                 variant="primary"
                 onClick={() => handleCompleteWithdrawal(pixQR.withdrawalId)}
                 disabled={withdrawalLoading === pixQR.withdrawalId}
               >
-                {withdrawalLoading === pixQR.withdrawalId
-                  ? "..."
-                  : "✅ Concluir Saque"}
+                {withdrawalLoading === pixQR.withdrawalId ? (
+                  "..."
+                ) : (
+                  <>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="w-4 h-4 inline mr-1"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>{" "}
+                    Concluir Saque
+                  </>
+                )}
               </Button>
             </div>
           </div>
@@ -848,7 +1134,7 @@ export default function AdminPage() {
           setRejectModal(null);
           setRejectNote("");
         }}
-        title="❌ Rejeitar Saque"
+        title="Rejeitar Saque"
       >
         {rejectModal && (
           <div className="space-y-4">
@@ -871,7 +1157,7 @@ export default function AdminPage() {
                 value={rejectNote}
                 onChange={(e) => setRejectNote(e.target.value)}
                 placeholder="Ex: chave Pix inválida, documentação pendente..."
-                className="w-full h-24 px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm resize-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                className="w-full h-24 px-3 py-2 bg-gray-800 border border-gray-700 text-white text-sm resize-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
               />
             </div>
             <div className="flex gap-2 justify-end">

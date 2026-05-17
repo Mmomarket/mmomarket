@@ -18,7 +18,7 @@ export default function LoginPage() {
         {/* Logo */}
         <div className="text-center">
           <Link href="/" className="inline-flex items-center gap-2.5">
-            <div className="w-10 h-10 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-xl flex items-center justify-center">
+            <div className="w-10 h-10 bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center">
               <span className="text-white font-bold text-lg">M</span>
             </div>
             <span className="text-2xl font-bold text-white tracking-tight">
@@ -29,14 +29,14 @@ export default function LoginPage() {
         </div>
 
         {/* Google Sign In */}
-        <div className="bg-gray-900 border border-gray-800 rounded-2xl p-8 space-y-4">
+        <div className="bg-gray-900 border border-gray-800 p-8 space-y-4">
           <button
             onClick={handleGoogle}
             disabled={googleLoading}
-            className="w-full flex items-center justify-center gap-3 bg-white hover:bg-gray-100 disabled:bg-gray-300 text-gray-900 font-semibold py-3 px-4 rounded-xl transition-colors"
+            className="w-full flex items-center justify-center gap-3 bg-white hover:bg-gray-100 disabled:bg-gray-300 text-gray-900 font-semibold py-3 px-4 transition-colors"
           >
             {googleLoading ? (
-              <span className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-600" />
+              <span className="h-5 w-5 border-b-2 border-gray-600 animate-spin" />
             ) : (
               <svg className="w-5 h-5" viewBox="0 0 24 24">
                 <path

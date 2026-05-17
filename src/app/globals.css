@@ -13,13 +13,25 @@
 }
 
 body {
-  background: var(--background);
+  background-color: var(--background);
+  background-image: url("/assets/wallpaper.png");
+  background-repeat: repeat-y;
+  background-size: 100% auto;
+  background-position: top center;
   color: var(--foreground);
   font-family:
     var(--font-sans),
     system-ui,
     -apple-system,
     sans-serif;
+}
+
+@media (max-width: 640px) {
+  body {
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: top center;
+  }
 }
 
 /* Custom scrollbar */

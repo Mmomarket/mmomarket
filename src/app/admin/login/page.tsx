@@ -38,7 +38,7 @@ export default function AdminLoginPage() {
         {/* Logo */}
         <div className="text-center">
           <Link href="/" className="inline-flex items-center gap-2.5">
-            <div className="w-10 h-10 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-xl flex items-center justify-center">
+            <div className="w-10 h-10 bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center">
               <span className="text-white font-bold text-lg">M</span>
             </div>
             <span className="text-2xl font-bold text-white tracking-tight">
@@ -46,7 +46,20 @@ export default function AdminLoginPage() {
             </span>
           </Link>
           <div className="mt-3 flex items-center justify-center gap-2">
-            <span className="text-2xl">🛡️</span>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="w-5 h-5 text-emerald-400"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"
+              />
+            </svg>
             <p className="text-gray-400 font-semibold">Acesso Administrativo</p>
           </div>
           <p className="text-xs text-gray-600 mt-1">
@@ -54,10 +67,10 @@ export default function AdminLoginPage() {
           </p>
         </div>
 
-        <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
+        <div className="bg-gray-900 border border-gray-800 p-6">
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
-              <div className="bg-red-900/30 border border-red-800/50 text-red-400 text-sm px-3 py-2 rounded-lg">
+              <div className="bg-red-900/30 border border-red-800/50 text-red-400 text-sm px-3 py-2">
                 {error}
               </div>
             )}
@@ -67,7 +80,7 @@ export default function AdminLoginPage() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="admin@email.com"
               required
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500"
+              className="w-full bg-gray-800 border border-gray-700 px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500"
             />
             <input
               type="password"
@@ -75,12 +88,12 @@ export default function AdminLoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
               required
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500"
+              className="w-full bg-gray-800 border border-gray-700 px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500"
             />
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-emerald-700 hover:bg-emerald-600 disabled:opacity-50 text-white font-medium py-2 rounded-lg text-sm transition-colors"
+              className="w-full bg-emerald-700 hover:bg-emerald-600 disabled:opacity-50 text-white font-medium py-2 text-sm transition-colors"
             >
               {loading ? "Entrando..." : "Entrar"}
             </button>

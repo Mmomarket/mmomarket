@@ -59,7 +59,7 @@ export default function RegisterPage() {
         {/* Logo */}
         <div className="text-center">
           <Link href="/" className="inline-flex items-center gap-2.5">
-            <div className="w-10 h-10 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-xl flex items-center justify-center">
+            <div className="w-10 h-10 bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center">
               <span className="text-white font-bold text-lg">M</span>
             </div>
             <span className="text-2xl font-bold text-white tracking-tight">
@@ -72,10 +72,10 @@ export default function RegisterPage() {
         </div>
 
         {/* Form Card */}
-        <div className="bg-gray-900 border border-gray-800 rounded-2xl p-8">
+        <div className="bg-gray-900 border border-gray-800 p-8">
           <form onSubmit={handleSubmit} className="space-y-5">
             {error && (
-              <div className="bg-red-900/30 border border-red-800/50 text-red-400 text-sm px-4 py-3 rounded-lg">
+              <div className="bg-red-900/30 border border-red-800/50 text-red-400 text-sm px-4 py-3">
                 {error}
               </div>
             )}

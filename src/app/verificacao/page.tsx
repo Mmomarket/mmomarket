@@ -1,7 +1,7 @@
 "use client";
 
 import Card, { CardContent, CardHeader } from "@/components/ui/Card";
-import { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 
 interface Verification {
   id: string;
@@ -16,22 +16,65 @@ interface Verification {
 
 const STATUS_INFO: Record<
   string,
-  { label: string; color: string; icon: string }
+  { label: string; color: string; icon: React.ReactNode }
 > = {
   PENDING: {
     label: "Aguardando revisão",
     color: "text-yellow-400",
-    icon: "⏳",
+    icon: (
+      <svg
+        className="w-6 h-6 text-yellow-400"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <circle cx="12" cy="12" r="10" strokeWidth={2} />
+        <path
+          strokeLinecap="square"
+          strokeLinejoin="miter"
+          strokeWidth={2}
+          d="M12 6v6l4 2"
+        />
+      </svg>
+    ),
   },
   APPROVED: {
     label: "Identidade verificada",
     color: "text-emerald-400",
-    icon: "✅",
+    icon: (
+      <svg
+        className="w-6 h-6 text-emerald-400"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          strokeLinecap="square"
+          strokeLinejoin="miter"
+          strokeWidth={2}
+          d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+        />
+      </svg>
+    ),
   },
   REJECTED: {
     label: "Reprovada — você pode reenviar",
     color: "text-red-400",
-    icon: "❌",
+    icon: (
+      <svg
+        className="w-6 h-6 text-red-400"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          strokeLinecap="square"
+          strokeLinejoin="miter"
+          strokeWidth={2}
+          d="M6 18L18 6M6 6l12 12"
+        />
+      </svg>
+    ),
   },
 };
 
@@ -116,7 +159,7 @@ export default function VerificacaoPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-950 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-400" />
+        <div className="animate-spin h-8 w-8 border-b-2 border-l-2 border-emerald-400" />
       </div>
     );
   }
@@ -132,8 +175,8 @@ export default function VerificacaoPage() {
             Verificação de Identidade
           </h1>
           <p className="text-gray-400 text-sm mt-1">
-            Usuários verificados recebem um selo ✅ e aparecem primeiro no livro
-            de ordens.
+            Usuários verificados recebem um selo de verificado e aparecem
+            primeiro no livro de ordens.
           </p>
         </div>
 
@@ -142,7 +185,7 @@ export default function VerificacaoPage() {
           <Card>
             <CardContent className="py-4">
               <div className="flex items-center gap-3">
-                <span className="text-2xl">{info?.icon}</span>
+                <span>{info?.icon}</span>
                 <div>
                   <p className={`font-semibold ${info?.color}`}>
                     {info?.label}
@@ -163,9 +206,9 @@ export default function VerificacaoPage() {
         )}
 
         {success && (
-          <div className="bg-emerald-900/40 border border-emerald-500/40 rounded-lg p-4 text-emerald-300 text-sm">
-            ✅ Verificação enviada com sucesso! Nossa equipe irá revisar em até
-            24 horas.
+          <div className="bg-emerald-900/40 border border-emerald-500/40 p-4 text-emerald-300 text-sm">
+            Verificação enviada com sucesso! Nossa equipe irá revisar em até 24
+            horas.
           </div>
         )}
 
@@ -192,7 +235,7 @@ export default function VerificacaoPage() {
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="(11) 99999-9999"
                     required
-                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500"
+                    className="w-full bg-gray-800 border border-gray-700 px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500"
                   />
                 </div>
 
@@ -231,7 +274,7 @@ export default function VerificacaoPage() {
                 <button
                   type="submit"
                   disabled={submitting || uploading !== null}
-                  className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:bg-gray-700 disabled:text-gray-500 text-white font-semibold py-2.5 rounded-lg transition-colors"
+                  className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:bg-gray-700 disabled:text-gray-500 text-white font-semibold py-2.5 transition-colors"
                 >
                   {submitting ? "Enviando..." : "Enviar para Revisão"}
                 </button>
@@ -243,11 +286,26 @@ export default function VerificacaoPage() {
         {/* Info box */}
         <Card>
           <CardContent className="py-4 space-y-2 text-sm text-gray-400">
-            <p className="font-medium text-gray-300">📋 Como funciona</p>
+            <p className="font-medium text-gray-300 flex items-center gap-2">
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="square"
+                  strokeLinejoin="miter"
+                  strokeWidth={2}
+                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                />
+              </svg>
+              Como funciona
+            </p>
             <ul className="list-disc list-inside space-y-1">
               <li>Você envia uma selfie + foto do documento</li>
               <li>Nossa equipe revisa em até 24 horas</li>
-              <li>Após aprovação, você recebe o selo ✅</li>
+              <li>Após aprovação, você recebe o selo de verificado</li>
               <li>Ordens de usuários verificados aparecem primeiro</li>
               <li>A verificação não é obrigatória para negociar</li>
             </ul>
@@ -281,10 +339,10 @@ function PhotoUpload({
       <p className="text-xs text-gray-500 mb-2">{hint}</p>
       <div
         onClick={() => inputRef.current?.click()}
-        className="border-2 border-dashed border-gray-700 hover:border-emerald-500 rounded-lg p-4 cursor-pointer text-center transition-colors"
+        className="border-2 border-dashed border-gray-700 hover:border-emerald-500 p-4 cursor-pointer text-center transition-colors"
       >
         {url ? (
-          <p className="text-emerald-400 text-sm">✅ Foto enviada</p>
+          <p className="text-emerald-400 text-sm">Foto enviada</p>
         ) : uploading ? (
           <p className="text-yellow-400 text-sm">Enviando...</p>
         ) : (

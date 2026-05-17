@@ -70,15 +70,15 @@ const statusConfig: Record<
   PENDING_DELIVERY: {
     label: "Aguardando Entrega",
     variant: "warning",
-    icon: "⏳",
+    icon: "clock",
   },
   DELIVERED: {
     label: "Entregue (Aguardando Confirmação)",
     variant: "info",
-    icon: "📦",
+    icon: "box",
   },
-  CONFIRMED: { label: "Confirmado", variant: "success", icon: "✅" },
-  DISPUTED: { label: "Em Disputa", variant: "danger", icon: "⚠️" },
+  CONFIRMED: { label: "Confirmado", variant: "success", icon: "check" },
+  DISPUTED: { label: "Em Disputa", variant: "danger", icon: "alert" },
 };
 
 const AUTO_RELEASE_HOURS = 48;
@@ -117,7 +117,7 @@ function VideoUploadArea({
         )}
       </label>
       <label
-        className={`flex flex-col items-center justify-center w-full h-24 border-2 border-dashed rounded-lg cursor-pointer transition-colors ${state === "done" ? "border-emerald-600 bg-emerald-900/20" : state === "error" ? "border-red-600 bg-red-900/20" : "border-gray-600 bg-gray-800/50 hover:border-gray-500"}`}
+        className={`flex flex-col items-center justify-center w-full h-24 border-2 border-dashed cursor-pointer transition-colors ${state === "done" ? "border-emerald-600 bg-emerald-900/20" : state === "error" ? "border-red-600 bg-red-900/20" : "border-gray-600 bg-gray-800/50 hover:border-gray-500"}`}
       >
         <input
           type="file"
@@ -130,7 +130,21 @@ function VideoUploadArea({
         />
         {state === "idle" && (
           <>
-            <span className="text-xl mb-1">🎥</span>
+            <span className="mb-1">
+              <svg
+                className="w-5 h-5 text-gray-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="square"
+                  strokeLinejoin="miter"
+                  strokeWidth={2}
+                  d="M15 10l4.553-2.069A1 1 0 0121 8.882v6.236a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
+                />
+              </svg>
+            </span>
             <span className="text-xs text-gray-400">
               Clique para selecionar um vídeo
             </span>
@@ -141,13 +155,42 @@ function VideoUploadArea({
         )}
         {state === "uploading" && (
           <>
-            <span className="text-xl mb-1 animate-pulse">⏳</span>
+            <span className="mb-1 animate-pulse">
+              <svg
+                className="w-5 h-5 text-yellow-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <circle cx="12" cy="12" r="10" strokeWidth={2} />
+                <path
+                  strokeLinecap="square"
+                  strokeLinejoin="miter"
+                  strokeWidth={2}
+                  d="M12 6v6l4 2"
+                />
+              </svg>
+            </span>
             <span className="text-xs text-gray-400">Enviando vídeo</span>
           </>
         )}
         {state === "done" && (
           <>
-            <span className="text-xl mb-1">✅</span>
+            <span className="mb-1">
+              <svg
+                className="w-5 h-5 text-emerald-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="square"
+                  strokeLinejoin="miter"
+                  strokeWidth={2}
+                  d="M5 13l4 4L19 7"
+                />
+              </svg>
+            </span>
             <span className="text-xs text-emerald-400">
               Vídeo enviado — clique para substituir
             </span>
@@ -155,7 +198,21 @@ function VideoUploadArea({
         )}
         {state === "error" && (
           <>
-            <span className="text-xl mb-1">❌</span>
+            <span className="mb-1">
+              <svg
+                className="w-5 h-5 text-red-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="square"
+                  strokeLinejoin="miter"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </span>
             <span className="text-xs text-red-400">
               {error || "Falha no envio"}
             </span>
@@ -419,7 +476,7 @@ export default function PerfilPage() {
     if (trade.serverRef) parts.push(trade.serverRef.name);
     if (trade.order?.characterName) parts.push(trade.order.characterName);
     const qty = formatNumber(trade.amount);
-    return `💬 Chat — ${parts.join(" · ")} (${qty})`;
+    return `Chat — ${parts.join(" · ")} (${qty})`;
   }
 
   function isFirstMessage() {
@@ -432,7 +489,7 @@ export default function PerfilPage() {
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
       {/* Profile Header */}
       <div className="flex items-center gap-4">
-        <div className="w-14 h-14 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-2xl font-bold text-white">
+        <div className="w-14 h-14 bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-2xl font-bold text-white">
           {session?.user?.name?.[0]?.toUpperCase() ?? "?"}
         </div>
         <div>
@@ -444,9 +501,22 @@ export default function PerfilPage() {
         <div className="ml-auto">
           <Link
             href="/verificacao"
-            className="text-sm text-teal-400 hover:text-teal-300 transition-colors"
+            className="text-sm text-teal-400 hover:text-teal-300 transition-colors flex items-center gap-1"
           >
-            ✅ Verificação KYC →
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="square"
+                strokeLinejoin="miter"
+                strokeWidth={2}
+                d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+              />
+            </svg>
+            Verificação KYC →
           </Link>
         </div>
       </div>
@@ -491,12 +561,12 @@ export default function PerfilPage() {
 
       {/* Tabs */}
       <div className="flex gap-2 flex-wrap">
-        <div className="flex gap-1 bg-gray-800 rounded-lg p-1 mr-2">
+        <div className="flex gap-1 bg-gray-800 p-1 mr-2">
           {(["TRADES", "ORDERS"] as const).map((t) => (
             <button
               key={t}
               onClick={() => setTab(t)}
-              className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors cursor-pointer ${tab === t ? "bg-emerald-600 text-white" : "text-gray-400 hover:text-white"}`}
+              className={`px-4 py-1.5 text-sm font-medium transition-colors cursor-pointer ${tab === t ? "bg-emerald-600 text-white" : "text-gray-400 hover:text-white"}`}
             >
               {t === "TRADES"
                 ? `Trades (${trades.length})`
@@ -509,7 +579,7 @@ export default function PerfilPage() {
             <button
               key={f}
               onClick={() => setFilter(f)}
-              className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors cursor-pointer ${filter === f ? "bg-gray-600 text-white" : "bg-gray-800 text-gray-400 hover:text-white"}`}
+              className={`px-4 py-2 text-sm font-medium transition-colors cursor-pointer ${filter === f ? "bg-gray-600 text-white" : "bg-gray-800 text-gray-400 hover:text-white"}`}
             >
               {f === "ALL"
                 ? "Todos"
@@ -607,7 +677,7 @@ export default function PerfilPage() {
                             <button
                               onClick={() => cancelOrder(order.id)}
                               disabled={cancellingOrderId === order.id}
-                              className="px-2 py-1 text-xs font-medium bg-red-700/80 hover:bg-red-600 text-white rounded transition-colors disabled:opacity-50 cursor-pointer"
+                              className="px-2 py-1 text-xs font-medium bg-red-700/80 hover:bg-red-600 text-white transition-colors disabled:opacity-50 cursor-pointer"
                             >
                               {cancellingOrderId === order.id
                                 ? "…"
@@ -679,16 +749,14 @@ export default function PerfilPage() {
                   return (
                     <div
                       key={trade.id}
-                      className="border border-gray-800 rounded-lg p-4 hover:bg-gray-800/30 transition-colors"
+                      className="border border-gray-800 p-4 hover:bg-gray-800/30 transition-colors"
                     >
                       <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
                         <div className="flex items-center gap-3">
                           <Badge variant={isBuyer ? "success" : "danger"}>
-                            {isBuyer ? "🛒 Compra" : "💰 Venda"}
+                            {isBuyer ? "Compra" : "Venda"}
                           </Badge>
-                          <Badge variant={config.variant}>
-                            {config.icon} {config.label}
-                          </Badge>
+                          <Badge variant={config.variant}>{config.label}</Badge>
                         </div>
                         <span className="text-xs text-gray-500">
                           {new Date(trade.createdAt).toLocaleDateString(
@@ -725,8 +793,21 @@ export default function PerfilPage() {
                             {formatNumber(trade.amount)}
                           </p>
                           {trade.order?.characterName && (
-                            <p className="text-gray-400 text-xs">
-                              👤 {trade.order.characterName}
+                            <p className="text-gray-400 text-xs flex items-center gap-1">
+                              <svg
+                                className="w-3 h-3"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="square"
+                                  strokeLinejoin="miter"
+                                  strokeWidth={2}
+                                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                                />
+                              </svg>
+                              {trade.order.characterName}
                             </p>
                           )}
                         </div>
@@ -750,13 +831,42 @@ export default function PerfilPage() {
                         </div>
                       </div>
                       {trade.status === "DELIVERED" && trade.deliveredAt && (
-                        <div className="text-xs text-orange-400 mb-3">
-                          ⏰ {getTimeRemaining(trade.deliveredAt)}
+                        <div className="text-xs text-orange-400 mb-3 flex items-center gap-1">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="w-3.5 h-3.5"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            strokeWidth={2}
+                          >
+                            <circle cx="12" cy="12" r="10" />
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M12 6v6l4 2"
+                            />
+                          </svg>{" "}
+                          {getTimeRemaining(trade.deliveredAt)}
                         </div>
                       )}
                       {trade.status === "DISPUTED" && trade.disputeReason && (
-                        <div className="text-xs text-red-400 bg-red-900/20 rounded p-2 mb-3">
-                          ⚠️ {trade.disputeReason}
+                        <div className="text-xs text-red-400 bg-red-900/20 p-2 mb-3 flex items-center gap-1">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="w-3.5 h-3.5 shrink-0"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            strokeWidth={2}
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"
+                            />
+                          </svg>{" "}
+                          {trade.disputeReason}
                         </div>
                       )}
                       <div className="flex flex-wrap gap-2">
@@ -768,9 +878,32 @@ export default function PerfilPage() {
                             }
                             disabled={isLoading}
                           >
-                            {isLoading
-                              ? "Processando..."
-                              : "📦 Marcar Entregue"}
+                            {isLoading ? (
+                              "Processando..."
+                            ) : (
+                              <>
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  className="w-4 h-4 inline mr-1"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  stroke="currentColor"
+                                  strokeWidth={2}
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M20 7H4a2 2 0 00-2 2v6a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z"
+                                  />
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M16 3H8v4h8V3z"
+                                  />
+                                </svg>{" "}
+                                Marcar Entregue
+                              </>
+                            )}
                           </Button>
                         )}
                         {isBuyer && trade.status === "DELIVERED" && (
@@ -780,9 +913,27 @@ export default function PerfilPage() {
                             onClick={() => handleAction(trade.id, "CONFIRM")}
                             disabled={isLoading}
                           >
-                            {isLoading
-                              ? "Processando..."
-                              : "✅ Confirmar Recebimento"}
+                            {isLoading ? (
+                              "Processando..."
+                            ) : (
+                              <>
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  className="w-4 h-4 inline mr-1"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  stroke="currentColor"
+                                  strokeWidth={2}
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M5 13l4 4L19 7"
+                                  />
+                                </svg>{" "}
+                                Confirmar Recebimento
+                              </>
+                            )}
                           </Button>
                         )}
                         {isSeller &&
@@ -794,9 +945,27 @@ export default function PerfilPage() {
                               onClick={() => handleAction(trade.id, "CONFIRM")}
                               disabled={isLoading}
                             >
-                              {isLoading
-                                ? "Processando..."
-                                : "🔓 Auto-Liberar Escrow"}
+                              {isLoading ? (
+                                "Processando..."
+                              ) : (
+                                <>
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    className="w-4 h-4 inline mr-1"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                    strokeWidth={2}
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"
+                                    />
+                                  </svg>{" "}
+                                  Auto-Liberar Escrow
+                                </>
+                              )}
                             </Button>
                           )}
                         {isBuyer &&
@@ -808,7 +977,21 @@ export default function PerfilPage() {
                               onClick={() => setDisputeModal(trade)}
                               disabled={isLoading}
                             >
-                              ⚠️ Abrir Disputa
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="w-4 h-4 inline mr-1"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                                strokeWidth={2}
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"
+                                />
+                              </svg>{" "}
+                              Abrir Disputa
                             </Button>
                           )}
                         {isSeller && trade.status === "DELIVERED" && (
@@ -818,7 +1001,21 @@ export default function PerfilPage() {
                             onClick={() => setDisputeModal(trade)}
                             disabled={isLoading}
                           >
-                            ⚠️ Abrir Disputa
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="w-4 h-4 inline mr-1"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                              strokeWidth={2}
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"
+                              />
+                            </svg>{" "}
+                            Abrir Disputa
                           </Button>
                         )}
                         {canChat && (
@@ -828,7 +1025,21 @@ export default function PerfilPage() {
                             onClick={() => openChat(trade)}
                             disabled={isLoading}
                           >
-                            💬 Chat
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="w-4 h-4 inline mr-1"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                              strokeWidth={2}
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M8 10h.01M12 10h.01M16 10h.01M21 16c0 1.1-.9 2-2 2H7l-4 4V6a2 2 0 012-2h14a2 2 0 012 2v10z"
+                              />
+                            </svg>{" "}
+                            Chat
                           </Button>
                         )}
                       </div>
@@ -854,14 +1065,28 @@ export default function PerfilPage() {
       <Modal
         isOpen={!!disputeModal}
         onClose={closeOpenDisputeModal}
-        title="⚠️ Abrir Disputa"
+        title="Abrir Disputa"
       >
         {disputeModal && (
           <div className="space-y-4">
             {disputeModalIsSeller ? (
-              <div className="bg-amber-950/40 border border-amber-700/40 rounded-lg px-4 py-3 text-xs text-amber-300 space-y-1">
-                <p className="font-semibold">
-                  ⚠️ Gravação obrigatória para vendedores
+              <div className="bg-amber-950/40 border border-amber-700/40 px-4 py-3 text-xs text-amber-300 space-y-1">
+                <p className="font-semibold flex items-center gap-1">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="w-3.5 h-3.5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"
+                    />
+                  </svg>{" "}
+                  Gravação obrigatória para vendedores
                 </p>
                 <p>
                   Envie um vídeo provando a entrega das moedas (antes e depois
@@ -869,8 +1094,25 @@ export default function PerfilPage() {
                 </p>
               </div>
             ) : (
-              <div className="bg-blue-950/40 border border-blue-700/40 rounded-lg px-4 py-3 text-xs text-blue-300 space-y-1">
-                <p className="font-semibold">ℹ️ Disputa como comprador</p>
+              <div className="bg-blue-950/40 border border-blue-700/40 px-4 py-3 text-xs text-blue-300 space-y-1">
+                <p className="font-semibold flex items-center gap-1">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="w-3.5 h-3.5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                  >
+                    <circle cx="12" cy="12" r="10" />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M12 8v4m0 4h.01"
+                    />
+                  </svg>{" "}
+                  Disputa como comprador
+                </p>
                 <p>
                   Descreva o problema. Se tiver gravação mostrando que as moedas
                   não foram recebidas, envie-a.
@@ -903,7 +1145,7 @@ export default function PerfilPage() {
                     ? "Ex: entreguei as moedas no personagem X mas o comprador não confirma"
                     : "Ex: já se passaram 24h e as moedas não foram entregues"
                 }
-                className="w-full h-24 px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm resize-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                className="w-full h-24 px-3 py-2 bg-gray-800 border border-gray-700 text-white text-sm resize-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
               />
             </div>
             <div className="flex gap-2 justify-end">
@@ -944,9 +1186,23 @@ export default function PerfilPage() {
               <>
                 {/* Welcome message for buyer when chat is empty or just starting */}
                 {isBuyerInChat && isFirstMessage() && (
-                  <div className="bg-blue-900/30 border border-blue-700/40 rounded-xl px-4 py-3 text-xs text-blue-300 space-y-1">
-                    <p className="font-semibold">
-                      👋 Bem-vindo ao chat da negociação!
+                  <div className="bg-blue-900/30 border border-blue-700/40 px-4 py-3 text-xs text-blue-300 space-y-1">
+                    <p className="font-semibold flex items-center gap-1">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="w-3.5 h-3.5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M8 10h.01M12 10h.01M16 10h.01M21 16c0 1.1-.9 2-2 2H7l-4 4V6a2 2 0 012-2h14a2 2 0 012 2v10z"
+                        />
+                      </svg>{" "}
+                      Bem-vindo ao chat da negociação!
                     </p>
                     <p>Para agilizar a entrega, compartilhe com o vendedor:</p>
                     <ul className="list-disc list-inside space-y-0.5 mt-1">
@@ -970,12 +1226,30 @@ export default function PerfilPage() {
                       className={`flex flex-col ${isMe ? "items-end" : "items-start"}`}
                     >
                       <div
-                        className={`max-w-[85%] rounded-xl px-3 py-2 text-sm ${msg.user.isAdmin ? "bg-purple-900/60 border border-purple-700/50" : isMe ? "bg-emerald-900/60 border border-emerald-700/50" : "bg-gray-700/60 border border-gray-600/50"}`}
+                        className={`max-w-[85%] px-3 py-2 text-sm ${msg.user.isAdmin ? "bg-purple-900/60 border border-purple-700/50" : isMe ? "bg-emerald-900/60 border border-emerald-700/50" : "bg-gray-700/60 border border-gray-600/50"}`}
                       >
                         <p className="text-xs font-medium mb-1 text-gray-400">
-                          {msg.user.isAdmin
-                            ? "🛡️ Admin"
-                            : msg.user.name || "Usuário"}
+                          {msg.user.isAdmin ? (
+                            <>
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="w-3.5 h-3.5 inline mr-0.5"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                                strokeWidth={2}
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"
+                                />
+                              </svg>
+                              Admin
+                            </>
+                          ) : (
+                            msg.user.name || "Usuário"
+                          )}
                           {" · "}
                           {new Date(msg.createdAt).toLocaleString("pt-BR", {
                             day: "2-digit",
@@ -994,7 +1268,21 @@ export default function PerfilPage() {
                             rel="noopener noreferrer"
                             className="inline-flex items-center gap-1 mt-2 text-xs text-teal-400 hover:text-teal-300 underline"
                           >
-                            🎥 Ver Gravação
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="w-3.5 h-3.5"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                              strokeWidth={2}
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M15 10l4.553-2.276A1 1 0 0121 8.723v6.554a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"
+                              />
+                            </svg>{" "}
+                            Ver Gravação
                           </a>
                         )}
                       </div>
@@ -1033,7 +1321,7 @@ export default function PerfilPage() {
                   }
                 }}
                 placeholder="Escreva uma mensagem (Enter para enviar)"
-                className="flex-1 px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm resize-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent h-16"
+                className="flex-1 px-3 py-2 bg-gray-800 border border-gray-700 text-white text-sm resize-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent h-16"
               />
               <Button
                 variant="primary"

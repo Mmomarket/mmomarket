@@ -14,7 +14,7 @@ export default function Badge({
   return (
     <span
       className={cn(
-        "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium",
+        "inline-flex items-center px-2.5 py-0.5 text-xs font-medium",
         {
           "bg-gray-700 text-gray-300": variant === "default",
           "bg-emerald-900/50 text-emerald-400 border border-emerald-800/50":

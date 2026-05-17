@@ -296,12 +296,12 @@ function NegociarContent() {
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               {error && (
-                <div className="bg-red-900/30 border border-red-800/50 text-red-400 text-sm px-4 py-3 rounded-lg">
+                <div className="bg-red-900/30 border border-red-800/50 text-red-400 text-sm px-4 py-3">
                   {error}
                 </div>
               )}
               {success && (
-                <div className="bg-emerald-900/30 border border-emerald-800/50 text-emerald-400 text-sm px-4 py-3 rounded-lg">
+                <div className="bg-emerald-900/30 border border-emerald-800/50 text-emerald-400 text-sm px-4 py-3">
                   {success}
                 </div>
               )}
@@ -311,7 +311,7 @@ function NegociarContent() {
                 <button
                   type="button"
                   onClick={() => setOrderType("BUY")}
-                  className={`py-2.5 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
+                  className={`py-2.5 text-sm font-medium transition-colors cursor-pointer ${
                     orderType === "BUY"
                       ? "bg-emerald-600 text-white"
                       : "bg-gray-800 text-gray-400 hover:bg-gray-700"
@@ -322,7 +322,7 @@ function NegociarContent() {
                 <button
                   type="button"
                   onClick={() => setOrderType("SELL")}
-                  className={`py-2.5 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
+                  className={`py-2.5 text-sm font-medium transition-colors cursor-pointer ${
                     orderType === "SELL"
                       ? "bg-red-600 text-white"
                       : "bg-gray-800 text-gray-400 hover:bg-gray-700"
@@ -403,9 +403,22 @@ function NegociarContent() {
               </div>
 
               {orderType === "SELL" && (
-                <div className="bg-amber-950/40 border border-amber-700/40 rounded-lg px-4 py-3 text-xs text-amber-300 space-y-1">
-                  <p className="font-semibold">
-                    ⚠️ Aviso importante para vendedores
+                <div className="bg-amber-950/40 border border-amber-700/40 px-4 py-3 text-xs text-amber-300 space-y-1">
+                  <p className="font-semibold flex items-center gap-1">
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="square"
+                        strokeLinejoin="miter"
+                        strokeWidth={2}
+                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                      />
+                    </svg>
+                    Aviso importante para vendedores
                   </p>
                   <p>
                     Em caso de disputa, o ônus da prova recai sobre o vendedor.{" "}
@@ -428,7 +441,7 @@ function NegociarContent() {
 
               {/* Summary */}
               {totalBRL > 0 && (
-                <div className="bg-gray-800/50 rounded-lg p-3 space-y-2 text-sm">
+                <div className="bg-gray-800/50 p-3 space-y-2 text-sm">
                   <div className="flex justify-between text-gray-400">
                     <span>Subtotal</span>
                     <span>{formatBRL(totalBRL)}</span>
@@ -561,7 +574,7 @@ function NegociarContent() {
                               <button
                                 onClick={() => cancelOrder(order.id)}
                                 disabled={cancellingOrderId === order.id}
-                                className="px-2 py-1 text-xs font-medium bg-gray-700 hover:bg-red-700 text-gray-300 hover:text-white rounded transition-colors disabled:opacity-50 cursor-pointer"
+                                className="px-2 py-1 text-xs font-medium bg-gray-700 hover:bg-red-700 text-gray-300 hover:text-white transition-colors disabled:opacity-50 cursor-pointer"
                               >
                                 {cancellingOrderId === order.id
                                   ? "…"
@@ -574,7 +587,7 @@ function NegociarContent() {
                                 <button
                                   onClick={() => acceptOrder(order)}
                                   disabled={acceptingOrderId === order.id}
-                                  className="px-2 py-1 text-xs font-medium bg-red-700/80 hover:bg-red-600 text-white rounded transition-colors disabled:opacity-50 cursor-pointer"
+                                  className="px-2 py-1 text-xs font-medium bg-red-700/80 hover:bg-red-600 text-white transition-colors disabled:opacity-50 cursor-pointer"
                                 >
                                   {acceptingOrderId === order.id
                                     ? "…"
@@ -675,7 +688,7 @@ function NegociarContent() {
                               <button
                                 onClick={() => cancelOrder(order.id)}
                                 disabled={cancellingOrderId === order.id}
-                                className="px-2 py-1 text-xs font-medium bg-gray-700 hover:bg-red-700 text-gray-300 hover:text-white rounded transition-colors disabled:opacity-50 cursor-pointer"
+                                className="px-2 py-1 text-xs font-medium bg-gray-700 hover:bg-red-700 text-gray-300 hover:text-white transition-colors disabled:opacity-50 cursor-pointer"
                               >
                                 {cancellingOrderId === order.id
                                   ? "…"
@@ -688,7 +701,7 @@ function NegociarContent() {
                                 <button
                                   onClick={() => acceptOrder(order)}
                                   disabled={acceptingOrderId === order.id}
-                                  className="px-2 py-1 text-xs font-medium bg-emerald-700/80 hover:bg-emerald-600 text-white rounded transition-colors disabled:opacity-50 cursor-pointer"
+                                  className="px-2 py-1 text-xs font-medium bg-emerald-700/80 hover:bg-emerald-600 text-white transition-colors disabled:opacity-50 cursor-pointer"
                                 >
                                   {acceptingOrderId === order.id
                                     ? "…"

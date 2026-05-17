@@ -5,6 +5,7 @@ import Badge from "@/components/ui/Badge";
 import Card, { CardContent, CardHeader } from "@/components/ui/Card";
 import Skeleton from "@/components/ui/Skeleton";
 import { formatBRLPrecise, formatPercent } from "@/lib/utils";
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -40,6 +41,20 @@ interface PriceStats {
   volume: number;
   history: { timestamp: string; price: number; volume: number }[];
 }
+
+// Game slug → logo filename mapping
+const GAME_LOGOS: Record<string, string> = {
+  tibia: "tibia.png",
+  "mu-online": "mu.png",
+  "ragnarok-online": "ragnarok.png",
+  "perfect-world": "perfectworld.png",
+  "lineage-2": "lineage2.png",
+  "world-of-warcraft": "worldofwarcraft.png",
+  "guild-wars-2": "guildwars2.png",
+  "black-desert-online": "blackdesertonline.png",
+  metin2: "metin2.png",
+  dofus: "dofus.png",
+};
 
 export default function HomePage() {
   const [games, setGames] = useState<Game[]>([]);
@@ -124,65 +139,48 @@ export default function HomePage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-      {/* Hero Section */}
-      <div className="text-center space-y-4 py-6">
-        <h1 className="text-4xl sm:text-5xl font-bold tracking-tight">
-          Negocie moedas de{" "}
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-300">
-            MMORPGs
-          </span>
-        </h1>
-        <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-          Compre e venda moedas digitais dos maiores MMORPGs do Brasil com
-          segurança. Taxa de apenas 2% por transação.
-        </p>
-        <div className="flex items-center justify-center gap-3 pt-2">
-          <Link
-            href="/negociar"
-            className="px-6 py-3 bg-emerald-600 text-white font-medium rounded-lg hover:bg-emerald-500 transition-colors"
-          >
-            Começar a Negociar
-          </Link>
-          <Link
-            href="/registro"
-            className="px-6 py-3 bg-gray-800 text-gray-300 font-medium rounded-lg hover:bg-gray-700 transition-colors"
-          >
-            Criar Conta
-          </Link>
+      {/* Hero Section — video background */}
+      <div className="relative overflow-hidden aspect-video sm:aspect-auto sm:min-h-[420px] flex items-center justify-center">
+        {/* Background video */}
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          disablePictureInPicture
+          className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none"
+          style={{ userSelect: "none" }}
+        >
+          <source src="/assets/intro.mp4" type="video/mp4" />
+        </video>
+        {/* Dark overlay */}
+        <div className="absolute inset-0 bg-black/60" />
+        {/* Content */}
+        <div className="relative z-10 text-center space-y-5 px-4 py-12 sm:py-16">
+          <h1 className="text-4xl sm:text-5xl font-bold tracking-tight">
+            Negocie moedas de{" "}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-300">
+              MMORPGs
+            </span>
+          </h1>
+          <p className="text-gray-300 text-lg max-w-2xl mx-auto">
+            Compre e venda moedas digitais dos maiores MMORPGs do Brasil com
+            segurança. Taxa de apenas 2% por transação.
+          </p>
+          <div className="flex items-center justify-center pt-2">
+            <Link
+              href="/login"
+              className="px-8 py-3 bg-emerald-600 text-white font-semibold hover:bg-emerald-500 transition-colors text-base"
+            >
+              Logar e Negociar
+            </Link>
+          </div>
         </div>
-      </div>
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="text-center py-4">
-            <p className="text-2xl font-bold text-emerald-400">10</p>
-            <p className="text-xs text-gray-500 mt-1">Jogos Disponíveis</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="text-center py-4">
-            <p className="text-2xl font-bold text-emerald-400">21</p>
-            <p className="text-xs text-gray-500 mt-1">Moedas Listadas</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="text-center py-4">
-            <p className="text-2xl font-bold text-emerald-400">2%</p>
-            <p className="text-xs text-gray-500 mt-1">Taxa por Transação</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="text-center py-4">
-            <p className="text-2xl font-bold text-emerald-400">24/7</p>
-            <p className="text-xs text-gray-500 mt-1">Mercado Aberto</p>
-          </CardContent>
-        </Card>
       </div>
 
       {/* Game Selector */}
       <div>
-        <h2 className="text-xl font-semibold mb-4">Jogos</h2>
+        <h2 className="text-2xl font-bold mb-5 text-center">Jogos</h2>
         {loadingGames ? (
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
             {Array.from({ length: 10 }).map((_, i) => (
@@ -191,27 +189,38 @@ export default function HomePage() {
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-            {games.map((game) => (
-              <button
-                key={game.id}
-                onClick={() => handleGameSelect(game)}
-                className={`p-4 rounded-xl border text-left transition-all cursor-pointer ${
-                  selectedGame?.id === game.id
-                    ? "bg-emerald-900/30 border-emerald-600/50 ring-1 ring-emerald-500/30"
-                    : "bg-gray-800/50 border-gray-700/50 hover:border-gray-600 hover:bg-gray-800"
-                }`}
-              >
-                <p className="font-medium text-sm text-white truncate">
-                  {game.name}
-                </p>
-                <p className="text-xs text-gray-500 mt-1">
-                  {game.servers.length} servidor
-                  {game.servers.length !== 1 ? "es" : ""} ·{" "}
-                  {game.currencies.length} moeda
-                  {game.currencies.length !== 1 ? "s" : ""}
-                </p>
-              </button>
-            ))}
+            {games.map((game) => {
+              const logoFile = GAME_LOGOS[game.slug];
+              return (
+                <button
+                  key={game.id}
+                  onClick={() => handleGameSelect(game)}
+                  className={`p-3 border text-center transition-all cursor-pointer flex flex-col items-center justify-center gap-2 ${
+                    selectedGame?.id === game.id
+                      ? "bg-emerald-900/30 border-emerald-600/50 ring-1 ring-emerald-500/30"
+                      : "bg-gray-800/50 border-gray-700/50 hover:border-gray-600 hover:bg-gray-800"
+                  }`}
+                >
+                  {logoFile ? (
+                    <Image
+                      src={`/assets/gamelogos/${logoFile}`}
+                      alt={game.name}
+                      width={80}
+                      height={40}
+                      className="h-10 w-auto object-contain"
+                    />
+                  ) : (
+                    <p className="font-medium text-sm text-white truncate">
+                      {game.name}
+                    </p>
+                  )}
+                  <p className="text-xs text-gray-500">
+                    {game.servers.length} servidor
+                    {game.servers.length !== 1 ? "es" : ""}
+                  </p>
+                </button>
+              );
+            })}
           </div>
         )}
       </div>
@@ -255,7 +264,7 @@ export default function HomePage() {
                   <button
                     key={c.id}
                     onClick={() => setSelectedCurrency(c)}
-                    className={`px-3 py-1 text-xs font-medium rounded-full transition-colors cursor-pointer ${
+                    className={`px-3 py-1 text-xs font-medium transition-colors cursor-pointer ${
                       selectedCurrency?.id === c.id
                         ? "bg-emerald-600 text-white"
                         : "bg-gray-700 text-gray-300 hover:bg-gray-600"
@@ -271,13 +280,13 @@ export default function HomePage() {
                   <button
                     key={s.id}
                     onClick={() => setSelectedServer(s)}
-                    className={`px-3 py-1 text-xs font-medium rounded-full transition-colors cursor-pointer ${
+                    className={`px-3 py-1 text-xs font-medium transition-colors cursor-pointer ${
                       selectedServer?.id === s.id
                         ? "bg-teal-600 text-white"
                         : "bg-gray-700 text-gray-300 hover:bg-gray-600"
                     }`}
                   >
-                    🖥️ {s.name}
+                    {s.name}
                   </button>
                 ))}
               </div>
@@ -371,8 +380,21 @@ export default function HomePage() {
             <Card hover>
               <Link href="/negociar">
                 <CardContent className="text-center py-6">
-                  <p className="text-emerald-400 font-semibold">
-                    💱 Negociar Agora
+                  <p className="text-emerald-400 font-semibold flex items-center justify-center gap-2">
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="square"
+                        strokeLinejoin="miter"
+                        strokeWidth={2}
+                        d="M7 16V4m0 0L3 8m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4"
+                      />
+                    </svg>
+                    Negociar Agora
                   </p>
                   <p className="text-xs text-gray-500 mt-1">
                     Criar ordens de compra e venda
@@ -384,8 +406,29 @@ export default function HomePage() {
             <Card hover>
               <Link href="/carteira">
                 <CardContent className="text-center py-6">
-                  <p className="text-emerald-400 font-semibold">
-                    💰 Minha Carteira
+                  <p className="text-emerald-400 font-semibold flex items-center justify-center gap-2">
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <rect
+                        x="1"
+                        y="5"
+                        width="22"
+                        height="14"
+                        rx="0"
+                        strokeWidth={2}
+                      />
+                      <path
+                        strokeLinecap="square"
+                        strokeLinejoin="miter"
+                        strokeWidth={2}
+                        d="M16 12h4"
+                      />
+                    </svg>
+                    Minha Carteira
                   </p>
                   <p className="text-xs text-gray-500 mt-1">
                     Depositar BRL e gerenciar saldo
@@ -399,32 +442,65 @@ export default function HomePage() {
 
       {/* All Games Overview */}
       <div>
-        <h2 className="text-xl font-semibold mb-4">Visão Geral dos Jogos</h2>
+        <h2 className="text-2xl font-bold mb-5 text-center">
+          Mercados Disponíveis
+        </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {games.map((game) => (
-            <Card key={game.id} hover>
-              <CardContent className="py-5">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <h3 className="font-semibold text-white">{game.name}</h3>
-                    <p className="text-xs text-gray-500 mt-0.5">
-                      {game.currencies.map((c) => c.code).join(", ")}
-                    </p>
-                    <p className="text-xs text-gray-600 mt-0.5">
-                      🖥️ {game.servers.map((s) => s.name).join(", ")}
-                    </p>
+          {games.map((game) => {
+            const logoFile = GAME_LOGOS[game.slug];
+            return (
+              <Card key={game.id} hover>
+                <CardContent className="py-5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      {logoFile ? (
+                        <Image
+                          src={`/assets/gamelogos/${logoFile}`}
+                          alt={game.name}
+                          width={64}
+                          height={32}
+                          className="h-8 w-auto object-contain"
+                        />
+                      ) : (
+                        <span className="font-semibold text-white">
+                          {game.name}
+                        </span>
+                      )}
+                      <div>
+                        <p className="text-xs text-gray-500">
+                          {game.currencies
+                            .map((c: Currency) => c.code)
+                            .join(", ")}
+                        </p>
+                        <p className="text-xs text-gray-600">
+                          {game.servers.map((s: Server) => s.name).join(", ")}
+                        </p>
+                      </div>
+                    </div>
+                    <Link
+                      href={`/negociar?game=${game.slug}`}
+                      className="text-xs text-emerald-400 hover:text-emerald-300 font-medium shrink-0"
+                    >
+                      Negociar →
+                    </Link>
                   </div>
-                  <Link
-                    href={`/negociar?game=${game.slug}`}
-                    className="text-xs text-emerald-400 hover:text-emerald-300 font-medium"
-                  >
-                    Negociar →
-                  </Link>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
+      </div>
+
+      {/* Sticky GIF — bottom right */}
+      <div className="fixed bottom-4 right-4 z-50 pointer-events-none">
+        <Image
+          src="/assets/taxa_por_transacao.gif"
+          alt="Taxa por transação"
+          width={160}
+          height={160}
+          className="w-32 h-auto sm:w-40"
+          unoptimized
+        />
       </div>
     </div>
   );

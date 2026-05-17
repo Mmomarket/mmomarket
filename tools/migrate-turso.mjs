@@ -143,6 +143,12 @@ async function main() {
     "ALTER TABLE Withdrawal ADD COLUMN pixKeyType TEXT",
   );
 
+  // ── Withdrawal.adminNote column ──────────────────────────────────────────
+  await safeExec(
+    "Withdrawal.adminNote column",
+    "ALTER TABLE Withdrawal ADD COLUMN adminNote TEXT",
+  );
+
   // Backfill pixKeyType from legacy "TYPE:value" format in pixKey
   try {
     await db.execute(`

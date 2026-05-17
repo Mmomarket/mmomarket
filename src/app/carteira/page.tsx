@@ -212,12 +212,12 @@ export default function CarteiraPage() {
   const depositForm = (
     <form onSubmit={handleDeposit} className="space-y-4">
       {error && (
-        <div className="bg-red-900/30 border border-red-800/50 text-red-400 text-sm px-4 py-3 rounded-lg">
+        <div className="bg-red-900/30 border border-red-800/50 text-red-400 text-sm px-4 py-3 ">
           {error}
         </div>
       )}
       {success && (
-        <div className="bg-emerald-900/30 border border-emerald-800/50 text-emerald-400 text-sm px-4 py-3 rounded-lg">
+        <div className="bg-emerald-900/30 border border-emerald-800/50 text-emerald-400 text-sm px-4 py-3 ">
           {success}
         </div>
       )}
@@ -239,7 +239,7 @@ export default function CarteiraPage() {
             key={v}
             type="button"
             onClick={() => setDepositAmount(v.toString())}
-            className="px-3 py-1.5 text-xs font-medium bg-gray-800 text-gray-300 rounded-lg hover:bg-gray-700 transition-colors cursor-pointer"
+            className="px-3 py-1.5 text-xs font-medium bg-gray-800 text-gray-300  hover:bg-gray-700 transition-colors cursor-pointer"
           >
             R$ {v}
           </button>
@@ -259,12 +259,12 @@ export default function CarteiraPage() {
   const withdrawForm = (
     <form onSubmit={handleWithdraw} className="space-y-4">
       {withdrawError && (
-        <div className="bg-red-900/30 border border-red-800/50 text-red-400 text-sm px-4 py-3 rounded-lg">
+        <div className="bg-red-900/30 border border-red-800/50 text-red-400 text-sm px-4 py-3 ">
           {withdrawError}
         </div>
       )}
       {withdrawSuccess && (
-        <div className="bg-emerald-900/30 border border-emerald-800/50 text-emerald-400 text-sm px-4 py-3 rounded-lg">
+        <div className="bg-emerald-900/30 border border-emerald-800/50 text-emerald-400 text-sm px-4 py-3 ">
           {withdrawSuccess}
         </div>
       )}
@@ -286,7 +286,7 @@ export default function CarteiraPage() {
             key={v}
             type="button"
             onClick={() => setWithdrawAmount(v.toString())}
-            className="px-3 py-1.5 text-xs font-medium bg-gray-800 text-gray-300 rounded-lg hover:bg-gray-700 transition-colors cursor-pointer"
+            className="px-3 py-1.5 text-xs font-medium bg-gray-800 text-gray-300  hover:bg-gray-700 transition-colors cursor-pointer"
           >
             R$ {v}
           </button>
@@ -295,7 +295,7 @@ export default function CarteiraPage() {
           <button
             type="button"
             onClick={() => setWithdrawAmount(wallet.balanceBRL.toFixed(2))}
-            className="px-3 py-1.5 text-xs font-medium bg-emerald-900/40 text-emerald-400 rounded-lg hover:bg-emerald-900/60 transition-colors cursor-pointer"
+            className="px-3 py-1.5 text-xs font-medium bg-emerald-900/40 text-emerald-400  hover:bg-emerald-900/60 transition-colors cursor-pointer"
           >
             Tudo ({formatBRL(wallet.balanceBRL)})
           </button>

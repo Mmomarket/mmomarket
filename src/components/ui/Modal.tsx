@@ -47,7 +47,7 @@ export default function Modal({
       <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" />
       <div
         className={cn(
-          "relative bg-gray-800 border border-gray-700 rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto",
+          "relative bg-gray-800 border border-gray-700 shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto",
           className,
         )}
       >
