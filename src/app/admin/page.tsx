@@ -88,7 +88,10 @@ export default function AdminPage() {
     pixKey: string;
     pixKeyType: string;
     userEmail: string;
+    withdrawalId: string;
   } | null>(null);
+  const [rejectModal, setRejectModal] = useState<AdminWithdrawal | null>(null);
+  const [rejectNote, setRejectNote] = useState("");
 
   // Chat state
   const [chatTradeId, setChatTradeId] = useState<string | null>(null);
@@ -135,7 +138,7 @@ export default function AdminPage() {
 
   useEffect(() => {
     if (sessionStatus === "unauthenticated") {
-      router.push("/login");
+      router.push("/admin/login");
       return;
     }
     if (session) {
@@ -220,33 +223,77 @@ export default function AdminPage() {
     }
   };
 
-  const handleWithdrawal = async (
-    withdrawalId: string,
-    action: "APPROVE" | "REJECT",
-  ) => {
+  const handleGetQR = async (withdrawalId: string) => {
     setWithdrawalLoading(withdrawalId);
     try {
       const res = await fetch("/api/admin/withdrawals", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ withdrawalId, action }),
+        body: JSON.stringify({ withdrawalId, action: "GET_QR" }),
       });
       const data = await res.json();
       if (res.ok) {
-        if (action === "APPROVE" && data.pixCode) {
-          setPixQR({
-            code: data.pixCode,
-            amount: data.amountBRL,
-            pixKey: data.pixKey ?? "",
-            pixKeyType: data.pixKeyType ?? "",
-            userEmail: data.userEmail ?? "",
-          });
-        } else {
-          alert(data.message || "Processado com sucesso!");
-        }
+        setPixQR({
+          code: data.pixCode,
+          amount: data.amountBRL,
+          pixKey: data.pixKey ?? "",
+          pixKeyType: data.pixKeyType ?? "",
+          userEmail: data.userEmail ?? "",
+          withdrawalId,
+        });
+      } else {
+        alert(data.error || "Erro ao gerar QR Code");
+      }
+    } catch {
+      alert("Erro de conexão");
+    } finally {
+      setWithdrawalLoading(null);
+    }
+  };
+
+  const handleCompleteWithdrawal = async (withdrawalId: string) => {
+    setWithdrawalLoading(withdrawalId);
+    try {
+      const res = await fetch("/api/admin/withdrawals", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ withdrawalId, action: "COMPLETE" }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        alert(data.message || "Saque concluído!");
+        setPixQR(null);
         loadData();
       } else {
-        alert(data.error || "Erro ao processar saque");
+        alert(data.error || "Erro ao concluir saque");
+      }
+    } catch {
+      alert("Erro de conexão");
+    } finally {
+      setWithdrawalLoading(null);
+    }
+  };
+
+  const handleRejectWithdrawal = async () => {
+    if (!rejectModal) return;
+    setWithdrawalLoading(rejectModal.id);
+    try {
+      const res = await fetch("/api/admin/withdrawals", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          withdrawalId: rejectModal.id,
+          action: "REJECT",
+          adminNote: rejectNote.trim() || undefined,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setRejectModal(null);
+        setRejectNote("");
+        loadData();
+      } else {
+        alert(data.error || "Erro ao rejeitar saque");
       }
     } catch {
       alert("Erro de conexão");
@@ -539,22 +586,33 @@ export default function AdminPage() {
                         </p>
                       )}
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 flex-wrap">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => handleGetQR(w.id)}
+                        disabled={withdrawalLoading === w.id}
+                      >
+                        {withdrawalLoading === w.id ? "..." : "📲 QR Code"}
+                      </Button>
                       <Button
                         size="sm"
                         variant="primary"
-                        onClick={() => handleWithdrawal(w.id, "APPROVE")}
+                        onClick={() => handleCompleteWithdrawal(w.id)}
                         disabled={withdrawalLoading === w.id}
                       >
-                        {withdrawalLoading === w.id ? "..." : "✅ Aprovar"}
+                        {withdrawalLoading === w.id ? "..." : "✅ Concluir"}
                       </Button>
                       <Button
                         size="sm"
                         variant="danger"
-                        onClick={() => handleWithdrawal(w.id, "REJECT")}
+                        onClick={() => {
+                          setRejectModal(w);
+                          setRejectNote("");
+                        }}
                         disabled={withdrawalLoading === w.id}
                       >
-                        {withdrawalLoading === w.id ? "..." : "❌ Rejeitar"}
+                        ❌ Rejeitar
                       </Button>
                     </div>
                   </div>
@@ -759,14 +817,83 @@ export default function AdminPage() {
               </p>
             </div>
             <p className="text-xs text-gray-500">
-              Escaneie com seu app bancário para pagar
+              Escaneie com seu app bancário para pagar e clique em Concluir após
+              o envio
             </p>
-            <Button
-              variant="secondary"
-              onClick={() => navigator.clipboard.writeText(pixQR.code)}
-            >
-              📋 Copiar código Pix Copia e Cola
-            </Button>
+            <div className="flex gap-3">
+              <Button
+                variant="secondary"
+                onClick={() => navigator.clipboard.writeText(pixQR.code)}
+              >
+                📋 Copiar Pix Copia e Cola
+              </Button>
+              <Button
+                variant="primary"
+                onClick={() => handleCompleteWithdrawal(pixQR.withdrawalId)}
+                disabled={withdrawalLoading === pixQR.withdrawalId}
+              >
+                {withdrawalLoading === pixQR.withdrawalId
+                  ? "..."
+                  : "✅ Concluir Saque"}
+              </Button>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      {/* Rejection Note Modal */}
+      <Modal
+        isOpen={!!rejectModal}
+        onClose={() => {
+          setRejectModal(null);
+          setRejectNote("");
+        }}
+        title="❌ Rejeitar Saque"
+      >
+        {rejectModal && (
+          <div className="space-y-4">
+            <p className="text-sm text-gray-400">
+              Saque de{" "}
+              <span className="text-white font-semibold">
+                {formatBRL(rejectModal.amountBRL)}
+              </span>{" "}
+              de <span className="text-white">{rejectModal.user.name}</span> (
+              {rejectModal.user.email})
+            </p>
+            <div className="space-y-1">
+              <label className="block text-sm font-medium text-gray-300">
+                Motivo da rejeição{" "}
+                <span className="text-gray-500 text-xs">
+                  (opcional — será exibido ao usuário)
+                </span>
+              </label>
+              <textarea
+                value={rejectNote}
+                onChange={(e) => setRejectNote(e.target.value)}
+                placeholder="Ex: chave Pix inválida, documentação pendente..."
+                className="w-full h-24 px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm resize-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+              />
+            </div>
+            <div className="flex gap-2 justify-end">
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  setRejectModal(null);
+                  setRejectNote("");
+                }}
+              >
+                Cancelar
+              </Button>
+              <Button
+                variant="danger"
+                onClick={handleRejectWithdrawal}
+                disabled={withdrawalLoading === rejectModal.id}
+              >
+                {withdrawalLoading === rejectModal.id
+                  ? "Rejeitando..."
+                  : "Confirmar Rejeição"}
+              </Button>
+            </div>
           </div>
         )}
       </Modal>

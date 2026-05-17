@@ -5,38 +5,11 @@ import Link from "next/link";
 import { useState } from "react";
 
 export default function LoginPage() {
-  const [showAdmin, setShowAdmin] = useState(false);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
 
   const handleGoogle = async () => {
     setGoogleLoading(true);
     await signIn("google", { callbackUrl: "/negociar" });
-  };
-
-  const handleAdminSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
-    try {
-      const res = await signIn("credentials", {
-        email,
-        password,
-        redirect: false,
-      });
-      if (res?.error) {
-        setError("Email ou senha inválidos");
-      } else {
-        window.location.href = "/negociar";
-      }
-    } catch {
-      setError("Erro ao fazer login.");
-    } finally {
-      setLoading(false);
-    }
   };
 
   return (
@@ -91,54 +64,6 @@ export default function LoginPage() {
             Ao entrar, você concorda com nossos termos de uso
           </p>
         </div>
-
-        {/* Admin toggle */}
-        <div className="text-center">
-          <button
-            onClick={() => setShowAdmin(!showAdmin)}
-            className="text-xs text-gray-700 hover:text-gray-500 transition-colors"
-          >
-            {showAdmin ? "Ocultar login admin" : "Login administrativo"}
-          </button>
-        </div>
-
-        {showAdmin && (
-          <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
-            <p className="text-xs text-gray-500 mb-4 text-center">
-              Acesso restrito — somente admins
-            </p>
-            <form onSubmit={handleAdminSubmit} className="space-y-4">
-              {error && (
-                <div className="bg-red-900/30 border border-red-800/50 text-red-400 text-sm px-3 py-2 rounded-lg">
-                  {error}
-                </div>
-              )}
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="admin@email.com"
-                required
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500"
-              />
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                required
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500"
-              />
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-gray-700 hover:bg-gray-600 disabled:opacity-50 text-white font-medium py-2 rounded-lg text-sm transition-colors"
-              >
-                {loading ? "Entrando..." : "Entrar como Admin"}
-              </button>
-            </form>
-          </div>
-        )}
       </div>
     </div>
   );

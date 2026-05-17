@@ -10,7 +10,7 @@ const navLinks = [
   { href: "/", label: "Mercado", icon: "📊" },
   { href: "/negociar", label: "Negociar", icon: "💱" },
   { href: "/carteira", label: "Carteira", icon: "💰" },
-  { href: "/historico", label: "Histórico", icon: "📋" },
+  { href: "/perfil", label: "Perfil", icon: "�" },
   { href: "/verificacao", label: "Verificação", icon: "✅" },
 ];
 
@@ -34,7 +34,10 @@ export default function Navbar() {
     ...(isAdmin ? [{ href: "/admin", label: "Admin", icon: "🛡️" }] : []),
   ];
 
-  const isAuth = pathname === "/login" || pathname === "/registro";
+  const isAuth =
+    pathname === "/login" ||
+    pathname === "/registro" ||
+    pathname === "/admin/login";
   if (isAuth) return null;
 
   return (
@@ -77,9 +80,12 @@ export default function Navbar() {
             ) : session?.user ? (
               <div className="flex items-center gap-3">
                 <div className="text-right">
-                  <p className="text-sm font-medium text-white">
+                  <Link
+                    href="/perfil"
+                    className="text-sm font-medium text-white hover:text-emerald-400 transition-colors"
+                  >
                     {session.user.name}
-                  </p>
+                  </Link>
                   <p className="text-xs text-gray-500">{session.user.email}</p>
                 </div>
                 <button

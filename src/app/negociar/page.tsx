@@ -10,6 +10,7 @@ import Skeleton from "@/components/ui/Skeleton";
 import { PLATFORM_FEE_PERCENT } from "@/lib/constants";
 import { formatBRL, formatBRLPrecise, formatNumber } from "@/lib/utils";
 import { useSession } from "next-auth/react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useState } from "react";
 
@@ -525,7 +526,10 @@ function NegociarContent() {
                           className="border-b border-gray-800/50 hover:bg-gray-800/30"
                         >
                           <td className="py-3 text-gray-300">
-                            <span className="flex items-center gap-1">
+                            <Link
+                              href={`/perfil/${order.user.id}`}
+                              className="flex items-center gap-1 hover:text-white transition-colors"
+                            >
                               {order.user.name}
                               {order.user.verifications &&
                                 order.user.verifications.length > 0 && (
@@ -536,7 +540,7 @@ function NegociarContent() {
                                     ✓
                                   </span>
                                 )}
-                            </span>
+                            </Link>
                           </td>
                           <td className="py-3 text-right text-white font-medium">
                             {formatNumber(order.amount - order.filledAmount)}
@@ -636,7 +640,10 @@ function NegociarContent() {
                           className="border-b border-gray-800/50 hover:bg-gray-800/30"
                         >
                           <td className="py-3 text-gray-300">
-                            <span className="flex items-center gap-1">
+                            <Link
+                              href={`/perfil/${order.user.id}`}
+                              className="flex items-center gap-1 hover:text-white transition-colors"
+                            >
                               {order.user.name}
                               {order.user.verifications &&
                                 order.user.verifications.length > 0 && (
@@ -647,7 +654,7 @@ function NegociarContent() {
                                     ✓
                                   </span>
                                 )}
-                            </span>
+                            </Link>
                           </td>
                           <td className="py-3 text-right text-white font-medium">
                             {formatNumber(order.amount - order.filledAmount)}

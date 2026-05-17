@@ -33,6 +33,7 @@ interface Withdrawal {
   amountBRL: number;
   status: string;
   pixKey: string | null;
+  adminNote: string | null;
   createdAt: string;
 }
 
@@ -564,6 +565,11 @@ export default function CarteiraPage() {
                               </td>
                               <td className="py-3 text-right">
                                 <Badge variant={st.variant}>{st.label}</Badge>
+                                {w.status === "REJECTED" && w.adminNote && (
+                                  <p className="text-xs text-red-400 mt-1">
+                                    {w.adminNote}
+                                  </p>
+                                )}
                               </td>
                             </tr>
                           );

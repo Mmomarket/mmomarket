@@ -151,6 +151,7 @@ model Withdrawal {
   status      String   @default("PENDING") // PENDING, PROCESSING, COMPLETED, REJECTED
   pixKey      String?  // the key value (CPF number, email address, etc.)
   pixKeyType  String?  // CPF, CNPJ, EMAIL, PHONE, EVP
+  adminNote   String?  // note added by admin on rejection
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

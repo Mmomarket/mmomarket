@@ -35,10 +35,11 @@ export async function GET() {
 
 const processSchema = z.object({
   withdrawalId: z.string().min(1),
-  action: z.enum(["APPROVE", "REJECT"]),
+  action: z.enum(["GET_QR", "COMPLETE", "REJECT"]),
+  adminNote: z.string().optional(),
 });
 
-// PATCH /api/admin/withdrawals - Approve or reject a withdrawal
+// PATCH /api/admin/withdrawals - Process a withdrawal
 export async function PATCH(req: Request) {
   try {
     const userId = await getCurrentUserId();
@@ -46,7 +47,7 @@ export async function PATCH(req: Request) {
     if (!(await isCurrentUserAdmin())) return forbiddenResponse();
 
     const body = await req.json();
-    const { withdrawalId, action } = processSchema.parse(body);
+    const { withdrawalId, action, adminNote } = processSchema.parse(body);
 
     const withdrawal = await prisma.withdrawal.findUnique({
       where: { id: withdrawalId },
@@ -60,69 +61,82 @@ export async function PATCH(req: Request) {
       );
     }
 
-    if (withdrawal.status !== "PENDING") {
-      return NextResponse.json(
-        { error: `Saque já foi processado (${withdrawal.status})` },
-        { status: 400 },
-      );
-    }
-
     if (action === "REJECT") {
+      if (withdrawal.status !== "PENDING") {
+        return NextResponse.json(
+          { error: `Saque já foi processado (${withdrawal.status})` },
+          { status: 400 },
+        );
+      }
       // Refund the balance back to the user and mark as rejected
       await prisma.$transaction([
         prisma.withdrawal.update({
           where: { id: withdrawalId },
-          data: { status: "REJECTED" },
+          data: { status: "REJECTED", adminNote: adminNote ?? null },
         }),
         prisma.wallet.update({
           where: { userId: withdrawal.userId },
-          data: {
-            balanceBRL: { increment: withdrawal.amountBRL },
-          },
+          data: { balanceBRL: { increment: withdrawal.amountBRL } },
         }),
       ]);
-
       return NextResponse.json({
         message: "Saque rejeitado. Saldo devolvido ao usuário.",
       });
     }
 
-    // APPROVE — generate Pix BR Code QR for the admin to scan, then mark COMPLETED.
-    let pixKey = withdrawal.pixKey || "";
-    let pixKeyType = (withdrawal.pixKeyType as string) || "EVP";
-
-    // Legacy format fallback: "TYPE:value"
-    if (!withdrawal.pixKeyType && pixKey.includes(":")) {
-      const colonIdx = pixKey.indexOf(":");
-      pixKeyType = pixKey.substring(0, colonIdx);
-      pixKey = pixKey.substring(colonIdx + 1);
+    // GET_QR — generate Pix QR code for admin to scan (does NOT mark as completed yet)
+    if (action === "GET_QR") {
+      if (withdrawal.status !== "PENDING") {
+        return NextResponse.json(
+          { error: `Saque já foi processado (${withdrawal.status})` },
+          { status: 400 },
+        );
+      }
+      let pixKey = withdrawal.pixKey || "";
+      let pixKeyType = (withdrawal.pixKeyType as string) || "EVP";
+      if (!withdrawal.pixKeyType && pixKey.includes(":")) {
+        const colonIdx = pixKey.indexOf(":");
+        pixKeyType = pixKey.substring(0, colonIdx);
+        pixKey = pixKey.substring(colonIdx + 1);
+      }
+      const userName =
+        withdrawal.user.name ?? withdrawal.user.email ?? "Usuario";
+      const pixCode = generatePixCode({
+        pixKey,
+        pixKeyType,
+        merchantName: userName,
+        merchantCity: "SAO PAULO",
+        amount: withdrawal.amountBRL,
+        txId: withdrawalId.replace(/[^A-Za-z0-9]/g, "").substring(0, 25),
+        description: `Saque MMOMarket`,
+      });
+      return NextResponse.json({
+        pixKey,
+        pixKeyType,
+        amountBRL: withdrawal.amountBRL,
+        userEmail: withdrawal.user.email,
+        pixCode,
+      });
     }
 
-    // Generate scannable Pix BR Code (EMV standard)
-    const userName = withdrawal.user.name ?? withdrawal.user.email ?? "Usuario";
-    const pixCode = generatePixCode({
-      pixKey,
-      pixKeyType,
-      merchantName: userName,
-      merchantCity: "SAO PAULO",
-      amount: withdrawal.amountBRL,
-      txId: withdrawalId.replace(/[^A-Za-z0-9]/g, "").substring(0, 25),
-      description: `Saque MMOMarket`,
-    });
+    // COMPLETE — mark withdrawal as completed (admin has already sent the Pix payment)
+    if (action === "COMPLETE") {
+      if (withdrawal.status !== "PENDING") {
+        return NextResponse.json(
+          { error: `Saque já foi processado (${withdrawal.status})` },
+          { status: 400 },
+        );
+      }
+      await prisma.withdrawal.update({
+        where: { id: withdrawalId },
+        data: { status: "COMPLETED" },
+      });
+      return NextResponse.json({
+        message: `Saque concluído! R$ ${withdrawal.amountBRL.toFixed(2)} marcado como enviado.`,
+      });
+    }
 
-    await prisma.withdrawal.update({
-      where: { id: withdrawalId },
-      data: { status: "COMPLETED" },
-    });
-
-    return NextResponse.json({
-      message: `Saque aprovado! Escaneie o QR code Pix abaixo para enviar R$ ${withdrawal.amountBRL.toFixed(2)}.`,
-      pixKey,
-      pixKeyType,
-      amountBRL: withdrawal.amountBRL,
-      userEmail: withdrawal.user.email,
-      pixCode, // full EMV string for QR rendering
-    });
+    return NextResponse.json({ error: "Ação inválida" }, { status: 400 });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(

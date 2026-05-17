@@ -68,9 +68,16 @@ export async function POST(
       return NextResponse.json({ error: "Acesso negado" }, { status: 403 });
     }
 
-    if (trade.status !== "DISPUTED") {
+    if (
+      trade.status === "PENDING_DELIVERY" ||
+      trade.status === "DELIVERED" ||
+      trade.status === "CONFIRMED" ||
+      trade.status === "DISPUTED"
+    ) {
+      // Allow chat for all active and completed trades
+    } else {
       return NextResponse.json(
-        { error: "Apenas trades em disputa aceitam mensagens" },
+        { error: "Chat não disponível para este trade" },
         { status: 400 },
       );
     }

@@ -20,6 +20,7 @@ export async function GET(req: Request) {
         seller: { select: { id: true, name: true } },
         buyer: { select: { id: true, name: true } },
         serverRef: true,
+        order: { select: { characterName: true, server: true } },
       },
       orderBy: { createdAt: "desc" },
       take: limit + 1,
