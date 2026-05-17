@@ -148,17 +148,17 @@ export default function Navbar() {
   if (isAuth) return null;
 
   return (
-    <nav className="sticky top-0 z-40 bg-gray-900/90 border-b border-gray-800 backdrop-blur-xl">
+    <nav className="sticky top-0 z-40 bg-black/50 border-b border-gray-800 backdrop-blur-xl">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-24">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2.5">
             <Image
               src="/assets/logo.png"
               alt="MMOMarket"
-              width={140}
-              height={40}
-              className="h-9 w-auto object-contain"
+              width={220}
+              height={64}
+              className="h-14 w-auto object-contain"
               priority
             />
           </Link>
