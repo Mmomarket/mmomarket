@@ -150,10 +150,12 @@ export default function HomePage() {
         {/* Background video */}
         <iframe
           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[177.78vh] min-w-full h-[56.25vw] min-h-full pointer-events-none select-none"
-          src="https://www.youtube.com/embed/PCiLaAETjt4?autoplay=1&mute=1&loop=1&controls=0&playlist=PCiLaAETjt4&showinfo=0&rel=0&modestbranding=1&playsinline=1"
+          src="https://www.youtube.com/embed/PCiLaAETjt4?autoplay=1&mute=1&loop=1&controls=0&playlist=PCiLaAETjt4&showinfo=0&rel=0&modestbranding=1&playsinline=1&disablekb=1&iv_load_policy=3&fs=0&cc_load_policy=0"
           allow="autoplay; fullscreen"
           title="Background video"
         />
+        {/* Transparent shield over iframe to block any YouTube UI */}
+        <div className="absolute inset-0 z-[1]" />
         {/* Dark overlay */}
         <div className="absolute inset-0 bg-black/55" />
         {/* Bottom gradient fade into page */}
