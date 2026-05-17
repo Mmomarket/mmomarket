@@ -18,6 +18,9 @@ export const metadata: Metadata = {
   title: "MMOMarket - Intermediação de Moedas Digitais para MMORPGs",
   description:
     "Compre e venda moedas digitais de MMORPGs com segurança. Tibia, Mu Online, Ragnarok e muito mais.",
+  icons: {
+    icon: "/assets/favicon.png",
+  },
 };
 
 export default function RootLayout({

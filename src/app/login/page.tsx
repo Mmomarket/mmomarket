@@ -1,6 +1,7 @@
 "use client";
 
 import { signIn } from "next-auth/react";
+import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -13,19 +14,29 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 bg-gray-950">
-      <div className="w-full max-w-sm space-y-8">
+    <div
+      className="min-h-screen flex items-center justify-center px-4"
+      style={{
+        backgroundImage: "url('/assets/wallpaper.png')",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+      }}
+    >
+      <div className="absolute inset-0 bg-black/60" />
+      <div className="relative z-10 w-full max-w-sm space-y-8">
         {/* Logo */}
         <div className="text-center">
-          <Link href="/" className="inline-flex items-center gap-2.5">
-            <div className="w-10 h-10 bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center">
-              <span className="text-white font-bold text-lg">M</span>
-            </div>
-            <span className="text-2xl font-bold text-white tracking-tight">
-              MMO<span className="text-emerald-400">Market</span>
-            </span>
+          <Link href="/" className="inline-flex items-center justify-center">
+            <Image
+              src="/assets/logo.png"
+              alt="MMOMarket"
+              width={220}
+              height={80}
+              className="h-16 w-auto object-contain"
+              priority
+            />
           </Link>
-          <p className="mt-3 text-gray-500">Entre para começar a negociar</p>
+          <p className="mt-3 text-gray-300">Entre para começar a negociar</p>
         </div>
 
         {/* Google Sign In */}

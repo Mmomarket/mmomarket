@@ -148,24 +148,18 @@ export default function HomePage() {
         />
         <div className="w-full aspect-[16/9] sm:aspect-auto sm:h-screen" />
         {/* Background video */}
-        <video
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="metadata"
-          disablePictureInPicture
-          className="absolute inset-0 w-full h-full object-cover select-none"
-          style={{ userSelect: "none" }}
-        >
-          <source src="/assets/intro.mp4" type="video/mp4" />
-        </video>
+        <iframe
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[177.78vh] min-w-full h-[56.25vw] min-h-full pointer-events-none select-none"
+          src="https://www.youtube.com/embed/PCiLaAETjt4?autoplay=1&mute=1&loop=1&controls=0&playlist=PCiLaAETjt4&showinfo=0&rel=0&modestbranding=1&playsinline=1"
+          allow="autoplay; fullscreen"
+          title="Background video"
+        />
         {/* Dark overlay */}
         <div className="absolute inset-0 bg-black/55" />
         {/* Bottom gradient fade into page */}
         <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-gray-950 to-transparent pointer-events-none" />
         {/* Content */}
-        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center text-center px-4 py-16 sm:py-24">
+        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center text-center px-4 pt-24 pb-16 sm:pt-0 sm:py-24">
           <div className="space-y-5 max-w-4xl w-full mx-auto">
             <h1 className="text-4xl sm:text-6xl font-bold tracking-tight">
               Negocie moedas de{" "}
