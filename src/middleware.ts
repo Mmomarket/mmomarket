@@ -65,9 +65,13 @@ export async function middleware(req: NextRequest) {
 
 export const config = {
   matcher: [
-    "/carteira/:path*",
-    "/historico/:path*",
-    "/verificacao/:path*",
-    "/admin/:path*",
+    /*
+     * Match all request paths EXCEPT:
+     * - _next/static (static files)
+     * - _next/image (image optimization)
+     * - favicon.ico, sitemap.xml, robots.txt
+     * - public assets
+     */
+    "/((?!_next/static|_next/image|favicon|assets|sitemap.xml|robots.txt).*)",
   ],
 };
