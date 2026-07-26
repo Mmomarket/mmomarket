@@ -2,7 +2,10 @@ import Navbar from "@/components/layout/Navbar";
 import SessionProvider from "@/components/providers/SessionProvider";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
+
+const GA_MEASUREMENT_ID = "G-VBQ8HB29QF";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -15,7 +18,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "MMOMarket - Intermediação de Moedas Digitais para MMORPGs",
+  title: "MMOMarket - Moedas Digitais para MMORPGs",
   description:
     "Compre e venda moedas digitais de MMORPGs com segurança. Tibia, Mu Online, Ragnarok e muito mais.",
   icons: {
@@ -34,6 +37,18 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-gray-950 text-gray-100">
+        <Script
+          src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', '${GA_MEASUREMENT_ID}');
+          `}
+        </Script>
         <SessionProvider>
           <Navbar />
           <main className="flex-1">{children}</main>

@@ -13,9 +13,30 @@ const PROTECTED_PREFIXES = [
 // The admin-only prefix — regular users are redirected to home
 const ADMIN_PREFIX = "/admin";
 
+// Paths that bypass the geo-block (API routes, static assets, etc.)
+const GEO_BYPASS_PREFIXES = ["/api/", "/_next/", "/favicon", "/assets"];
+
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
+  // --- Geo-block: only allow Brazil ---
+  const isAsset = GEO_BYPASS_PREFIXES.some((p) => pathname.startsWith(p));
+  if (!isAsset) {
+    const country =
+      req.headers.get("x-vercel-ip-country") ?? req.headers.get("cf-ipcountry");
+
+    if (country && country !== "BR") {
+      return new NextResponse(
+        "<!DOCTYPE html><html lang='pt-BR'><head><meta charset='UTF-8'/><title>Acesso Restrito</title></head><body style='font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;background:#0f0f0f;color:#e5e7eb'><div style='text-align:center'><h1>🚫 Acesso Restrito</h1><p>Este serviço está disponível apenas para usuários no Brasil.</p></div></body></html>",
+        {
+          status: 403,
+          headers: { "Content-Type": "text/html; charset=utf-8" },
+        },
+      );
+    }
+  }
+
+  // --- Auth guard ---
   const isProtected = PROTECTED_PREFIXES.some((p) => pathname.startsWith(p));
   if (!isProtected) return NextResponse.next();
 
