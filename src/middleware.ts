@@ -57,7 +57,7 @@ export async function middleware(req: NextRequest) {
   if (pathname.startsWith(ADMIN_PREFIX) && !token.isAdmin) {
     // isAdmin is not in the default JWT — the page handles this gracefully,
     // but we do a best-effort check here if it was added to the token.
-    // Leave it to the page for now — just ensure auth.
+    // Leave it to the page for now — just ensure auth
   }
 
   return NextResponse.next();
