@@ -46,7 +46,7 @@ interface PriceStats {
 const GAME_LOGOS: Record<string, string> = {
   tibia: "tibia.png",
   "mu-online": "mu.png",
-  "ragnarok-online": "ragnarok.png",
+  "ragnarok-latam": "ragnarok.png",
   "perfect-world": "perfectworld.png",
   "lineage-2": "lineage2.png",
   "world-of-warcraft": "worldofwarcraft.png",
@@ -54,6 +54,20 @@ const GAME_LOGOS: Record<string, string> = {
   "black-desert-online": "blackdesertonline.png",
   metin2: "metin2.png",
   dofus: "dofus.png",
+  "final-fantasy-xiv": "finalfantasyxiv.png",
+  "lost-ark": "lostart.png",
+  "old-school-runescape": "oldschoolrunescape.png",
+  runescape: "runescape.png",
+  "throne-and-liberty": "throneandliberty.png",
+  "tree-of-savior": "treeofsavior.png",
+  "aion-classic": "aionclassic.png",
+  aion: "aion.png",
+  cabal: "cabal.png",
+  flyff: "flyff.png",
+  maplestory: "maplestory.png",
+  "albion-online": "albion.png",
+  "talisman-online": "talismаnonline.png",
+  wyd: "wyd.png",
 };
 
 export default function HomePage() {
