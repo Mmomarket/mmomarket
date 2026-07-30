@@ -553,14 +553,26 @@ async function main() {
   for (const currency of currencies) {
     const gameServerIds = gameServersMap.get(currency.gameId) || [];
 
-    // Generate price history per server
     for (const serverId of gameServerIds) {
-      // Generate 30 days of hourly price history
-      let basePrice = Math.random() * 0.05 + 0.001; // Random base price in BRL
+      const srv = servers.find((s) => s.id === serverId);
+
+      // --- Resume checkpoint: skip if history already exists for this pair ---
+      const existingCount = await prisma.priceHistory.count({
+        where: { currencyId: currency.id, serverId },
+      });
+      if (existingCount > 0) {
+        console.log(
+          `  ⏭️  Skipping (already seeded): ${currency.name} (${currency.game.name} - ${srv?.name})`,
+        );
+        continue;
+      }
+
+      // Build all records in memory first, then insert in one batch
+      let basePrice = Math.random() * 0.05 + 0.001;
+      const records = [];
       for (let day = 30; day >= 0; day--) {
         for (let hour = 0; hour < 24; hour += 4) {
-          // every 4 hours
-          const fluctuation = (Math.random() - 0.48) * 0.002; // slight upward bias
+          const fluctuation = (Math.random() - 0.48) * 0.002;
           basePrice = Math.max(0.0001, basePrice + fluctuation);
 
           const timestamp = new Date(now);
@@ -568,27 +580,24 @@ async function main() {
           timestamp.setHours(hour, 0, 0, 0);
 
           const volume = Math.random() * 10000 + 100;
-          const minPrice = basePrice * (1 - Math.random() * 0.05);
-          const maxPrice = basePrice * (1 + Math.random() * 0.05);
-
-          await prisma.priceHistory.create({
-            data: {
-              currencyId: currency.id,
-              serverId,
-              avgPrice: basePrice,
-              minPrice,
-              maxPrice,
-              volume,
-              volumeBRL: volume * basePrice,
-              period: "4h",
-              timestamp,
-            },
+          records.push({
+            currencyId: currency.id,
+            serverId,
+            avgPrice: basePrice,
+            minPrice: basePrice * (1 - Math.random() * 0.05),
+            maxPrice: basePrice * (1 + Math.random() * 0.05),
+            volume,
+            volumeBRL: volume * basePrice,
+            period: "4h",
+            timestamp,
           });
         }
       }
-      const srv = servers.find((s) => s.id === serverId);
+
+      // Single network round-trip instead of 186
+      await prisma.priceHistory.createMany({ data: records });
       console.log(
-        `  📊 Price history for ${currency.name} (${currency.game.name} - ${srv?.name})`,
+        `  📊 Price history for ${currency.name} (${currency.game.name} - ${srv?.name}) [${records.length} records]`,
       );
     }
   }
